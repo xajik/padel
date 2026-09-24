@@ -11,3 +11,6 @@ coverage/
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+
+# Local scratch / credential dumps
+.tmp*

@@ -42,14 +42,14 @@ The web Worker binds to `padel-mcp` (service binding `MCP`) and serves it at `/m
 
 The app runs fully without credentials:
 - **Games** are stored on the device. Games created by AI assistants are stored in Durable Objects.
-- **Sign-in** is a guest identity.
+- **Sign-in** is a guest identity. With the Firebase variables set, guests get a silent anonymous Firebase account and can link Google sign-in to it (same UID).
 - **Analytics** log to the console.
 
 Supplying these switches on the real integrations (see `lib/config.ts` and docs/REQUIREMENTS.md §12):
 
 | Variable | Used for |
 |---|---|
-| `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID` | Google sign-in + Firestore (`TODO(firebase)` markers) |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID` | Google sign-in (done) + Firestore (`TODO(firebase)` markers). Project `padel-americanoo`; values live in the untracked `apps/web/.env` |
 | `NEXT_PUBLIC_AMPLITUDE_API_KEY` | Product analytics (`TODO(amplitude)` in `lib/analytics.ts`) |
 
 `NEXT_PUBLIC_*` values are inlined at build time. Set them in `apps/web/.env.production` or in CI before `opennextjs-cloudflare build`.

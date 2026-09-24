@@ -19,6 +19,8 @@ export interface GameRepository {
   save(game: StoredGame): Promise<void>;
   remove(code: string): Promise<void>;
   list(): Promise<StoredGame[]>;
+  /** Hands a guest's games to the account they signed in to. */
+  transferOwnership(fromUid: string, toUid: string): Promise<void>;
   /** Live updates for one game (other tabs now; other devices once Firebase is connected). */
   subscribe(code: string, onChange: (game: StoredGame | null) => void): () => void;
 }

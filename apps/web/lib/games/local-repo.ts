@@ -41,6 +41,17 @@ export const localRepository: GameRepository = {
   async list() {
     return Object.values(readAll()).sort((a, b) => b.updatedAt - a.updatedAt);
   },
+  async transferOwnership(fromUid, toUid) {
+    const all = readAll();
+    let changed = false;
+    for (const game of Object.values(all)) {
+      if (game.ownerUid === fromUid) {
+        game.ownerUid = toUid;
+        changed = true;
+      }
+    }
+    if (changed) writeAll(all);
+  },
   subscribe(code, onChange) {
     const handler = () => onChange(readAll()[code] ?? null);
     window.addEventListener(EVENT, handler);

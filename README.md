@@ -16,28 +16,27 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 | `apps/web` | Next.js 16 (App Router) + shadcn/ui, deployed to Cloudflare Workers with OpenNext. |
 | `apps/mcp` | Remote MCP server Worker (stateless Streamable HTTP) + `GameRoom` Durable Objects that store games created by assistants. |
 
-## Develop
+## Run, test and deploy (`make help` lists everything)
 
-```bash
-npm install
-npm test -w @padel/engine            # engine tests
-npm test -w @padel/mcp               # MCP unit tests
+| Stage | Command | What it does |
+|---|---|---|
+| Setup | `make install` · `make login` · `make cf-setup` | Dependencies, wrangler login, R2 cache bucket (one-time) |
+| Run | `make dev` | MCP worker (:8788) + web app (:3100) together |
+| | `make dev-web` / `make dev-mcp` | Each on its own |
+| | `make preview` | Production web build in the real Workers runtime |
+| Check | `make check` | Engine + MCP tests and typecheck of all packages |
+| | `make smoke URL=…` · `make e2e-mcp URL=…` | Route/crawler smoke test and full MCP game flow against any URL |
+| Build | `make build` · `make dry-run` | OpenNext build · bundle both workers without deploying |
+| Preview | `make upload-preview` | Non-live web version at `https://<branch>-padel-web.xajik0.workers.dev` |
+| Deploy | `make deploy` | check → deploy MCP → deploy web → production smoke + MCP e2e |
+| | `make deploy-mcp` / `make deploy-web` / `make deploy-fast` | Partial or unchecked deploys |
+| Release | `make release TAG=v0.4.0` | Clean tree required; deploy, then tag and push |
+| Operate | `make logs-web` · `make logs-mcp` · `make versions` | Live logs and deployment history |
+| | `make rollback-web` · `make rollback-mcp` | Roll back to the previous version |
+| | `make secret-web NAME=…` · `make secret-mcp NAME=…` | Set Worker secrets |
+| Other | `make types` · `make icons` · `make clean` | Regenerate types, export icons, remove build output |
 
-# MCP worker (needed for /mcp and cloud games in the web dev server)
-cd apps/mcp && npx wrangler dev --port 8788
-
-# Web app (service binding to the local MCP worker via the wrangler dev registry)
-cd apps/web && npx next dev --port 3100
-```
-
-## Deploy (Cloudflare, wrangler)
-
-```bash
-cd apps/mcp && npx wrangler deploy                                         # padel-mcp
-cd apps/web && npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy   # padel-web
-```
-
-The web Worker binds to `padel-mcp` (service binding `MCP`) and serves it at `/mcp` and `/api/games/*`. The OpenNext incremental cache lives in the R2 bucket `padel-web-opennext-cache`.
+The web Worker binds to `padel-mcp` (service binding `MCP`) and serves it at `/mcp` and `/api/games/*`, so always deploy MCP first (`make deploy` does). The OpenNext incremental cache lives in the R2 bucket `padel-web-opennext-cache`.
 
 ## Credentials (pending)
 

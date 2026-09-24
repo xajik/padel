@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft v0.2 |
+| **Status** | v0.3: implementation notes added |
 | **Date** | 2026-09-24 |
 | **Product doc** | [PRD.md](./PRD.md) |
 
@@ -215,6 +215,13 @@ validate(config, players): ValidationError[]
 | FR-7.4.8 | **Measurement**: track AI referrals (`utm`/referrer: chatgpt.com, claude.ai, perplexity.ai, gemini.google.com) as an Amplitude property. Log crawler hits by user agent in Cloudflare analytics. Check citations manually each month (PRD §9). | P1 |
 
 ## FR-8 MCP server (AI-agent access)
+
+> **Implementation note (v0.2.0).** The server was built with the Agents SDK's **stateless** `createMcpHandler`, because `McpAgent` is deprecated. This changes three things from the spec below:
+> - **No session identity.** There is no per-session anonymous Firebase user. Write tools take the `organizerKey` explicitly, and `list_my_games` was dropped.
+> - **Interim storage.** Until Firestore credentials exist, games live in a `GameRoom` Durable Object per join code, inside the `padel-mcp` Worker. Only SHA-256 hashes of organizer keys are stored.
+> - **Served on the web domain.** The web Worker exposes the server at `/mcp` and `/api/games/*` through a service binding.
+>
+> The organizer-key hand-off (`/g/CODE?key=`), the spectator link, rate limits, name sanitising and 90-day retention are implemented as specified.
 
 **Goal:** a user can say to their assistant *"Set up an Americano for 10 of us on 2 courts: Anna, Mikko, …"*. The assistant then creates the game through our MCP server, sends back the share link and QR, and can keep entering scores and reading the leaderboard during the session. The user or friends can also open the same game on their phones.
 

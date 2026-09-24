@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { Icon } from "@/components/icons/icon";
-import { SITE } from "@/lib/site";
 
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight" aria-label={`${SITE.name} home`}>
+    <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
       <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
         <Icon name="logo" size={20} />
       </span>

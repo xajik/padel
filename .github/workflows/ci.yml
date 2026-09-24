@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Engine tests
+        run: npm test -w @padel/engine
+      - name: MCP tests
+        run: npm test -w @padel/mcp
+      - name: Typecheck
+        run: |
+          npm run typecheck -w @padel/engine
+          npm run typecheck -w @padel/mcp
+          npm run typecheck -w @padel/web
+      - name: Build web for Cloudflare
+        run: npx opennextjs-cloudflare build
+        working-directory: apps/web

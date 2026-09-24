@@ -19,7 +19,7 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2" aria-label="Account and sign in">
           <LogIn className="size-4" />
           <span className="hidden sm:inline">{user?.isAnonymous === false ? user.displayName : "Sign in"}</span>
         </Button>

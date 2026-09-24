@@ -1,7 +1,7 @@
 import { formatDuration, estimate, modeInfo, MODES, defaultSettings } from "@padel/engine";
 import { buildSchedule, scheduleCombos, scheduleMarkdown, scheduleSlug, playUrl, SCHEDULE_MODES, type ScheduleResult } from "../schedule";
 import { absoluteUrl, SITE } from "../site";
-import { MODE_GUIDES, type ModeGuide } from "./modes";
+import { MODE_GUIDES, type ModeGuide } from "@padel/content";
 
 export function modeMarkdown(g: ModeGuide): string {
   const ex = exampleSchedule(g);

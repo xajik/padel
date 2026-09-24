@@ -9,7 +9,7 @@ import { Breadcrumbs } from "@/components/marketing/breadcrumbs";
 import { ScheduleTable } from "@/components/marketing/schedule-table";
 import { Button } from "@/components/ui/button";
 import { exampleSchedule } from "@/lib/content/markdown";
-import { MODE_GUIDES, modeGuide } from "@/lib/content/modes";
+import { MODE_GUIDES, modeGuide } from "@padel/content";
 import { SCHEDULE_MODES, scheduleSlug } from "@/lib/schedule";
 import { absoluteUrl } from "@/lib/site";
 

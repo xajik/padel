@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { MODE_GUIDES, modeGuide } from "@/lib/content/modes";
+import { MODE_GUIDES, modeGuide } from "@padel/content";
 import { markdownResponse, modeMarkdown } from "@/lib/content/markdown";
 
 export const dynamic = "force-static";

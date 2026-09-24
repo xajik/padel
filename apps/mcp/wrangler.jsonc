@@ -1,0 +1,22 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "padel-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [{ "name": "GAMES", "class_name": "GameRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom"] }],
+  "ratelimits": [
+    // create_game: per client IP (FR-8.4.1)
+    { "name": "CREATE_LIMITER", "namespace_id": "4101", "simple": { "limit": 10, "period": 60 } },
+    // every MCP / API request: per client IP
+    { "name": "REQUEST_LIMITER", "namespace_id": "4102", "simple": { "limit": 120, "period": 60 } }
+  ],
+  "vars": {
+    "SITE_URL": "https://padel-web.xajik0.workers.dev",
+    "ALLOWED_HOSTS": "padel-web.xajik0.workers.dev,padel-mcp.xajik0.workers.dev,localhost,127.0.0.1"
+  }
+}

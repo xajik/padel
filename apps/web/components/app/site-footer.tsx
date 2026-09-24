@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MODE_GUIDES } from "@/lib/content/modes";
+import { MODE_GUIDES } from "@padel/content";
 import { SITE } from "@/lib/site";
 
 export function SiteFooter() {

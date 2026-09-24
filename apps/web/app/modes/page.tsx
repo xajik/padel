@@ -3,7 +3,7 @@ import Link from "next/link";
 import { modeInfo } from "@padel/engine";
 import { Icon, MODE_ICONS } from "@/components/icons/icon";
 import { Breadcrumbs } from "@/components/marketing/breadcrumbs";
-import { MODE_GUIDES } from "@/lib/content/modes";
+import { MODE_GUIDES } from "@padel/content";
 
 export const metadata: Metadata = {
   title: "Padel formats compared: Americano, Mexicano, Mixicano and more",

@@ -1,6 +1,6 @@
 import { MODES } from "@padel/engine";
 import { json } from "@/lib/api";
-import { MODE_GUIDES } from "@/lib/content/modes";
+import { MODE_GUIDES } from "@padel/content";
 import { absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";

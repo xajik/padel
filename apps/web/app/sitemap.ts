@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { MODE_GUIDES } from "@/lib/content/modes";
+import { MODE_GUIDES } from "@padel/content";
 import { scheduleCombos, scheduleSlug } from "@/lib/schedule";
 import { absoluteUrl } from "@/lib/site";
 

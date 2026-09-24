@@ -10,7 +10,9 @@
   },
   "services": [
     // Self-reference used by OpenNext caching. Must match "name".
-    { "binding": "WORKER_SELF_REFERENCE", "service": "padel-web" }
+    { "binding": "WORKER_SELF_REFERENCE", "service": "padel-web" },
+    // MCP server + interim cloud game store (apps/mcp), served on this domain at /mcp and /api/games/*.
+    { "binding": "MCP", "service": "padel-mcp" }
   ],
   "r2_buckets": [
     { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "padel-web-opennext-cache" }

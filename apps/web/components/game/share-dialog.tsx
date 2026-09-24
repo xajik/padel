@@ -15,12 +15,14 @@ export function ShareDialog({
   code,
   name,
   standingsText,
+  live = false,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   code: string;
   name: string;
   standingsText: string;
+  live?: boolean;
 }) {
   const [url, setUrl] = useState("");
   const [qr, setQr] = useState("");
@@ -46,7 +48,7 @@ export function ShareDialog({
         <DialogHeader>
           <DialogTitle>Share game</DialogTitle>
           <DialogDescription>
-            {isFirebaseConfigured
+            {isFirebaseConfigured || live
               ? "Anyone with the link can follow the scores live."
               : "Live sharing across phones switches on when cloud sync is connected. For now the game lives on this device."}
           </DialogDescription>

@@ -1,19 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Flag, RotateCcw, Shuffle } from "lucide-react";
 import { toast } from "sonner";
 import {
   advanceStatus,
   computeStandings,
-  EngineError,
   isRoundComplete,
   isScored,
   modeInfo,
-  nextRound,
-  setScore,
-  swapPlayers,
   type Standing,
 } from "@padel/engine";
 import { useAuth } from "@/components/app/auth-provider";
@@ -24,7 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { track } from "@/lib/analytics";
 import type { StoredGame } from "@/lib/games";
-import { useGame } from "@/lib/games/use-game";
+import { useGame, type GameOps, type GameSource } from "@/lib/games/use-game";
 import { cn } from "@/lib/utils";
 import { CourtCard } from "./court-card";
 import { Leaderboard } from "./leaderboard";
@@ -32,25 +29,46 @@ import { Podium } from "./podium";
 import { ScorePad, type PadTarget } from "./score-pad";
 import { ShareDialog } from "./share-dialog";
 
-export function GameView({ code }: { code: string }) {
-  const { load, save } = useGame(code);
+export function GameView({ code, initial = null, keyFromUrl = null }: { code: string; initial?: StoredGame | null; keyFromUrl?: string | null }) {
+  const router = useRouter();
+  const { load, ops } = useGame(code, initial, keyFromUrl);
+
+  // Organizer hand-off: the key is stored on this device, then removed from the address bar (FR-8.2).
+  const handedOff = useRef(false);
+  useEffect(() => {
+    if (keyFromUrl && load.status === "ready" && !handedOff.current) {
+      handedOff.current = true;
+      router.replace(`/g/${code}`, { scroll: false });
+      if (load.cloudEditor) toast("You can now enter scores on this device.");
+    }
+  }, [keyFromUrl, load, code, router]);
+
   if (load.status === "loading") return <GameSkeleton />;
   if (load.status === "missing") return <GameMissing code={code} />;
-  return <LoadedGame game={load.game} save={save} />;
+  return <LoadedGame game={load.game} source={load.source} cloudEditor={load.cloudEditor} ops={ops} />;
 }
 
-function LoadedGame({ game, save }: { game: StoredGame; save: (g: StoredGame) => Promise<void> }) {
+const errorMessage = (e: unknown, fallback: string) => (e instanceof Error && e.message ? e.message : fallback);
+
+function LoadedGame({ game, source, cloudEditor, ops }: { game: StoredGame; source: GameSource; cloudEditor: boolean; ops: GameOps }) {
   const { user } = useAuth();
   const { state } = game;
   const info = modeInfo(state.settings.mode);
   const [viewRound, setViewRound] = useState(state.current);
+  const [seenCurrent, setSeenCurrent] = useState(state.current);
+  if (seenCurrent !== state.current) {
+    // Another device (or the AI assistant) started a new round: follow it.
+    setSeenCurrent(state.current);
+    setViewRound(state.current);
+  }
   const [tab, setTab] = useState(game.status === "done" ? "leaderboard" : "round");
   const [pad, setPad] = useState<PadTarget | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [swapMode, setSwapMode] = useState(false);
   const [picked, setPicked] = useState<string | null>(null);
 
-  const canEdit = !!user && user.uid === game.ownerUid && game.status === "live";
+  const canEdit = game.status === "live" && (source === "cloud" ? cloudEditor : !!user && user.uid === game.ownerUid);
+  const canManage = source === "cloud" ? cloudEditor : !!user && user.uid === game.ownerUid;
   const names = useMemo(() => {
     const m = new Map(state.players.map((p) => [p.id, p.name]));
     return (id: string) => m.get(id) ?? "?";
@@ -62,48 +80,46 @@ function LoadedGame({ game, save }: { game: StoredGame; save: (g: StoredGame) =>
   const roundUnscored = !round.matches.some(isScored);
   const canSwap = canEdit && state.settings.shuffle === "manual" && viewRound === state.current && roundUnscored;
 
-  const persist = (next: StoredGame) => save({ ...next, updatedAt: Date.now() });
-
-  const applyScore = (matchIndex: number, a: number | null, b: number | null) => {
+  const applyScore = async (matchIndex: number, a: number | null, b: number | null) => {
     setPad(null);
     try {
-      const res = setScore(state, round.index, matchIndex, a, b);
-      void persist({ ...game, state: res.state });
+      const regenerated = await ops.score(round.index, matchIndex, a, b);
       if (a !== null) track("score_entered", { round: round.index + 1 });
-      if (res.regenerated.length) {
+      if (regenerated.length) {
         toast("Later rounds reshuffled", {
-          description: `Round ${res.regenerated.map((i) => i + 1).join(", ")} now uses the updated standings.`,
+          description: `Round ${regenerated.map((i) => i + 1).join(", ")} now uses the updated standings.`,
         });
       }
     } catch (e) {
-      toast.error(e instanceof EngineError ? e.message : "Could not save that score.");
+      toast.error(errorMessage(e, "Could not save that score."));
     }
   };
 
-  const goNext = () => {
+  const goNext = async () => {
     try {
-      const next = nextRound(state);
-      void persist({ ...game, state: next });
-      setViewRound(next.current);
+      const next = await ops.next();
+      setViewRound(next.state.current);
       setTab("round");
-      track("round_started", { round: next.current + 1 });
+      track("round_started", { round: next.state.current + 1 });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
-      toast.error(e instanceof EngineError ? e.message : "Could not start the next round.");
+      toast.error(errorMessage(e, "Could not start the next round."));
     }
   };
 
-  const finish = () => {
-    void persist({ ...game, status: "done" });
-    setTab("leaderboard");
-    track("game_finished", { rounds: state.current + 1, mode: state.settings.mode });
+  const finish = async () => {
+    try {
+      await ops.finish();
+      setTab("leaderboard");
+      track("game_finished", { rounds: state.current + 1, mode: state.settings.mode });
+    } catch (e) {
+      toast.error(errorMessage(e, "Could not finish the game."));
+    }
   };
 
   const pickForSwap = (id: string) => {
     if (!picked) return setPicked(id);
-    if (picked !== id) {
-      void persist({ ...game, state: swapPlayers(state, round.index, picked, id) });
-    }
+    if (picked !== id) void ops.swap(round.index, picked, id).catch((e) => toast.error(errorMessage(e, "Could not swap.")));
     setPicked(null);
   };
 
@@ -120,6 +136,15 @@ function LoadedGame({ game, save }: { game: StoredGame; save: (g: StoredGame) =>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {info.name} · {state.players.length} players · {state.settings.courts} court{state.settings.courts > 1 ? "s" : ""}
           </p>
+          {source === "cloud" && (
+            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-foreground/40" />
+                <span className="relative inline-flex size-2 rounded-full bg-foreground" />
+              </span>
+              Live{cloudEditor ? " · you can edit" : " · view only"}
+            </p>
+          )}
         </div>
         <Button variant="outline" className="h-10 shrink-0 gap-2" onClick={() => setShareOpen(true)}>
           <Icon name="share" size={16} />
@@ -276,17 +301,18 @@ function LoadedGame({ game, save }: { game: StoredGame; save: (g: StoredGame) =>
       <ActionBar
         game={game}
         canEdit={canEdit}
+        canManage={canManage}
         status={status}
         viewingCurrent={viewRound >= state.current}
         onNext={goNext}
         onFinish={finish}
-        onReopen={() => void persist({ ...game, status: "live" })}
+        onReopen={() => void ops.reopen().catch((e) => toast.error(errorMessage(e, "Could not reopen.")))}
         onBack={() => setViewRound(state.current)}
         standings={standings}
       />
 
       <ScorePad target={pad} scoring={state.settings.scoring} onClose={() => setPad(null)} onSubmit={applyScore} />
-      <ShareDialog open={shareOpen} onOpenChange={setShareOpen} code={game.code} name={game.name} standingsText={standingsText} />
+      <ShareDialog open={shareOpen} onOpenChange={setShareOpen} code={game.code} name={game.name} standingsText={standingsText} live={source === "cloud"} />
     </div>
   );
 }
@@ -324,6 +350,7 @@ function RoundPicker({ count, planned, value, onChange }: { count: number; plann
 function ActionBar({
   game,
   canEdit,
+  canManage,
   status,
   viewingCurrent,
   onNext,
@@ -334,6 +361,7 @@ function ActionBar({
 }: {
   game: StoredGame;
   canEdit: boolean;
+  canManage: boolean;
   status: ReturnType<typeof advanceStatus>;
   viewingCurrent: boolean;
   onNext: () => void;
@@ -343,7 +371,7 @@ function ActionBar({
   standings: Standing[];
 }) {
   const [confirmFinish, setConfirmFinish] = useState(false);
-  if (!canEdit && game.status === "live") return null;
+  if (!canManage) return null;
   const leader = standings[0];
 
   return (

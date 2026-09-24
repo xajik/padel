@@ -1,0 +1,23 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "padel-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    // Self-reference used by OpenNext caching. Must match "name".
+    { "binding": "WORKER_SELF_REFERENCE", "service": "padel-web" }
+  ],
+  "r2_buckets": [
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "padel-web-opennext-cache" }
+  ],
+  "observability": { "enabled": true },
+  "vars": {
+    // Public config. Firebase / Amplitude keys are added once provided (docs/REQUIREMENTS.md §12).
+    "NEXT_PUBLIC_SITE_URL": "https://padel-web.xajik0.workers.dev"
+  }
+}

@@ -1,9 +1,19 @@
 {
   "name": "padel",
   "private": true,
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "esbuild@0.28.1": true,
+    "sharp@0.35.4": true,
+    "unrs-resolver@1.12.2": true,
+    "workerd@1.20260921.1": true
   }
 }

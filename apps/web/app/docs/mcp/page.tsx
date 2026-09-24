@@ -6,7 +6,7 @@ import { absoluteUrl } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Connect your AI assistant (MCP)",
   description:
-    "Let Claude, ChatGPT, Cursor or any MCP client create padel Americano games, share the link, enter scores and read the leaderboard.",
+    "Let Claude, ChatGPT, Meta Muse, Cursor or any MCP client create padel Americano games, share the link, enter scores and read the leaderboard.",
   alternates: { canonical: "/docs/mcp" },
 };
 
@@ -26,6 +26,7 @@ const TOOLS: [string, string][] = [
 export default function McpDocsPage() {
   const endpoint = absoluteUrl("/mcp");
   const snippets: [string, string][] = [
+    ["Meta Muse", `Paste the setup prompt from ${absoluteUrl("/docs/muse")} into a Muse chat.\nMCP server URL: ${endpoint} (streamable HTTP, no authentication)`],
     ["Claude (claude.ai / desktop)", `Settings → Connectors → Add custom connector\nURL: ${endpoint}`],
     ["Claude Code", `claude mcp add --transport http padel ${endpoint}`],
     ["ChatGPT", `Settings → Apps & Connectors → Create\nMCP server URL: ${endpoint}\nAuthentication: none`],

@@ -27,6 +27,7 @@ export function SiteFooter() {
           <ul className="space-y-1">
             <li><Link href="/schedule" className="hover:text-foreground">Americano schedules</Link></li>
             <li><Link href="/docs/mcp" className="hover:text-foreground">Connect your AI assistant</Link></li>
+            <li><Link href="/docs/muse" className="hover:text-foreground">Meta Muse connector</Link></li>
             <li><Link href="/llms.txt" className="hover:text-foreground">llms.txt</Link></li>
             <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
           </ul>

@@ -1,6 +1,7 @@
 import { createMcpHandler } from "agents/mcp/server";
 import type { GameState } from "@padel/engine";
 import { hashKey, isValidCode, normalizeCode } from "./game";
+import { handleRest } from "./rest";
 import { createServer } from "./server";
 import { room, type Mutation } from "./store";
 
@@ -90,7 +91,7 @@ function isGameState(s: unknown): s is GameState {
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
-    if (req.method === "OPTIONS" && url.pathname.startsWith("/api/")) return new Response(null, { status: 204, headers: CORS });
+    if (req.method === "OPTIONS" && url.pathname.startsWith("/api/games/")) return new Response(null, { status: 204, headers: CORS });
 
     if (url.pathname === "/mcp" || url.pathname.startsWith("/api/")) {
       const { success } = await env.REQUEST_LIMITER.limit({ key: clientIp(req) });
@@ -98,6 +99,11 @@ export default {
     }
 
     if (url.pathname === "/mcp") return handleMcp(req, env, ctx);
+    if (url.pathname === "/api/v1/games" || url.pathname.startsWith("/api/v1/games/")) {
+      const parts = url.pathname.slice("/api/v1/games".length).split("/").filter(Boolean);
+      const allowCreate = async () => (await env.CREATE_LIMITER.limit({ key: clientIp(req) })).success;
+      return handleRest(req, env, parts, allowCreate);
+    }
     if (url.pathname.startsWith("/api/games/")) {
       return handleApi(req, env, url.pathname.slice("/api/games/".length).split("/").filter(Boolean));
     }

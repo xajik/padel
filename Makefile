@@ -119,6 +119,10 @@ smoke: ## Smoke-test public routes and AI crawler access (URL=...)
 e2e-mcp: ## End-to-end MCP tool flow against URL/mcp (URL=...)
 	node scripts/mcp-e2e.mjs $(URL)/mcp
 
+.PHONY: e2e-rest
+e2e-rest: ## End-to-end REST game API flow (OpenAPI path, e.g. Meta Muse) against URL
+	node scripts/rest-e2e.mjs $(URL)
+
 .PHONY: e2e-local
 e2e-local: ## E2E against the local MCP worker directly
 	node scripts/mcp-e2e.mjs http://localhost:$(MCP_PORT)/mcp
@@ -160,9 +164,10 @@ upload-preview: build-web ## Upload a non-live web version at https://<branch>-p
 	@echo "Preview: https://$(ALIAS)-padel-web.xajik0.workers.dev"
 
 .PHONY: smoke-prod
-smoke-prod: ## Smoke + MCP e2e against production
+smoke-prod: ## Smoke + MCP and REST e2e against production
 	./scripts/smoke.sh $(PROD_URL)
 	node scripts/mcp-e2e.mjs $(PROD_URL)/mcp
+	node scripts/rest-e2e.mjs $(PROD_URL)
 
 .PHONY: release
 release: ## Check, deploy, then tag + push: make release TAG=v0.4.0

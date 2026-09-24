@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     })),
     { url: absoluteUrl("/docs/mcp"), lastModified: UPDATED, priority: 0.5 },
+    { url: absoluteUrl("/docs/muse"), lastModified: UPDATED, priority: 0.5 },
     { url: absoluteUrl("/privacy"), lastModified: UPDATED, priority: 0.2 },
   ];
 }

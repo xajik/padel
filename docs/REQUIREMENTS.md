@@ -234,6 +234,7 @@ validate(config, players): ValidationError[]
 | FR-8.1.3 | **No sign-in required** (anonymous mode). The server works without OAuth. | P1 |
 | FR-8.1.4 | **Human docs** live at `/docs/mcp`: what it does, the tool list, and copy-paste setup for:<br>• **Claude** (Settings → Connectors → *Add custom connector* → URL)<br>• **Claude Code** (`claude mcp add --transport http padel https://{domain}/mcp`)<br>• **ChatGPT** (custom connector / developer mode)<br>• **Cursor / VS Code** (`mcp.json` snippet)<br>The MCP server is also listed in `llms.txt` and the OpenAPI spec description. | P1 |
 | FR-8.1.5 | The server reports `serverInfo` with name `padel-americano`, a version, and **instructions** (a short system-level description: what the server does, that games are anonymous and shareable, and that the agent should always show the user the share link). | P1 |
+| FR-8.1.5a | **Meta Muse custom integration**: Muse builds integrations from a public MCP URL or OpenAPI document, running in Meta's cloud with bearer-token/API-key auth only (no OAuth). `/docs/muse` gives a one-message setup prompt. A REST game API (`/api/v1/games`, organizer key as `Authorization: Bearer`) is documented in `/openapi.json` as the non-MCP path. | P1 ✅ |
 | FR-8.1.6 | Optional **OAuth sign-in with Google** (Cloudflare `workers-oauth-provider` + Firebase). Games created by a signed-in agent land in the user's history, and `claim_player` becomes available. | P2 |
 
 ### FR-8.2 Anonymous identity model

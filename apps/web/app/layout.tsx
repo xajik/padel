@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/app/auth-provider";
+import { MarketingOnly } from "@/components/app/marketing-only";
 import { SiteFooter } from "@/components/app/site-footer";
 import { SiteHeader } from "@/components/app/site-header";
 import { ThemeProvider } from "@/components/app/theme-provider";
@@ -43,7 +44,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <main id="main" className="flex flex-1 flex-col">
               {children}
             </main>
-            <SiteFooter />
+            <MarketingOnly>
+              <SiteFooter />
+            </MarketingOnly>
             <Toaster position="top-center" />
           </AuthProvider>
         </ThemeProvider>

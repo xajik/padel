@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@padel/engine"],
+  transpilePackages: ["@padel/engine", "@padel/design"],
   poweredByHeader: false,
   async headers() {
     return [

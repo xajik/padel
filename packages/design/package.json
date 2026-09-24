@@ -1,0 +1,13 @@
+{
+  "name": "@padel/design",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./icons.ts",
+    "./tokens.json": "./tokens.json"
+  },
+  "scripts": {
+    "icons": "node --experimental-strip-types scripts/export-icons.ts"
+  }
+}

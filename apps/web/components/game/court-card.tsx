@@ -78,7 +78,11 @@ export function CourtCard({
             aria-label={`Score for ${team.map(names).join(" and ")}: ${score ?? "not entered"}`}
             className={cn(
               "grid h-14 w-16 place-items-center rounded-xl border font-mono text-3xl font-semibold tabular-nums transition-colors",
-              score === null ? "border-dashed text-muted-foreground/60 hover:border-foreground/50" : "hover:border-foreground/40",
+              score === null
+                ? editable
+                  ? "border-dashed text-muted-foreground/60 hover:border-foreground/50"
+                  : "border-transparent bg-muted/60 text-muted-foreground/60"
+                : editable && "hover:border-foreground/40",
               won && "border-primary bg-primary text-primary-foreground",
               lost && "text-muted-foreground",
             )}

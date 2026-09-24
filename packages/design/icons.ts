@@ -4,8 +4,8 @@
  * exported to .svg files for Flutter (flutter_svg) via `npm run icons`.
  */
 export const ICONS = {
-  /** Brand mark: a court seen from above with the ball crossing the net. */
-  logo: `<rect x="4" y="2.5" width="16" height="19" rx="3"/><path d="M4 12h16"/><path d="M8 7.5h8M8 16.5h8" opacity=".45"/><circle cx="15.5" cy="12" r="2.25" fill="currentColor" stroke="none"/>`,
+  /** Brand mark: a perforated padel racket leaning right, with a ball (tennis-style seam). */
+  logo: `<g transform="rotate(35 12 12)" fill="currentColor" stroke="none" fill-rule="evenodd"><path d="M12 1.5C16 1.5 18.5 4.2 18.5 7.8C18.5 11.8 15.6 14.5 12 14.5C8.4 14.5 5.5 11.8 5.5 7.8C5.5 4.2 8 1.5 12 1.5ZM9.28 4.6a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0ZM11.28 4.6a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0ZM13.28 4.6a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0ZM8.28 7a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0ZM10.28 7a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0ZM12.28 7a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0ZM14.28 7a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0ZM9.28 9.4a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0ZM11.28 9.4a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0ZM13.28 9.4a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0ZM10.28 11.7a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0ZM12.28 11.7a0.72 0.72 0 1 0 1.44 0a0.72 0.72 0 1 0 -1.44 0Z"/><path d="M9.4 13.6L14.6 13.6L13.1 17.2L10.9 17.2Z M11.1 14.5L12.9 14.5L12 16.3Z"/><path d="M11 17a1 1 0 0 1 1-1h0a1 1 0 0 1 1 1v5.3a1 1 0 0 1-1 1h0a1 1 0 0 1-1-1Z"/></g><g transform="rotate(35 19 19.4)"><circle cx="19" cy="19.4" r="2.9"/><path d="M17.35 17.05a2.7 2.7 0 0 1 0 4.7M20.65 17.05a2.7 2.7 0 0 0 0 4.7" stroke-width="1.15"/></g>`,
   racket: `<path d="M12 2.75c3.6 0 6.25 2.6 6.25 6.1 0 3.9-3 6.4-6.25 6.4s-6.25-2.5-6.25-6.4c0-3.5 2.65-6.1 6.25-6.1Z"/><path d="M10.4 15l-.6 2.2h4.4l-.6-2.2"/><path d="M10.4 17.2h3.2V21a1.6 1.6 0 0 1-3.2 0Z"/><circle cx="10" cy="7.5" r=".6" fill="currentColor" stroke="none"/><circle cx="14" cy="7.5" r=".6" fill="currentColor" stroke="none"/><circle cx="12" cy="9.5" r=".6" fill="currentColor" stroke="none"/><circle cx="10" cy="11.5" r=".6" fill="currentColor" stroke="none"/><circle cx="14" cy="11.5" r=".6" fill="currentColor" stroke="none"/>`,
   ball: `<circle cx="12" cy="12" r="9"/><path d="M5.2 6.2c2.6 1.7 4.2 3.8 4.2 5.8s-1.6 4.1-4.2 5.8"/><path d="M18.8 6.2c-2.6 1.7-4.2 3.8-4.2 5.8s1.6 4.1 4.2 5.8"/>`,
   court: `<rect x="4" y="2.5" width="16" height="19" rx="1.5"/><path d="M4 12h16"/><path d="M4 7h16M4 17h16M12 7v10" opacity=".55"/>`,
@@ -35,4 +35,13 @@ export type IconName = keyof typeof ICONS;
 
 export function iconSvg(name: IconName, size = 24, strokeWidth = 1.75): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`;
+}
+
+/** Standalone SVG string in a fixed colour (for <img> data URIs in OG images / app icons). */
+export function iconSvgColored(name: IconName, color: string, size = 24): string {
+  return iconSvg(name, size).replace(/currentColor/g, color);
+}
+
+export function iconDataUri(name: IconName, color: string, size = 24): string {
+  return `data:image/svg+xml;utf8,${encodeURIComponent(iconSvgColored(name, color, size))}`;
 }

@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { iconDataUri } from "@padel/design";
 import { SITE } from "./site";
 
 export const OG_SIZE = { width: 1200, height: 630 };
@@ -9,9 +10,9 @@ export function ogCard({ eyebrow, title, footer }: { eyebrow: string; title: str
     (
       <div style={{ width: "100%", height: "100%", background: "#0a0a0a", color: "#fafafa", display: "flex", flexDirection: "column", padding: 72, justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 20, fontSize: 30 }}>
-          <div style={{ width: 52, height: 64, border: "5px solid #fafafa", borderRadius: 10, display: "flex", alignItems: "center", position: "relative" }}>
-            <div style={{ width: "100%", height: 5, background: "#fafafa" }} />
-            <div style={{ position: "absolute", right: 6, width: 14, height: 14, borderRadius: 7, background: "#fafafa" }} />
+          <div style={{ width: 64, height: 64, borderRadius: 16, background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={iconDataUri("logo", "#0a0a0a", 46)} width={46} height={46} alt="" />
           </div>
           {SITE.name}
         </div>

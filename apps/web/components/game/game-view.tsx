@@ -20,7 +20,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { track } from "@/lib/analytics";
-import type { StoredGame } from "@/lib/games";
+import { gameRepository, type StoredGame } from "@/lib/games";
+import { publishGame } from "@/lib/games/cloud";
 import { useGame, type GameOps, type GameSource } from "@/lib/games/use-game";
 import { cn } from "@/lib/utils";
 import { CourtCard } from "./court-card";
@@ -51,6 +52,7 @@ export function GameView({ code, initial = null, keyFromUrl = null }: { code: st
 const errorMessage = (e: unknown, fallback: string) => (e instanceof Error && e.message ? e.message : fallback);
 
 function LoadedGame({ game, source, cloudEditor, ops }: { game: StoredGame; source: GameSource; cloudEditor: boolean; ops: GameOps }) {
+  const router = useRouter();
   const { user } = useAuth();
   const { state } = game;
   const info = modeInfo(state.settings.mode);
@@ -114,6 +116,20 @@ function LoadedGame({ game, source, cloudEditor, ops }: { game: StoredGame; sour
       track("game_finished", { rounds: state.current + 1, mode: state.settings.mode });
     } catch (e) {
       toast.error(errorMessage(e, "Could not finish the game."));
+    }
+  };
+
+  /** Local game → cloud: a new shareable code that phones, the apps and other browsers can open. */
+  const publish = async () => {
+    try {
+      const code = await publishGame(game);
+      await gameRepository().remove(game.code);
+      track("share_opened", { code_length: code.length });
+      setShareOpen(false);
+      router.replace(`/g/${code}`);
+      toast("Game is live", { description: `Share code ${code} or its QR code. You can still enter scores here.` });
+    } catch (e) {
+      toast.error(errorMessage(e, "Could not share the game."));
     }
   };
 
@@ -312,7 +328,15 @@ function LoadedGame({ game, source, cloudEditor, ops }: { game: StoredGame; sour
       />
 
       <ScorePad target={pad} scoring={state.settings.scoring} onClose={() => setPad(null)} onSubmit={applyScore} />
-      <ShareDialog open={shareOpen} onOpenChange={setShareOpen} code={game.code} name={game.name} standingsText={standingsText} live={source === "cloud"} />
+      <ShareDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        code={game.code}
+        name={game.name}
+        standingsText={standingsText}
+        live={source === "cloud"}
+        onPublish={source === "local" && canManage ? publish : undefined}
+      />
     </div>
   );
 }

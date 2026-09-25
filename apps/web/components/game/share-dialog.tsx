@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { track } from "@/lib/analytics";
-import { isFirebaseConfigured } from "@/lib/config";
 
 export function ShareDialog({
   open,
@@ -16,6 +15,7 @@ export function ShareDialog({
   name,
   standingsText,
   live = false,
+  onPublish,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -23,10 +23,13 @@ export function ShareDialog({
   name: string;
   standingsText: string;
   live?: boolean;
+  /** Local games: move the game to the cloud so phones and the apps can join (FR-4). */
+  onPublish?: () => Promise<void>;
 }) {
   const [url, setUrl] = useState("");
   const [qr, setQr] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -48,11 +51,29 @@ export function ShareDialog({
         <DialogHeader>
           <DialogTitle>Share game</DialogTitle>
           <DialogDescription>
-            {isFirebaseConfigured || live
-              ? "Anyone with the link can follow the scores live."
-              : "Live sharing across phones switches on when cloud sync is connected. For now the game lives on this device."}
+            {/* Games are stored locally until the Firestore repository lands (lib/games/index.ts), so only
+                cloud games can be followed elsewhere, whatever the Firebase auth config says. */}
+            {live
+              ? "Anyone with the link can follow the scores live, on the web or in the Padel app."
+              : "This game lives on this device. Share it live so others can follow on the web or join from the Padel app."}
           </DialogDescription>
         </DialogHeader>
+        {!live && onPublish && (
+          <Button
+            className="h-11 w-full"
+            disabled={publishing}
+            onClick={async () => {
+              setPublishing(true);
+              try {
+                await onPublish();
+              } finally {
+                setPublishing(false);
+              }
+            }}
+          >
+            {publishing ? "Sharing…" : "Share live"}
+          </Button>
+        )}
         <div className="flex flex-col items-center gap-4">
           <div
             className="size-48 rounded-xl border bg-white p-2 [&>svg]:size-full"

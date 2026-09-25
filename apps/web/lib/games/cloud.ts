@@ -66,3 +66,30 @@ export async function mutateCloud(code: string, key: string, m: CloudMutation): 
   if ("error" in body) throw new CloudError(body.error.code, body.error.message);
   return body;
 }
+
+/**
+ * Moves a game that lives only on this device to the cloud game store, so other phones, the native
+ * apps (QR / link) and the web can follow it live. The server allocates a new code; our schedule and
+ * scores are kept with a `replace`. The organizer key stays on this device.
+ */
+export async function publishGame(game: StoredGame): Promise<string> {
+  const { state } = game;
+  const res = await fetch("/api/v1/games", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      mode: state.settings.mode,
+      names: state.players.map((p) => p.name),
+      courts: state.settings.courts,
+      name: game.name,
+      ...(state.players.some((p) => p.side) ? { sides: state.players.map((p) => p.side ?? "A") } : {}),
+    }),
+  });
+  const body = (await res.json().catch(() => ({}))) as { code?: string; organizerKey?: string; error?: { code: string; message: string } };
+  if (!res.ok || !body.code || !body.organizerKey) {
+    throw new CloudError(body.error?.code ?? "NETWORK", body.error?.message ?? "Could not reach the game server.");
+  }
+  await mutateCloud(body.code, body.organizerKey, { type: "replace", state, status: game.status, name: game.name });
+  setOrganizerKey(body.code, body.organizerKey);
+  return body.code;
+}

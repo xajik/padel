@@ -4,17 +4,20 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 
 - **Live:** https://padel-web.xajik0.workers.dev
 - **MCP endpoint:** https://padel-web.xajik0.workers.dev/mcp · [connection guide](https://padel-web.xajik0.workers.dev/docs/mcp)
-- **Product:** [docs/PRD.md](docs/PRD.md) · **Requirements:** [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md)
+- **Product:** [docs/PRD.md](docs/PRD.md) · **Requirements:** [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) · **Native apps:** [docs/MOBILE.md](docs/MOBILE.md)
 
 ## Layout
 
 | Path | What |
 |---|---|
-| `packages/engine` | Pure TypeScript pairing & scoring engine for all 8 formats (deterministic, seeded). The Flutter app will port it and reuse its tests. |
+| `packages/engine` | Pure TypeScript pairing & scoring engine for all 8 formats (deterministic, seeded). The native apps use a Kotlin Multiplatform port (`apps/mobile-shared`) checked against shared JSON fixtures. |
 | `packages/content` | Format guides (single source for web pages, Markdown mirrors, `llms.txt`, MCP `explain_mode`). |
-| `packages/design` | Design tokens (`tokens.json`) and the custom icon set (`icons.ts`, exported to `svg/` for Flutter). |
+| `packages/design` | Design tokens (`tokens.json`) and the custom icon set (`icons.ts`, exported to `svg/` and generated into Swift/Kotlin for the native apps). |
 | `apps/web` | Next.js 16 (App Router) + shadcn/ui, deployed to Cloudflare Workers with OpenNext. |
 | `apps/mcp` | Remote MCP server Worker (stateless Streamable HTTP) + `GameRoom` Durable Objects that store games created by assistants. |
+| `apps/mobile-shared` | Kotlin Multiplatform module shared by both native apps: the engine port (passes `packages/engine/fixtures`), later the offline store and API client. |
+| `apps/ios` | Native iOS app: SwiftUI, iOS 17+, XcodeGen project (`project.yml`). Links the KMP framework through a Gradle build phase. |
+| `apps/android` | Native Android app: Jetpack Compose + Material 3 (monochrome), includes `apps/mobile-shared` as a composite build. |
 
 ## Run, test and deploy (`make help` lists everything)
 
@@ -27,7 +30,6 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 | Check | `make check` | Engine + MCP tests and typecheck of all packages |
 | | `make smoke URL=…` · `make e2e-mcp URL=…` | Route/crawler smoke test and full MCP game flow against any URL |
 | Build | `make build` · `make dry-run` | OpenNext build · bundle both workers without deploying |
-| Preview | `make upload-preview` | Non-live web version at `https://<branch>-padel-web.xajik0.workers.dev` |
 | Deploy | `make deploy` | check → deploy MCP → deploy web → production smoke + MCP e2e |
 | | `make deploy-mcp` / `make deploy-web` / `make deploy-fast` | Partial or unchecked deploys |
 | Release | `make release TAG=v0.4.0` | Clean tree required; deploy, then tag and push |
@@ -35,6 +37,12 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 | | `make rollback-web` · `make rollback-mcp` | Roll back to the previous version |
 | | `make secret-web NAME=…` · `make secret-mcp NAME=…` | Set Worker secrets |
 | Other | `make types` · `make icons` · `make clean` | Regenerate types, export icons, remove build output |
+| Mobile | `make mobile-test` | Kotlin engine vs shared fixtures (JVM + iOS simulator) and Android unit tests |
+| | `make ios-project` · `make ios-test` | Generate/open the Xcode project · run iOS tests (`IOS_SIM=…`) |
+| | `make android` · `make android-build` | Install on a running emulator/device · build the APK |
+| | `make ios-ui-test` · `make android-ui-test` | End-to-end against the deployed API (phone ↔ web sync, links, Live Activity) |
+| | `make ios-screenshots` · `make android-screenshots` | App Store / Play Store screenshots into `store/` |
+| | `make fixtures` · `make native-assets` | After engine changes: regenerate fixtures · after design changes: regenerate Swift/Kotlin tokens, icons, fonts |
 
 The web Worker binds to `padel-mcp` (service binding `MCP`) and serves it at `/mcp` and `/api/games/*`, so always deploy MCP first (`make deploy` does). The OpenNext incremental cache lives in the R2 bucket `padel-web-opennext-cache`.
 

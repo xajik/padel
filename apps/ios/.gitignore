@@ -1,0 +1,5 @@
+Padel.xcodeproj/
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/

@@ -1,0 +1,6 @@
+<resources>
+    <!-- Window background only; everything else is themed in Compose (ui/theme/Theme.kt). -->
+    <style name="Theme.Padel" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/background</item>
+    </style>
+</resources>

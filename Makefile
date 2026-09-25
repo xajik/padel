@@ -16,13 +16,16 @@ PROD_URL   ?= https://padel-web.xajik0.workers.dev
 MCP_PROD   ?= https://padel-mcp.xajik0.workers.dev
 R2_BUCKET  ?= padel-web-opennext-cache
 
-# Preview alias for version uploads: current git branch, URL-safe.
-BRANCH     := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
-ALIAS      ?= $(shell echo "$(BRANCH)" | tr 'A-Z' 'a-z' | tr -c 'a-z0-9\n' '-' | cut -c1-30)
 GIT_SHA    := $(shell git rev-parse --short HEAD 2>/dev/null)
 
 # Target URL for smoke / e2e checks: `make smoke URL=https://...` (defaults to local dev).
 URL        ?= http://localhost:$(WEB_PORT)
+
+# Native apps (M6). IOS_SIM: any available simulator name, e.g. "iPhone 17 Pro".
+SHARED     := apps/mobile-shared
+ANDROID    := apps/android
+IOS        := apps/ios
+IOS_SIM    ?= iPhone 17 Pro
 
 .DEFAULT_GOAL := help
 
@@ -32,7 +35,7 @@ URL        ?= http://localhost:$(WEB_PORT)
 help: ## List all targets
 	@awk 'BEGIN {FS = ":.*?## "} /^## -+/ {gsub(/## -+ ?| -+$$/, ""); printf "\n\033[1m%s\033[0m\n", $$0} /^[a-zA-Z0-9_-]+:.*?## / {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo ""
-	@echo "Variables: URL=<base url> TAG=vX.Y.Z ALIAS=<preview alias> WEB_PORT=$(WEB_PORT) MCP_PORT=$(MCP_PORT)"
+	@echo "Variables: URL=<base url> TAG=vX.Y.Z WEB_PORT=$(WEB_PORT) MCP_PORT=$(MCP_PORT)"
 
 .PHONY: install
 install: ## Install all workspace dependencies
@@ -60,7 +63,7 @@ types: ## Regenerate Worker binding types and Next.js route types
 	cd $(MCP) && $(WRANGLER) types
 
 .PHONY: icons
-icons: ## Export the custom icon set to packages/design/svg (for Flutter)
+icons: ## Export the custom icon set to packages/design/svg (for the native apps)
 	cd packages/design && node --experimental-strip-types scripts/export-icons.ts
 
 ## ---------- Run locally ----------
@@ -127,6 +130,55 @@ e2e-rest: ## End-to-end REST game API flow (OpenAPI path, e.g. Meta Muse) agains
 e2e-local: ## E2E against the local MCP worker directly
 	node scripts/mcp-e2e.mjs http://localhost:$(MCP_PORT)/mcp
 
+## ---------- Mobile (SwiftUI · Compose · KMP) ----------
+
+.PHONY: fixtures
+fixtures: ## Regenerate engine fixtures shared with the Kotlin port (after engine changes)
+	npm run fixtures -w @padel/engine
+
+.PHONY: native-assets
+native-assets: ## Generate Swift/Kotlin tokens, icons and fonts from packages/design
+	npm run native -w @padel/design
+
+.PHONY: mobile-test
+mobile-test: ## Kotlin engine vs shared fixtures on JVM + iOS simulator, Android unit tests
+	cd $(SHARED) && ./gradlew jvmTest iosSimulatorArm64Test --console=plain
+	cd $(ANDROID) && ./gradlew :app:testDebugUnitTest --console=plain
+
+.PHONY: ios-project
+ios-project: ## Generate apps/ios/Padel.xcodeproj (XcodeGen) and open it
+	cd $(IOS) && xcodegen generate && open Padel.xcodeproj
+
+.PHONY: ios-test
+ios-test: ## Build the iOS app and run its tests on IOS_SIM
+	cd $(IOS) && xcodegen generate --quiet && xcodebuild test -project Padel.xcodeproj -scheme Padel \
+		-destination "platform=iOS Simulator,name=$(IOS_SIM)" -derivedDataPath build/dd -quiet
+
+.PHONY: ios-screenshots
+ios-screenshots: ## App Store screenshots (6.9", 6.5", iPad 13") into store/ios
+	scripts/ios-screenshots.sh
+
+.PHONY: ios-ui-test
+ios-ui-test: ## iOS UI tests against the deployed API (create, score, join by link, web sync)
+	cd $(IOS) && xcodegen generate --quiet && xcodebuild test -project Padel.xcodeproj -scheme Padel \
+		-destination "platform=iOS Simulator,name=$(IOS_SIM)" -derivedDataPath build/dd -only-testing:PadelUITests -quiet
+
+.PHONY: android-screenshots
+android-screenshots: ## Play Store screenshots (phone, 7" and 10" tablet) into store/android
+	scripts/android-screenshots.sh
+
+.PHONY: android-ui-test
+android-ui-test: ## Android instrumented tests against the deployed API (needs a running emulator)
+	cd $(ANDROID) && ./gradlew :app:connectedDebugAndroidTest --console=plain -Pandroid.testInstrumentationRunnerArguments.class=app.padel.android.PadelFlowTest
+
+.PHONY: android
+android: ## Build the Android debug APK and install it on a running device/emulator
+	cd $(ANDROID) && ./gradlew :app:installDebug --console=plain
+
+.PHONY: android-build
+android-build: ## Build the Android debug APK
+	cd $(ANDROID) && ./gradlew :app:assembleDebug --console=plain
+
 ## ---------- Build ----------
 
 .PHONY: build
@@ -156,12 +208,6 @@ deploy-web: build-web ## Build and deploy the web worker
 
 .PHONY: deploy-fast
 deploy-fast: deploy-mcp deploy-web ## Deploy both without running checks
-
-.PHONY: upload-preview
-upload-preview: build-web ## Upload a non-live web version at https://<branch>-padel-web.<acct>.workers.dev
-	@# Workers with Durable Objects (padel-mcp) get no preview URLs; the preview binds to the live MCP worker.
-	cd $(WEB) && $(OPENNEXT) upload -- --preview-alias $(ALIAS) --message "$(GIT_SHA)"
-	@echo "Preview: https://$(ALIAS)-padel-web.xajik0.workers.dev"
 
 .PHONY: smoke-prod
 smoke-prod: ## Smoke + MCP and REST e2e against production

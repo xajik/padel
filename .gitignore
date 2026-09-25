@@ -14,3 +14,14 @@ next-env.d.ts
 
 # Local scratch / credential dumps
 .tmp*
+
+# Mobile signing & per-project Firebase config: never in this public repo (inject in CI).
+*.keystore
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+*.cer
+GoogleService-Info.plist
+google-services.json
+keystore.properties

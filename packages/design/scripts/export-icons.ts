@@ -1,4 +1,4 @@
-// Writes every icon to svg/<name>.svg for the Flutter app (flutter_svg) and design tools.
+// Writes every icon to svg/<name>.svg for the native apps and design tools.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { ICONS, iconSvg, type IconName } from '../icons.ts';
 

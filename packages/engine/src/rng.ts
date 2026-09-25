@@ -1,4 +1,4 @@
-/** Deterministic PRNG so the same seed always yields the same schedule (web, Worker and Dart port). */
+/** Deterministic PRNG so the same seed always yields the same schedule (web, Worker and the Kotlin Multiplatform port). */
 
 export type Rng = () => number;
 

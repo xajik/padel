@@ -4,7 +4,7 @@
 |---|---|
 | **Status** | Draft v0.2 |
 | **Date** | 2026-09-24 |
-| **Platforms** | Web (Next.js SSR + TS, v1) → Flutter iOS/Android (v2) |
+| **Platforms** | Web (Next.js SSR + TS, v1) → native iOS (SwiftUI) + Android (Jetpack Compose) with a shared Kotlin Multiplatform engine (v2) |
 | **Web hosting** | Cloudflare Workers (Next.js via OpenNext adapter) |
 | **Backend** | Firebase (Auth, Firestore, Cloud Functions) |
 | **Analytics** | Amplitude |
@@ -169,7 +169,7 @@ Detailed algorithms are in [REQUIREMENTS.md §FR-6](./REQUIREMENTS.md#fr-6-pairi
 | **M4 — Full modes & reuse** | Remaining 6 modes in the UI, Groups, Play again, recent players | Web |
 | **M5 — Polish & discovery** | PWA install, share image, dark mode, i18n scaffold (EN), analytics, accessibility pass. **SEO/GEO content**: mode guides, programmatic schedule pages, `llms.txt`, Markdown mirrors, public schedule API. | Web |
 | **M5b — Agent access** | **MCP server** (FR-8): AI assistants create anonymous games, join existing ones by code, enter scores and read standings. Hand-off to phones via spectator and organizer links. Plus the public schedule API + OpenAPI. | Cloudflare Worker |
-| **M6 — Mobile** | Flutter app (iOS/Android) on the same backend. Dart port of the engine validated against the shared fixtures. Push notifications ("Round 3 is ready"). | Flutter |
+| **M6 — Mobile** | Native apps on the same backend: SwiftUI (iOS) and Jetpack Compose (Android). Pairing/scoring logic lives in one Kotlin Multiplatform module (`apps/mobile-shared`), a port of the engine validated against the shared fixtures. Live Activities, widgets, push notifications ("Round 3 is ready"). | SwiftUI · Compose · KMP |
 
 ### Out of scope (v1)
 Payments, court booking, cross-session ELO/ratings, chat, push notifications (planned for M6), multi-day tournaments and brackets, club admin dashboards.

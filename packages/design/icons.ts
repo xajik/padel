@@ -1,7 +1,7 @@
 /**
  * Custom padel icon set. 24×24 viewBox, outline, stroke = currentColor.
  * Each icon is SVG child markup so it can be rendered by React on the web and
- * exported to .svg files for Flutter (flutter_svg) via `npm run icons`.
+ * exported to .svg files for the native apps and design tools via `npm run icons`.
  */
 export const ICONS = {
   /** Brand mark: a perforated padel racket leaning right, with a ball (tennis-style seam). */

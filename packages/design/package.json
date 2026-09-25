@@ -8,6 +8,8 @@
     "./tokens.json": "./tokens.json"
   },
   "scripts": {
-    "icons": "node --experimental-strip-types scripts/export-icons.ts"
+    "icons": "node --experimental-strip-types scripts/export-icons.ts",
+    "native": "node --experimental-strip-types scripts/export-native.ts",
+    "app-icons": "node --experimental-strip-types scripts/export-app-icons.ts"
   }
 }

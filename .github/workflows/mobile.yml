@@ -1,0 +1,63 @@
+name: Mobile
+
+on:
+  push:
+    branches: [main]
+    paths: &paths
+      - packages/engine/**
+      - packages/design/**
+      - apps/mobile-shared/**
+      - apps/android/**
+      - apps/ios/**
+      - .github/workflows/mobile.yml
+  pull_request:
+    paths: *paths
+
+jobs:
+  # Kotlin engine vs TS fixtures, generated assets in sync, Android build + tests.
+  shared-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci
+      - name: Fixtures match the TS engine
+        run: npm test -w @padel/engine
+      - name: Generated native design assets are up to date
+        run: |
+          npm run native -w @padel/design
+          git diff --exit-code -- apps/ios/Padel apps/android/app/src/main || (echo "Run: make native-assets" && exit 1)
+      - name: Kotlin engine passes the shared fixtures (JVM)
+        run: ./gradlew jvmTest --console=plain
+        working-directory: apps/mobile-shared
+      - name: Android unit tests + debug build
+        run: ./gradlew :app:testDebugUnitTest :app:assembleDebug --console=plain
+        working-directory: apps/android
+
+  ios:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Kotlin engine passes the shared fixtures (iOS simulator)
+        run: ./gradlew iosSimulatorArm64Test --console=plain
+        working-directory: apps/mobile-shared
+      - name: iOS app tests (unit, Swift bridge, widget render)
+        run: |
+          brew install xcodegen
+          cd apps/ios && xcodegen generate
+          SIM=$(xcrun simctl list devices available | grep -m1 -oE 'iPhone [0-9]+[^(]*' | sed 's/ *$//')
+          # Unit + widget render tests. UI tests create real games on the deployed API: run them with make ios-ui-test.
+          xcodebuild test -project Padel.xcodeproj -scheme Padel -destination "platform=iOS Simulator,name=$SIM" -only-testing:PadelTests -quiet

@@ -1,0 +1,126 @@
+# XcodeGen spec: `make ios-project` (or `xcodegen` here) regenerates Padel.xcodeproj, which is not committed.
+name: Padel
+options:
+  bundleIdPrefix: app.padel
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    # The Kotlin framework build (below) runs Gradle outside the sandbox.
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    # Shared Kotlin Multiplatform module, built for the current SDK/arch by embedAndSignAppleFrameworkForXcode.
+    FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../mobile-shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
+targets:
+  Padel:
+    type: application
+    platform: iOS
+    sources:
+      - path: Padel
+      - path: Shared
+      # Also in the app so its tests can render the widget and Live Activity views.
+      - path: PadelWidgets/WidgetViews.swift
+    entitlements:
+      path: Padel/Padel.entitlements
+    dependencies:
+      - target: PadelWidgets
+    info:
+      path: Padel/Info.plist
+      properties:
+        CFBundleDisplayName: Padel
+        # padel://g/CODE?key=… from QR codes, widgets and the Live Activity.
+        CFBundleURLTypes:
+          - CFBundleURLName: app.padel.link
+            CFBundleURLSchemes: [padel]
+        NSSupportsLiveActivities: true
+        NSCameraUsageDescription: Scan a game's QR code to join it.
+        NSPhotoLibraryUsageDescription: Read a game's QR code from a photo or screenshot.
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIAppFonts:
+          - Geist.ttf
+          - GeistMono.ttf
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.padel.ios
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        OTHER_LDFLAGS: "$(inherited) -framework PadelShared"
+        TARGETED_DEVICE_FAMILY: "1,2"
+    preBuildScripts:
+      - name: Build shared Kotlin framework
+        basedOnDependencyAnalysis: false
+        script: |
+          if [ "${OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED}" = "YES" ]; then exit 0; fi
+          cd "$SRCROOT/../mobile-shared"
+          ./gradlew :embedAndSignAppleFrameworkForXcode --console=plain
+  PadelWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: PadelWidgets
+      - path: Shared
+    entitlements:
+      path: PadelWidgets/PadelWidgets.entitlements
+    info:
+      path: PadelWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Padel
+        UIAppFonts:
+          - Geist.ttf
+          - GeistMono.ttf
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.padel.ios.widgets
+        SKIP_INSTALL: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+        # The extension doesn't use the Kotlin framework.
+        OTHER_LDFLAGS: "$(inherited)"
+  PadelTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: PadelTests
+    dependencies:
+      - target: Padel
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: app.padel.ios.tests
+  PadelUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: PadelUITests
+    dependencies:
+      - target: Padel
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: app.padel.ios.uitests
+        TEST_TARGET_NAME: Padel
+schemes:
+  Padel:
+    build:
+      targets:
+        Padel: all
+        PadelTests: [test]
+        PadelUITests: [test]
+    test:
+      targets:
+        - PadelTests
+        - PadelUITests

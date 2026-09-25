@@ -11,7 +11,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
   title?: string;
 }
 
-/** Custom padel icon set (packages/design/icons.ts), shared with the Flutter app as SVG files. */
+/** Custom padel icon set (packages/design/icons.ts), shared with the native apps as SVG files. */
 export function Icon({ name, size = 24, strokeWidth = 1.75, title, className, ...rest }: IconProps) {
   return (
     <svg

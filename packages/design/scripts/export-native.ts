@@ -15,7 +15,7 @@ const IOS = new URL('apps/ios/Padel/', root);
 /** Compiled into the app and the widget extension. */
 const IOS_SHARED = new URL('apps/ios/Shared/', root);
 const ANDROID_RES = new URL('apps/android/app/src/main/res/', root);
-const ANDROID_THEME = new URL('apps/android/app/src/main/java/app/padel/android/ui/theme/', root);
+const ANDROID_THEME = new URL('apps/android/app/src/main/java/app/americanoo/android/ui/theme/', root);
 
 function write(url: URL, text: string) {
   mkdirSync(new URL('.', url), { recursive: true });
@@ -117,12 +117,12 @@ function kotlin(): string {
       .map((k) => `    val ${camel(k)} = ${col(p[k])}`)
       .join('\n');
   return `// ${HEADER}
-package app.padel.android.ui.theme
+package app.americanoo.android.ui.theme
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.padel.android.R
+import app.americanoo.android.R
 
 /** Black & white, casual-professional. Colour only for functional state (PRD §3a). */
 object LightPalette {

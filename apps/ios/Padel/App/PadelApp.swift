@@ -23,7 +23,7 @@ struct PadelApp: App {
             RootView()
                 .environment(model)
                 .tint(Palette.primary)
-                // padel://g/CODE?key=… (QR codes, widgets, Live Activity) and universal links.
+                // americanoo://g/CODE?key=… (QR codes, widgets, Live Activity) and universal links.
                 .onOpenURL { model.handle(url: $0) }
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
                     if let url = activity.webpageURL { model.handle(url: url) }

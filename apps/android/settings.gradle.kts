@@ -21,5 +21,5 @@ dependencyResolutionManagement {
 rootProject.name = "padel-android"
 include(":app")
 
-// Kotlin Multiplatform engine (+ data layer later); substitutes app.padel:shared.
+// Kotlin Multiplatform engine (+ data layer later); substitutes app.americanoo:shared.
 includeBuild("../mobile-shared")

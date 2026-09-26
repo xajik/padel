@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.android.kmp.library)
 }
 
-group = "app.padel"
+group = "app.americanoo"
 version = "0.1.0"
 
 // Golden fixtures produced by the TS engine (packages/engine: npm run fixtures).
@@ -17,9 +17,9 @@ val fixturesSource = tasks.register("fixturesSource") {
     inputs.property("path", path)
     outputs.dir(out)
     doLast {
-        val file = out.get().file("app/padel/engine/FixturesDir.kt").asFile
+        val file = out.get().file("app/americanoo/engine/FixturesDir.kt").asFile
         file.parentFile.mkdirs()
-        file.writeText("package app.padel.engine\n\ninternal const val FIXTURES_DIR = \"$path\"\n")
+        file.writeText("package app.americanoo.engine\n\ninternal const val FIXTURES_DIR = \"$path\"\n")
     }
 }
 
@@ -27,7 +27,7 @@ kotlin {
     jvmToolchain(17)
 
     androidLibrary {
-        namespace = "app.padel.shared"
+        namespace = "app.americanoo.shared"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
     }

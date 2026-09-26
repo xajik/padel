@@ -1,7 +1,7 @@
 # XcodeGen spec: `make ios-project` (or `xcodegen` here) regenerates Padel.xcodeproj, which is not committed.
 name: Padel
 options:
-  bundleIdPrefix: app.padel
+  bundleIdPrefix: app.americanoo
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
@@ -40,11 +40,11 @@ targets:
     info:
       path: Padel/Info.plist
       properties:
-        CFBundleDisplayName: Padel Score
-        # padel://g/CODE?key=… from QR codes, widgets and the Live Activity.
+        CFBundleDisplayName: Americanoo
+        # americanoo://g/CODE?key=… from QR codes, widgets and the Live Activity.
         CFBundleURLTypes:
-          - CFBundleURLName: app.padel.link
-            CFBundleURLSchemes: [padel]
+          - CFBundleURLName: app.americanoo.link
+            CFBundleURLSchemes: [americanoo]
         NSSupportsLiveActivities: true
         # Only local-network hosts (make dev on localhost) may use plain http; everything else stays https.
         NSAppTransportSecurity:
@@ -66,7 +66,7 @@ targets:
         ITSAppUsesNonExemptEncryption: false
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: app.padel.ios
+        PRODUCT_BUNDLE_IDENTIFIER: app.americanoo.ios
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # -ObjC: Firebase Analytics' Objective-C categories.
         OTHER_LDFLAGS: "$(inherited) -ObjC -framework PadelShared"
@@ -89,7 +89,7 @@ targets:
     info:
       path: PadelWidgets/Info.plist
       properties:
-        CFBundleDisplayName: Padel Score
+        CFBundleDisplayName: Americanoo
         UIAppFonts:
           - Geist.ttf
           - GeistMono.ttf
@@ -97,7 +97,7 @@ targets:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: app.padel.ios.widgets
+        PRODUCT_BUNDLE_IDENTIFIER: app.americanoo.ios.widgets
         SKIP_INSTALL: YES
         TARGETED_DEVICE_FAMILY: "1,2"
         # The extension doesn't use the Kotlin framework.
@@ -112,7 +112,7 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        PRODUCT_BUNDLE_IDENTIFIER: app.padel.ios.tests
+        PRODUCT_BUNDLE_IDENTIFIER: app.americanoo.ios.tests
   PadelUITests:
     type: bundle.ui-testing
     platform: iOS
@@ -123,7 +123,7 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        PRODUCT_BUNDLE_IDENTIFIER: app.padel.ios.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: app.americanoo.ios.uitests
         TEST_TARGET_NAME: Padel
 schemes:
   Padel:

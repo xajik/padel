@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-// Consumed by apps/android through includeBuild; the coordinates app.padel:shared resolve here.
+// Consumed by apps/android through includeBuild; the coordinates app.americanoo:shared resolve here.
 rootProject.name = "shared"

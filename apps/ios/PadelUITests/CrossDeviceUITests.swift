@@ -13,7 +13,7 @@ final class CrossDeviceUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-reset"] + TestServer.appArguments
         app.launch()
-        app.open(URL(string: "padel://g/\(code)?key=\(key)")!)
+        app.open(URL(string: "americanoo://g/\(code)?key=\(key)")!)
         let court1 = app.descendants(matching: .any)["court-1"]
         XCTAssertTrue(court1.waitForExistence(timeout: 15))
 

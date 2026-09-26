@@ -4,6 +4,19 @@ iOS (`apps/ios`, SwiftUI) and Android (`apps/android`, Jetpack Compose) share on
 Multiplatform module (`apps/mobile-shared`): the engine port and the data layer. UI is native on
 each platform, built from the generated design system (`make native-assets`).
 
+## Identity
+
+| | iOS | Android |
+|---|---|---|
+| Store name | Americanoo: Padel Score | Americanoo: Padel Score |
+| Home-screen name | Americanoo | Americanoo |
+| ID | `app.americanoo.ios` (widget `.widgets`, tests `.tests` / `.uitests`) | `app.americanoo.android` |
+| SKU | `americanoo-ios` | — |
+| Other | App Group `group.app.americanoo`, URL scheme `americanoo://` | URL scheme `americanoo://` |
+
+Kotlin sources live under `app.americanoo.*` (`android`, `data`, `engine`); the Gradle coordinates
+of the shared module are `app.americanoo:shared`.
+
 ## Build, run and test
 
 Each app has its own Makefile (`make help` inside the folder); from the repo root the same targets
@@ -25,8 +38,8 @@ Firebase project `padel-americanoo`. The per-app config files are gitignored (pu
 
 | | File | Init |
 |---|---|---|
-| Android `app.padel.android` | `apps/android/app/google-services.json` | Google services Gradle plugin + Firebase BoM (Analytics); auto-initialised |
-| iOS `app.padel.ios` (team `83S2462FEL`) | `apps/ios/Padel/GoogleService-Info.plist` | Firebase SPM package (Core, Analytics); `FirebaseApp.configure()` in `PadelApp.swift`'s `AppDelegate` |
+| Android `app.americanoo.android` | `apps/android/app/google-services.json` | Google services Gradle plugin + Firebase BoM (Analytics); auto-initialised |
+| iOS `app.americanoo.ios` (team `83S2462FEL`) | `apps/ios/Padel/GoogleService-Info.plist` | Firebase SPM package (Core, Analytics); `FirebaseApp.configure()` in `PadelApp.swift`'s `AppDelegate` |
 
 Without the files (CI, forks) both apps build and run with Firebase off. Android release builds are
 signed with the upload key `apps/android/release.jks` (alias `padel`), configured by
@@ -53,7 +66,7 @@ All clients use the same cloud game API served by the web Worker (proxied to `ap
   taps **Share live** in the share dialog, which publishes it (new code, organizer key kept in
   the browser). Until the Firestore repository lands, that's the only way to follow a web game elsewhere.
 - **Codes, links, QR**: `GameLinks` parses a code, `https://…/g/CODE[?key=…]`, `…/join?code=…` and
-  `padel://g/CODE[?key=…]`. QR codes encode the https spectator link, so they open the app where
+  `americanoo://g/CODE[?key=…]`. QR codes encode the https spectator link, so they open the app where
   installed and the web everywhere else. Joining: type the code, paste a link, **scan** with the
   camera, or pick a **photo/screenshot**. Scanning and photos read both QR codes and a game code
   written or shown anywhere (iOS: VisionKit live scanner, Core Image QR + Vision text; Android:
@@ -105,7 +118,7 @@ and light appearance.
 ## Before release
 
 - Apple: set `DEVELOPMENT_TEAM` (`apps/ios/project.yml`) and `APPLE_TEAM_ID` to `83S2462FEL`; register
-  the App Group `group.app.padel` and the Associated Domains capability; upload an APNs key to Firebase.
+  the App Group `group.app.americanoo` and the Associated Domains capability; upload an APNs key to Firebase.
 - Android: after the first Play upload, add the Play App Signing SHA-1/SHA-256 to Firebase (then
   re-download `google-services.json`) and the SHA-256 to `ANDROID_CERT_SHA256`.
 - Android toolchain: AGP 8.13 / compileSdk 36; the newest androidx (navigation 2.10, lifecycle 2.11)

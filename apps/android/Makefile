@@ -7,7 +7,7 @@ SDK      ?= $(or $(ANDROID_HOME),$(HOME)/Library/Android/sdk)
 ADB      := $(SDK)/platform-tools/adb
 EMULATOR := $(SDK)/emulator/emulator
 AVD      ?= Padel_Phone
-APP_ID   := app.padel.android
+APP_ID   := app.americanoo.android
 GRADLE   := ./gradlew --console=plain
 
 ifeq ($(LOCAL),1)
@@ -55,7 +55,7 @@ test: ## Shared Kotlin tests (JVM) + Android unit tests
 	$(GRADLE) :app:testDebugUnitTest
 
 .PHONY: ui-test
-ui-test: device ## Instrumented tests on the running emulator/device (CLASS=app.padel.android.PadelFlowTest for one)
+ui-test: device ## Instrumented tests on the running emulator/device (CLASS=app.americanoo.android.PadelFlowTest for one)
 	$(GRADLE) :app:connectedDebugAndroidTest $(if $(CLASS),-Pandroid.testInstrumentationRunnerArguments.class=$(CLASS))
 
 .PHONY: lint

@@ -35,12 +35,12 @@ struct GameSnapshot: Codable, Hashable {
 
     var scoredCourts: Int { courts.filter(\.scored).count }
 
-    var url: URL { URL(string: "padel://g/\(code)")! }
+    var url: URL { URL(string: "americanoo://g/\(code)")! }
 }
 
 enum SharedStore {
     /// Shared with the widget extension (entitlements: com.apple.security.application-groups).
-    static let appGroup = "group.app.padel"
+    static let appGroup = "group.app.americanoo"
     static let snapshotKey = "padel.snapshot.v1"
 
     static var defaults: UserDefaults { UserDefaults(suiteName: appGroup) ?? .standard }

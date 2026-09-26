@@ -24,7 +24,7 @@ ios_test() { # extra xcodebuild args…
 }
 
 step "1/5 Shared KMP repository ↔ local API"
-(cd apps/mobile-shared && PADEL_LIVE_URL=$LOCAL ./gradlew jvmTest --tests 'app.padel.data.*' --console=plain -q --rerun-tasks)
+(cd apps/mobile-shared && PADEL_LIVE_URL=$LOCAL ./gradlew jvmTest --tests 'app.americanoo.data.*' --console=plain -q --rerun-tasks)
 
 step "2/5 iOS unit, widget render and UI tests"
 (cd apps/ios && xcodegen generate --quiet)
@@ -32,7 +32,7 @@ XC_ARGS=(-skip-testing:PadelUITests/StoreScreenshots -skip-testing:PadelUITests/
 
 step "3/5 Android flow and widget render tests"
 (cd apps/android && ./gradlew :app:connectedDebugAndroidTest --console=plain -q -Ppadel.baseUrl=$ANDROID_LOCAL \
-  -Pandroid.testInstrumentationRunnerArguments.class=app.padel.android.PadelFlowTest,app.padel.android.WidgetRenderTest,app.padel.android.ScanReaderTest)
+  -Pandroid.testInstrumentationRunnerArguments.class=app.americanoo.android.PadelFlowTest,app.americanoo.android.WidgetRenderTest,app.americanoo.android.ScanReaderTest)
 
 step "4/5 Cross-device: web → iPhone → Android → iPhone"
 game=$(curl -sf -X POST "$LOCAL/api/v1/games" -H 'Content-Type: application/json' \
@@ -42,7 +42,7 @@ key=$(echo "$game" | python3 -c 'import json,sys;print(json.load(sys.stdin)["org
 echo "   game $code"
 XC_ARGS=(-only-testing:PadelUITests/CrossDeviceUITests); ios_test env TEST_RUNNER_E2E_CODE=$code TEST_RUNNER_E2E_KEY=$key TEST_RUNNER_E2E_STEP=score-court-1
 (cd apps/android && ./gradlew :app:connectedDebugAndroidTest --console=plain -q -Ppadel.baseUrl=$ANDROID_LOCAL \
-  -Pandroid.testInstrumentationRunnerArguments.class=app.padel.android.CrossDeviceTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=app.americanoo.android.CrossDeviceTest \
   -Pandroid.testInstrumentationRunnerArguments.e2eCode=$code -Pandroid.testInstrumentationRunnerArguments.e2eKey=$key)
 XC_ARGS=(-only-testing:PadelUITests/CrossDeviceUITests); ios_test env TEST_RUNNER_E2E_CODE=$code TEST_RUNNER_E2E_KEY=$key TEST_RUNNER_E2E_STEP=see-android
 
@@ -55,7 +55,7 @@ print("   server:", got)'
 curl -sf -o /dev/null -w "   web page /g/$code: %{http_code}\n" "$LOCAL/g/$code"
 step "5/5 Join from a photo showing a game code (Android and iOS photo pickers)"
 (cd apps/android && ./gradlew :app:connectedDebugAndroidTest --console=plain -q -Ppadel.baseUrl=$ANDROID_LOCAL \
-  -Pandroid.testInstrumentationRunnerArguments.class=app.padel.android.JoinFromPhotoTest)
+  -Pandroid.testInstrumentationRunnerArguments.class=app.americanoo.android.JoinFromPhotoTest)
 photo_game=$(curl -sf -X POST "$LOCAL/api/v1/games" -H 'Content-Type: application/json' \
   -d '{"mode":"americano","names":["Anna","Mikko","Laura","Jussi","Sara","Pekka","Emma","Olli"],"courts":2,"name":"Photo join iOS"}')
 photo_code=$(echo "$photo_game" | python3 -c 'import json,sys;print(json.load(sys.stdin)["code"])')

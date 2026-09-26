@@ -5,7 +5,7 @@ SHELL := /bin/bash
 
 SIM      ?= iPhone 17 Pro
 TEAM     ?= 83S2462FEL
-BUNDLE   := app.padel.ios
+BUNDLE   := app.americanoo.ios
 DD       := build/dd
 PROJECT  := Padel.xcodeproj
 # arm64 only: the Kotlin framework (PadelShared) has no x86_64 simulator slice.

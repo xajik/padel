@@ -16,8 +16,8 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 | `apps/web` | Next.js 16 (App Router) + shadcn/ui, deployed to Cloudflare Workers with OpenNext. |
 | `apps/mcp` | Remote MCP server Worker (stateless Streamable HTTP) + `GameRoom` Durable Objects that store games created by assistants. |
 | `apps/mobile-shared` | Kotlin Multiplatform module shared by both native apps: the engine port (passes `packages/engine/fixtures`), later the offline store and API client. |
-| `apps/ios` | Native iOS app: SwiftUI, iOS 17+, XcodeGen project (`project.yml`). Links the KMP framework through a Gradle build phase. |
-| `apps/android` | Native Android app: Jetpack Compose + Material 3 (monochrome), includes `apps/mobile-shared` as a composite build. |
+| `apps/ios` | Native iOS app "Americanoo" (`app.americanoo.ios`): SwiftUI, iOS 17+, XcodeGen project (`project.yml`). Links the KMP framework through a Gradle build phase. |
+| `apps/android` | Native Android app "Americanoo" (`app.americanoo.android`): Jetpack Compose + Material 3 (monochrome), includes `apps/mobile-shared` as a composite build. |
 
 ## Run, test and deploy (`make help` lists everything)
 

@@ -41,7 +41,7 @@ shoot() { # size avd width height density
   done
   "$ADB" shell rm -rf /data/local/tmp/padel-shots
   (cd apps/android && ./gradlew :app:connectedDebugAndroidTest --console=plain -q \
-    -Pandroid.testInstrumentationRunnerArguments.class=app.padel.android.StoreScreenshots \
+    -Pandroid.testInstrumentationRunnerArguments.class=app.americanoo.android.StoreScreenshots \
     -Pandroid.testInstrumentationRunnerArguments.storeScreenshots=true)
   rm -rf "$OUT/$size" && mkdir -p "$OUT/$size"
   "$ADB" pull /data/local/tmp/padel-shots/. "$OUT/$size" >/dev/null

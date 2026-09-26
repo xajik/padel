@@ -25,12 +25,12 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- padel://g/CODE?key=… from QR codes, the widget and notifications. -->
+            <!-- americanoo://g/CODE?key=… from QR codes, the widget and notifications. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="padel" />
+                <data android:scheme="americanoo" />
             </intent-filter>
             <!-- App Links: the same https game links the web shares open here when installed
                  (verified through https://padel-web.xajik0.workers.dev/.well-known/assetlinks.json). -->

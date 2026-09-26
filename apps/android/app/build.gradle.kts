@@ -10,11 +10,11 @@ plugins {
 if (file("google-services.json").exists()) apply(plugin = "com.google.gms.google-services")
 
 android {
-    namespace = "app.padel.android"
+    namespace = "app.americanoo.android"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "app.padel.android"
+        applicationId = "app.americanoo.android"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.compileSdk.get().toInt()
         versionCode = 1
@@ -57,7 +57,7 @@ android {
 kotlin { jvmToolchain(17) }
 
 dependencies {
-    implementation("app.padel:shared")
+    implementation("app.americanoo:shared")
     implementation(libs.core.ktx)
     implementation(libs.activity.compose)
     implementation(libs.lifecycle.viewmodel.compose)

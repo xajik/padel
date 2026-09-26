@@ -39,7 +39,7 @@ final class PadelUITests: XCTestCase {
     /// a score entered on the web shows up on the phone.
     func testJoinFromLinkAndFollowWebChanges() throws {
         let (code, key) = try createOnServer()
-        app.open(URL(string: "padel://g/\(code)")!)
+        app.open(URL(string: "americanoo://g/\(code)")!)
         XCTAssertTrue(app.staticTexts["Web check"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'view only'")).firstMatch.exists)
 
@@ -48,7 +48,7 @@ final class PadelUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["20"].waitForExistence(timeout: 15))
 
         // Organizer link from the web share dialog grants editing.
-        app.open(URL(string: "padel://g/\(code)?key=\(key)")!)
+        app.open(URL(string: "americanoo://g/\(code)?key=\(key)")!)
         XCTAssertTrue(app.descendants(matching: .any)["court-2"].waitForExistence(timeout: 10))
         app.descendants(matching: .any)["court-2"].firstMatch.tap()
         app.buttons["score-9"].tap()

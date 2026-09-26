@@ -185,7 +185,7 @@ android-screenshots: ## Play Store screenshots (phone, 7" and 10" tablet) into s
 
 .PHONY: android-ui-test
 android-ui-test: ## Android instrumented tests against the deployed API (needs a running emulator)
-	cd $(ANDROID) && ./gradlew :app:connectedDebugAndroidTest --console=plain -Pandroid.testInstrumentationRunnerArguments.class=app.padel.android.PadelFlowTest
+	cd $(ANDROID) && ./gradlew :app:connectedDebugAndroidTest --console=plain -Pandroid.testInstrumentationRunnerArguments.class=app.americanoo.android.PadelFlowTest
 
 .PHONY: e2e-local
 e2e-local: ## Apps end-to-end on the local stack (needs make dev + an Android emulator): iOS, Android, cross-device

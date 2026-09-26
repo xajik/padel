@@ -115,7 +115,7 @@ final class AppModel {
         }
     }
 
-    /// padel://g/CODE?key=…, https://…/g/CODE (universal link) or …/join?code=…
+    /// americanoo://g/CODE?key=…, https://…/g/CODE (universal link) or …/join?code=…
     func handle(url: URL) {
         guard GameLinks.shared.parse(input: url.absoluteString) != nil else { return }
         Task {

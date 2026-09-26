@@ -183,6 +183,14 @@ ios-ui-test: ## iOS UI tests against the deployed API (create, score, join by li
 android-screenshots: ## Play Store screenshots (phone, 7" and 10" tablet) into store/android
 	scripts/android-screenshots.sh
 
+.PHONY: watch-screenshots
+watch-screenshots: ## App Store Apple Watch screenshots (Series 11 46mm, Ultra 3) into store/ios
+	scripts/watch-screenshots.sh
+
+.PHONY: wear-screenshots
+wear-screenshots: ## Play Store Wear OS screenshots (454×454, round) into store/android/wear
+	scripts/wear-screenshots.sh
+
 .PHONY: android-ui-test
 android-ui-test: ## Android instrumented tests against the deployed API (needs a running emulator)
 	cd $(ANDROID) && ./gradlew :app:connectedDebugAndroidTest --console=plain -Pandroid.testInstrumentationRunnerArguments.class=app.americanoo.android.PadelFlowTest

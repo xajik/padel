@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import app.americanoo.data.DemoData
 import app.americanoo.wear.ui.WearApp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +31,8 @@ class MainActivity : ComponentActivity() {
         }
         // Debug builds: `adb shell am start … --es join <organizer link>` adds a game without a paired phone.
         if (BuildConfig.DEBUG) intent.getStringExtra("join")?.let { link -> lifecycleScope.launch { runCatching { repo.join(link) } } }
+        // Debug builds: `--ez demo true` seeds the store screenshot games (scripts/wear-screenshots.sh).
+        if (BuildConfig.DEBUG && intent.getBooleanExtra("demo", false)) lifecycleScope.launch { DemoData.seed(repo) }
         setContent { WearApp(repo, onOpen = { openCode.value = it }) }
     }
 }

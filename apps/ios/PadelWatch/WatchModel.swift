@@ -31,6 +31,10 @@ final class WatchModel {
         KeySync.shared.start { [weak self] json in
             Task { @MainActor in await self?.importKeys(json) }
         }
+        // `-demo`: the store screenshot games (shared with Android and Wear OS).
+        if ProcessInfo.processInfo.arguments.contains("-demo") {
+            Task { _ = try? await DemoData.shared.seed(repo: repo) }
+        }
         #if DEBUG
         // `-join <organizer link>` adds a game without a paired iPhone (simulator runs).
         if let link = UserDefaults.standard.string(forKey: "join") {

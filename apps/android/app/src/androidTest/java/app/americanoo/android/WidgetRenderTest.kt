@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.compose
 import androidx.glance.ExperimentalGlanceApi
 import androidx.test.core.app.ApplicationProvider
+import app.americanoo.data.DemoData
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.americanoo.android.widget.ActiveGameWidget

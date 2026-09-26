@@ -92,7 +92,7 @@ struct WatchGameView: View {
             let round = state.rounds[Int(state.current)]
             let editable = local.canEdit && local.game.status == .live
             List {
-                Section(state.roundLabel) {
+                Section(local.game.name) {
                     ForEach(Array(round.matches.enumerated()), id: \.offset) { i, m in
                         NavigationLink(value: WatchRoute.score(code: local.code, round: Int(state.current), match: i)) {
                             MatchRow(state: state, match: m)
@@ -107,7 +107,8 @@ struct WatchGameView: View {
                 }
                 Section { footer(local, editable: editable) }
             }
-            .navigationTitle(local.game.name)
+            // Short enough for the watch's title bar; the game name heads the list.
+            .navigationTitle(state.roundLabel)
             .onAppear { model.openCode = local.code }
             .onDisappear { model.openCode = nil }
             .confirmationDialog("Finish the game?", isPresented: $confirmFinish) {
@@ -249,6 +250,7 @@ private struct PointsPicker: View {
             }
             .pickerStyle(.wheel)
             .labelsHidden()
+            .accessibilityIdentifier("score-picker")
             Text(other(value)).font(.footnote).foregroundStyle(.secondary).lineLimit(1)
             Button("Save") { onSave(value) }.primaryButton().accessibilityIdentifier("save-score")
         }

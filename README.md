@@ -7,6 +7,25 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 - **Apps, help & legal:** [/app](https://padel-americanoo.com/app) · [/support](https://padel-americanoo.com/support) · [/privacy](https://padel-americanoo.com/privacy) · [/terms](https://padel-americanoo.com/terms) · support@padel-americanoo.com
 - **Product:** [docs/PRD.md](docs/PRD.md) · **Requirements:** [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) · **Native apps:** [docs/MOBILE.md](docs/MOBILE.md)
 
+## Screenshots
+
+Real apps with demo games (`make ios-screenshots`, `make watch-screenshots`, `make android-screenshots`,
+`make wear-screenshots`); all sizes for the stores are in [`store/`](store).
+
+**iPhone**
+
+<img src="store/ios/iphone-6.9/01-game.png" width="150" alt="game"> <img src="store/ios/iphone-6.9/02-score-pad.png" width="150" alt="score pad"> <img src="store/ios/iphone-6.9/03-leaderboard.png" width="150" alt="leaderboard"> <img src="store/ios/iphone-6.9/04-share-qr.png" width="150" alt="share qr"> <img src="store/ios/iphone-6.9/05-home.png" width="150" alt="home">
+
+**Android**
+
+<img src="store/android/phone/01-game.png" width="150" alt="game"> <img src="store/android/phone/02-score-pad.png" width="150" alt="score pad"> <img src="store/android/phone/03-leaderboard.png" width="150" alt="leaderboard"> <img src="store/android/phone/06-podium.png" width="150" alt="podium"> <img src="store/android/phone/07-new-game.png" width="150" alt="new game">
+
+**Apple Watch** and **Wear OS**: score the current round with the crown, start the next round, start a recent group again.
+
+<img src="store/ios/watch-series-11/01-round.png" width="120" alt="round"> <img src="store/ios/watch-series-11/02-score.png" width="120" alt="score"> <img src="store/ios/watch-series-11/03-next-round.png" width="120" alt="next round"> <img src="store/ios/watch-series-11/04-start-again.png" width="120" alt="start again">
+
+<img src="store/android/wear/01-round.png" width="130" alt="round"> <img src="store/android/wear/02-score.png" width="130" alt="score"> <img src="store/android/wear/03-next-round.png" width="130" alt="next round"> <img src="store/android/wear/04-start-again.png" width="130" alt="start again">
+
 ## Layout
 
 | Path | What |
@@ -46,7 +65,7 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 | | `make android` · `make android-build` | Install on a running emulator/device · build the APK |
 | | `make ios-ui-test` · `make android-ui-test` | End-to-end against the deployed API (phone ↔ web sync, links, Live Activity) |
 | | `make dev` then `make e2e-local` | Both apps against the local stack, including a cross-device game (web → iPhone → Android) |
-| | `make ios-screenshots` · `make android-screenshots` | App Store / Play Store screenshots into `store/` |
+| | `make ios-screenshots` · `make watch-screenshots` · `make android-screenshots` · `make wear-screenshots` | App Store / Play Store (phone, tablet, Apple Watch, Wear OS) screenshots into `store/` |
 | | `make fixtures` · `make native-assets` | After engine changes: regenerate fixtures · after design changes: regenerate Swift/Kotlin tokens, icons, fonts |
 
 The web Worker binds to `padel-mcp` (service binding `MCP`) and serves it at `/mcp` and `/api/games/*`, so always deploy MCP first (`make deploy` does). The OpenNext incremental cache lives in the R2 bucket `padel-web-opennext-cache`.

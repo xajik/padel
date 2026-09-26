@@ -236,13 +236,32 @@ smoke-prod: ## Smoke + MCP and REST e2e against production
 	node scripts/rest-e2e.mjs $(PROD_URL)
 
 .PHONY: release
-release: ## Check, deploy, then tag + push: make release TAG=v0.4.0
+release: ## Bump mobile versions, check, deploy, then tag + push: make release TAG=v0.11.0
 	@test -n "$(TAG)" || (echo "Usage: make release TAG=vX.Y.Z" && exit 1)
 	@test -z "$$(git status --porcelain)" || (echo "Working tree not clean" && exit 1)
+	$(MAKE) version-bump TAG=$(TAG)
 	$(MAKE) deploy
 	git push
 	git tag -a $(TAG) -m "$(TAG)"
 	git push origin $(TAG)
+
+.PHONY: tag
+tag: ## Bump mobile versions, commit, tag + push without deploying: make tag TAG=v0.11.0
+	@test -n "$(TAG)" || (echo "Usage: make tag TAG=vX.Y.Z" && exit 1)
+	@test -z "$$(git status --porcelain)" || (echo "Working tree not clean" && exit 1)
+	$(MAKE) version-bump TAG=$(TAG)
+	git push
+	git tag -a $(TAG) -m "$(TAG)"
+	git push origin $(TAG)
+
+.PHONY: version-bump
+version-bump: ## Set mobile app version from TAG and build + 1, then commit (used by tag/release)
+	scripts/bump-version.sh $(TAG)
+	git commit -q -m "chore(release): $(TAG)" -- apps/mobile-version.properties apps/ios/project.yml
+
+.PHONY: version
+version: ## Current mobile app version and build
+	@awk -F= '/^version=/ {v=$$2} /^build=/ {b=$$2} END {print "version " v ", build " b}' apps/mobile-version.properties
 
 ## ---------- Operate ----------
 

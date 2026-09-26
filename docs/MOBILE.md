@@ -48,6 +48,21 @@ this Mac instead of production.
 
 iOS simulator builds are arm64 only: the Kotlin framework has no x86_64 simulator slice.
 
+## Versions
+
+Every tag bumps all four apps (iPhone with widgets, Apple Watch, Android, Wear OS). The version is the
+tag without "v"; the build number goes up by one on every tag. Always tag with `make tag TAG=vX.Y.Z` (or
+`make release TAG=vX.Y.Z` to deploy as well), never `git tag` directly: it runs
+`scripts/bump-version.sh`, commits `chore(release): vX.Y.Z` and then tags that commit.
+
+| | Where | Value |
+|---|---|---|
+| Source | `apps/mobile-version.properties` | `version`, `build` |
+| Android / Wear OS | `apps/android/{app,wear}/build.gradle.kts` | `versionName` = version; `versionCode` = build (phone), 1 000 000 + build (Wear, must differ on Play) |
+| iOS / watchOS | `apps/ios/project.yml` (`MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`) | app, widgets and watch app share both |
+
+The script refuses a version that isn't higher than the current one. `make version` prints it.
+
 ## Firebase and signing
 
 Firebase project `padel-americanoo`. The per-app config files are gitignored (public repo) and live next to each app:

@@ -1,5 +1,7 @@
 import java.util.Properties
 
+val mobileVersion = Properties().apply { rootProject.file("../mobile-version.properties").inputStream().use { load(it) } }
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,8 +19,9 @@ android {
         applicationId = "app.americanoo.android"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.compileSdk.get().toInt()
-        versionCode = 1
-        versionName = "0.1.0"
+        // apps/mobile-version.properties, bumped on every tag (make tag / make release).
+        versionCode = mobileVersion.getProperty("build").toInt()
+        versionName = mobileVersion.getProperty("version")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Game API. Local end-to-end runs: ./gradlew … -Ppadel.baseUrl=http://10.0.2.2:3100 (make dev on the host).
         buildConfigField("String", "PADEL_BASE_URL", "\"${providers.gradleProperty("padel.baseUrl").getOrElse("https://padel-americanoo.com")}\"")

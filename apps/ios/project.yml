@@ -10,8 +10,9 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    # Set by scripts/bump-version.sh on every tag (make tag / make release); same for app, widgets and watch.
+    MARKETING_VERSION: "0.10.0"
+    CURRENT_PROJECT_VERSION: "2"
     DEVELOPMENT_TEAM: ""
     # The Kotlin framework build (below) runs Gradle outside the sandbox.
     ENABLE_USER_SCRIPT_SANDBOXING: NO
@@ -48,6 +49,8 @@ targets:
       path: Padel/Info.plist
       properties:
         CFBundleDisplayName: Americanoo
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         # americanoo://g/CODE?key=… from QR codes, widgets and the Live Activity.
         CFBundleURLTypes:
           - CFBundleURLName: app.americanoo.link
@@ -97,6 +100,8 @@ targets:
       path: PadelWidgets/Info.plist
       properties:
         CFBundleDisplayName: Americanoo
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UIAppFonts:
           - Geist.ttf
           - GeistMono.ttf
@@ -119,6 +124,8 @@ targets:
       path: PadelWatch/Info.plist
       properties:
         CFBundleDisplayName: Americanoo
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         WKApplication: true
         WKCompanionAppBundleIdentifier: app.americanoo.ios
         NSAppTransportSecurity:

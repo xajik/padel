@@ -1,5 +1,7 @@
 import java.util.Properties
 
+val mobileVersion = Properties().apply { rootProject.file("../mobile-version.properties").inputStream().use { load(it) } }
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -15,9 +17,10 @@ android {
         applicationId = "app.americanoo.android"
         minSdk = libs.versions.wear.minSdk.get().toInt()
         targetSdk = libs.versions.android.compileSdk.get().toInt()
+        // apps/mobile-version.properties, bumped on every tag (make tag / make release).
         // Play needs version codes distinct from the phone app's.
-        versionCode = 1001
-        versionName = "0.1.0"
+        versionCode = 1_000_000 + mobileVersion.getProperty("build").toInt()
+        versionName = mobileVersion.getProperty("version")
         buildConfigField("String", "PADEL_BASE_URL", "\"${providers.gradleProperty("padel.baseUrl").getOrElse("https://padel-americanoo.com")}\"")
     }
 

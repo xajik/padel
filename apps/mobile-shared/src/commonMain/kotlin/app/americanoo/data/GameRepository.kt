@@ -102,6 +102,37 @@ class GameRepository(
      * Opens a game from a code, link or QR payload. An organizer link (`?key=`) grants editing
      * when the server accepts the key; otherwise the game is followed as a spectator.
      */
+    /** Starts a new game with the players and settings of a [recentGroup][recentGroups]. */
+    @Throws(EngineError::class, CancellationException::class)
+    suspend fun rematch(group: RecentGroup): LocalGame = create(group.name, group.settings, group.names, group.sides)
+
+    /** Organizer keys of the live games this device can edit and the server knows, for a paired watch or phone. */
+    fun editorKeys(): List<GameKey> = _games.value
+        .filter { it.game.status == GameStatus.Live && !it.needsCreate }
+        .mapNotNull { g -> g.organizerKey?.let { GameKey(g.code, it) } }
+
+    /**
+     * Adds the games behind [keys] as editable, skipping those this device can already edit.
+     * Failures (offline, deleted game) are skipped; the paired device sends its keys again.
+     */
+    @Throws(CancellationException::class)
+    suspend fun importKeys(keys: List<GameKey>) {
+        for (k in keys) {
+            if (game(k.code)?.organizerKey != null) continue
+            try {
+                join(GameLinks.organizerUrl(baseUrl, k.code, k.key))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun encodeKeys(keys: List<GameKey> = editorKeys()): String = PadelJson.encodeToString(ListSerializer(GameKey.serializer()), keys)
+
+    fun decodeKeys(json: String): List<GameKey> =
+        runCatching { PadelJson.decodeFromString(ListSerializer(GameKey.serializer()), json) }.getOrDefault(emptyList())
+
     @Throws(ApiException::class, CancellationException::class)
     suspend fun join(input: String): LocalGame {
         val target = GameLinks.parse(input) ?: throw ApiException("INVALID_CODE", "Game codes have 6 letters and digits, e.g. K7Q2MX.", 400)

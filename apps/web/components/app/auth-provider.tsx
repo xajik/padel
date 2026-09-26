@@ -18,6 +18,8 @@ interface AuthState {
   ready: boolean;
   signInWithGoogle: () => Promise<boolean>;
   signOut: () => Promise<void>;
+  /** Deletes the Google account's sign-in and, optionally, its games on this device. */
+  deleteAccount: (options: { removeDeviceGames: boolean }) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -129,7 +131,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await (await loadFirebaseAuth()).signOut();
   }, []);
 
-  const value = useMemo(() => ({ user, ready, signInWithGoogle, signOut }), [user, ready, signInWithGoogle, signOut]);
+  const deleteAccount = useCallback(
+    async ({ removeDeviceGames }: { removeDeviceGames: boolean }) => {
+      if (!isFirebaseConfigured || !user || user.isAnonymous) return false;
+      const rememberUser = (isAnonymous: boolean) => {
+        try {
+          localStorage.setItem(LAST_USER_KEY, JSON.stringify({ uid: user.uid, isAnonymous }));
+        } catch {
+          // Storage unavailable: nothing on this device to hand over.
+        }
+      };
+      // Set before deleting: the auth listener starts a new guest session right away. Kept games
+      // are handed to it like a guest's games on sign-in; games to remove stay with this UID.
+      rememberUser(!removeDeviceGames);
+      try {
+        const result = await (await loadFirebaseAuth()).deleteAccount();
+        if (result !== "deleted") {
+          rememberUser(false);
+          return false;
+        }
+      } catch {
+        rememberUser(false);
+        toast.error("Couldn't delete your account", { description: "Please try again, or email us and we'll do it for you." });
+        return false;
+      }
+      if (removeDeviceGames) {
+        const repo = gameRepository();
+        const games = await repo.list();
+        await Promise.all(games.filter((g) => g.ownerUid === user.uid).map((g) => repo.remove(g.code)));
+      }
+      identify(null);
+      return true;
+    },
+    [user],
+  );
+
+  const value = useMemo(
+    () => ({ user, ready, signInWithGoogle, signOut, deleteAccount }),
+    [user, ready, signInWithGoogle, signOut, deleteAccount],
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

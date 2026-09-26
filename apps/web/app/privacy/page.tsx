@@ -97,17 +97,24 @@ export default function PrivacyPage() {
       <ul>
         <li>Games on our servers are deleted automatically 90 days after their last change.</li>
         <li>Games on your device stay until you remove them or uninstall the app or clear your browser data.</li>
-        <li>Sign-in data is kept until you ask us to delete it.</li>
+        <li>Sign-in data is kept until you delete your account or ask us to delete it.</li>
         <li>Analytics data is kept for at most 14 months.</li>
       </ul>
 
       <h2 id="delete-data">Deleting your data</h2>
+      <p>
+        Step-by-step instructions, and what is deleted or kept, are on <Link href="/delete-account">Delete your account and
+        data</Link>. In short:
+      </p>
       <ul>
         <li>iPhone and iPad: touch and hold a game on the home screen and choose <strong>Remove from this phone</strong>.</li>
         <li>Android: clear the app’s storage in system settings, or uninstall the app.</li>
         <li>Website: clear this site’s data in your browser.</li>
         <li>
-          Games stored on our servers, and website sign-in accounts: email <Mail subject="Delete my data" /> with the game codes
+          Website sign-in account: open <Link href="/me">My games</Link> and tap <strong>Delete account</strong>.
+        </li>
+        <li>
+          Games stored on our servers, or your website account if you can’t sign in: email <Mail subject="Delete my data" /> with the game codes
           or the email address you signed in with. We delete the data within 30 days. Otherwise games are deleted automatically
           after 90 days without changes.
         </li>

@@ -106,6 +106,53 @@ class GameRepositoryTest {
     }
 
     @Test
+    fun recentGroupsAreDistinctAndNewestFirst() = runTest {
+        val repo = repo()
+        repo.create("Tuesday", defaultSettings(ModeId.Americano, 8), names)
+        repo.create("Six", defaultSettings(ModeId.Mexicano, 6), names.take(6))
+        repo.create("Tuesday again", defaultSettings(ModeId.Americano, 8).copy(courts = 2), names.reversed())
+        val groups = recentGroups(repo.games.value)
+        assertEquals(listOf("Tuesday again", "Six"), groups.map { it.name })
+        assertEquals(names.reversed(), groups[0].names)
+        assertNull(groups[0].sides)
+    }
+
+    @Test
+    fun rematchStartsANewGameWithTheSamePlayersAndSettings() = runTest {
+        val repo = repo()
+        val first = repo.create("Friday", defaultSettings(ModeId.Mexicano, 8).copy(courts = 2), names)
+        val again = repo.rematch(recentGroups(repo.games.value).single())
+        assertNotEquals(first.code, again.code)
+        assertEquals("Friday", again.game.name)
+        assertEquals(first.game.state.settings, again.game.state.settings)
+        assertEquals(names, again.game.state.players.map { it.name })
+        assertTrue(again.canEdit)
+        assertEquals(2, repo.games.value.size)
+    }
+
+    @Test
+    fun keysFromThePairedDeviceGrantEditing() = runTest {
+        val phone = repo()
+        val g = phone.create("Tuesday", defaultSettings(ModeId.Americano, 8), names)
+        server.online = false
+        phone.create("Offline", defaultSettings(ModeId.Americano, 8), names)
+        server.online = true
+        val keys = phone.decodeKeys(phone.encodeKeys())
+        assertEquals(listOf(GameKey(g.code, "key-${g.code}")), keys, "only games the server knows")
+
+        val watch = repo()
+        watch.importKeys(keys + GameKey("ZZZZZZ", "nope"))
+        val onWatch = watch.game(g.code)
+        assertNotNull(onWatch)
+        assertTrue(onWatch.canEdit)
+        assertEquals(1, watch.games.value.size)
+        watch.score(g.code, 0, 0, 20, null)
+        watch.sync(g.code)
+        assertEquals(4, server.games.getValue(g.code).state.rounds[0].matches[0].scoreB)
+        assertEquals(emptyList(), watch.decodeKeys("not json"))
+    }
+
+    @Test
     fun createOnlineRegistersWithOurSchedule() = runTest {
         val repo = repo()
         val g = repo.create("Tuesday", defaultSettings(ModeId.Americano, 8), names)

@@ -35,8 +35,9 @@ kotlin {
     // JVM target runs the fixture suite quickly on any machine (CI, Linux).
     jvm()
 
+    // One XCFramework for the iPhone app and the Apple Watch app (watchOS: arm64_32, arm64, simulator).
     val xcf = XCFramework("PadelShared")
-    listOf(iosArm64(), iosSimulatorArm64()).forEach {
+    listOf(iosArm64(), iosSimulatorArm64(), watchosArm64(), watchosDeviceArm64(), watchosSimulatorArm64()).forEach {
         it.binaries.framework {
             baseName = "PadelShared"
             isStatic = true
@@ -62,7 +63,7 @@ kotlin {
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
         }
-        iosMain.dependencies {
+        appleMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
         commonTest {

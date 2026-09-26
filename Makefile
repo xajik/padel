@@ -141,11 +141,11 @@ ios-%:
 	@$(MAKE) --no-print-directory -C $(IOS) $*
 
 .PHONY: android-help
-android-help: ## Android targets (build, release, bundle, test, ui-test, run, emulator, sha, …)
+android-help: ## Android + Wear OS targets (build, bundle, test, run, emulator, wear-run, wear-bundle, …)
 	@$(MAKE) --no-print-directory -C $(ANDROID) help
 
 .PHONY: ios-help
-ios-help: ## iOS targets (build, archive, test, ui-test, run, sim, logs, …)
+ios-help: ## iOS + Apple Watch targets (build, archive, test, run, sim, watch-run, watch-test, …)
 	@$(MAKE) --no-print-directory -C $(IOS) help
 
 .PHONY: fixtures
@@ -157,9 +157,9 @@ native-assets: ## Generate Swift/Kotlin tokens, icons and fonts from packages/de
 	npm run native -w @padel/design
 
 .PHONY: mobile-test
-mobile-test: ## Kotlin engine vs shared fixtures on JVM + iOS simulator, Android unit tests
-	cd $(SHARED) && ./gradlew jvmTest iosSimulatorArm64Test --console=plain
-	cd $(ANDROID) && ./gradlew :app:testDebugUnitTest --console=plain
+mobile-test: ## Kotlin engine + data vs shared fixtures on JVM, iOS and watchOS simulators, Android + Wear unit tests
+	cd $(SHARED) && ./gradlew jvmTest iosSimulatorArm64Test watchosSimulatorArm64Test --console=plain
+	cd $(ANDROID) && ./gradlew :app:testDebugUnitTest :wear:testDebugUnitTest --console=plain
 
 .PHONY: ios-project
 ios-project: ## Generate apps/ios/Padel.xcodeproj (XcodeGen) and open it

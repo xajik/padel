@@ -43,6 +43,13 @@ final class AppModel {
             nonisolated(unsafe) let games = list
             Task { @MainActor in self?.update(games) }
         }
+        // Organizer keys from the Apple Watch app (games started there become editable here).
+        KeySync.shared.start { [weak self] json in
+            Task { @MainActor in
+                guard let self else { return }
+                try? await self.repo.importKeys(keys: self.repo.decodeKeys(json: json))
+            }
+        }
         if ProcessInfo.processInfo.arguments.contains("-demo") {
             Task { await DemoData.seed(self) }
         }
@@ -59,6 +66,7 @@ final class AppModel {
         }
         games = list
         publishSnapshot()
+        KeySync.shared.publish(repo.encodeKeys(keys: repo.editorKeys()))
     }
 
     // MARK: - Polling

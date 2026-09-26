@@ -1,0 +1,206 @@
+# Store listing: Americanoo: Padel Score
+
+Copy for App Store Connect and Google Play Console. Every claim below is backed by the code or the
+legal pages (`apps/web/app/privacy`, `/support`, `/terms`, `docs/MOBILE.md`). If the app changes,
+update this file and the privacy policy together.
+
+## Identity
+
+| Field | Value |
+|---|---|
+| App name (both stores) | Americanoo: Padel Score (23/30 chars) |
+| Home-screen name | Americanoo |
+| iOS bundle ID / SKU | `app.americanoo.ios` / `americanoo-ios` |
+| Android package | `app.americanoo.android` |
+| Version | 0.1.0 (Android `versionCode` 1) |
+| Platforms | iPhone and iPad, iOS 17.0+ · Android phones and tablets, Android 8.0+ (minSdk 26) |
+| Language | English |
+| Price | Free. No in-app purchases, no subscriptions, no ads |
+| Publisher / contact | Americanoo · support@padel-americanoo.com |
+| Category | Primary: Sports · Secondary (App Store): Utilities |
+
+## URLs
+
+| Field | URL |
+|---|---|
+| Marketing (App Store) / Website (Play) | https://padel-americanoo.com/app |
+| Support | https://padel-americanoo.com/support |
+| Privacy Policy | https://padel-americanoo.com/privacy |
+| Account / data deletion (Play) | https://padel-americanoo.com/delete-account |
+| Terms of Use / EULA | https://padel-americanoo.com/terms |
+
+## App Store (iOS)
+
+**Subtitle** (30 max)
+
+```
+Americano & Mexicano scoring
+```
+
+**Promotional text** (170 max)
+
+```
+Run a fair padel Americano or Mexicano in 30 seconds. Free, no ads and no account: enter players, share a QR code and everyone follows the live leaderboard.
+```
+
+**Keywords** (100 max, comma-separated, no spaces)
+
+```
+padel,americano,mexicano,score,tournament,leaderboard,rotation,social,court,mixicano,round robin
+```
+
+**Description**: use the shared description below.
+
+**What's New** (first release)
+
+```
+First release: 8 game formats, live scores, sharing by QR code or link, offline scoring, widgets and Live Activities.
+```
+
+## Google Play (Android)
+
+**Short description** (80 max)
+
+```
+Free padel Americano & Mexicano scores: fair rotations, live leaderboard, no ads.
+```
+
+**Full description**: use the shared description below.
+
+**Graphics**: `store/android/play-icon-512.png`, `store/android/feature-graphic.png`.
+
+## Shared description (under 4000 chars)
+
+```
+Americanoo keeps score for social padel. Enter the players, pick the courts and points, and get a fair schedule, live scores and a leaderboard in about 30 seconds.
+
+FREE AND ANONYMOUS
+• Free, with no ads, no in-app purchases and no subscriptions.
+• No account and no sign-up. Just open the app and start a game.
+• We never sell your data and don't track you across other apps.
+
+8 FORMATS
+• Americano: partners rotate every round and everyone collects the points their team scores.
+• Mexicano: after round one, players are grouped by standings so every match stays close.
+• Mixicano: Mexicano for mixed groups, one player from each side on every team.
+• Team Americano: fixed pairs play a round-robin against every other pair.
+• Team Mexicano: fixed pairs are matched against pairs with similar standings.
+• Beat the Box: groups of four play all three partner combinations, then the box winner moves up.
+• Up & Down: winners move up a court, losers move down, and partners split every round.
+• Team Up & Down: fixed pairs climb the courts.
+
+FAIR SCHEDULES
+The schedule is generated so everyone plays with and against as many different people as possible, with sit-outs shared out fairly. Score by total points, first to a target, by time, or not at all, and rank by points, wins or average.
+
+PLAY WITH FRIENDS
+• Share a game with a QR code, a 6-character code or a link.
+• Friends follow the schedule and leaderboard live in the app, or on the website without installing anything.
+• Only the organizer, and anyone they send the organizer link to, can enter scores.
+• Join a game by scanning its QR code, typing the code, or picking a photo or screenshot that shows it.
+
+ON COURT
+• Big score pad for quick entry between points.
+• Keeps working offline; changes sync when you're back online.
+• iPhone: follow the game on the Lock Screen and in the Dynamic Island with a Live Activity, and add a home screen widget.
+• Android: follow the game in notifications and add a home screen widget.
+• Final podium when the game ends.
+
+RUN IT WITH YOUR AI ASSISTANT
+Americanoo has a free MCP server. Connect Claude, ChatGPT, Cursor or any MCP client and ask it to set up a game; it builds the schedule, returns a share link and an organizer link, enters scores and reads the leaderboard. Open the link in the app to keep playing. Setup: padel-americanoo.com/docs/mcp
+
+OPTIONAL SIGN-IN ON THE WEB
+Want your games in one place? Sign in with Google on padel-americanoo.com to keep them under My games. It's optional: the apps work without any account.
+
+Questions or ideas: support@padel-americanoo.com
+```
+
+## Screenshots (upload order)
+
+Same 7 shots per size, generated by `make ios-screenshots` / `make android-screenshots`.
+
+| # | File | Suggested caption |
+|---|---|---|
+| 1 | `01-game.png` | Fair rotations for every round |
+| 2 | `02-score-pad.png` | Enter scores in seconds |
+| 3 | `03-leaderboard.png` | Live leaderboard for everyone |
+| 4 | `04-share-qr.png` | Share with a QR code or link |
+| 5 | `05-home.png` | All your games, no account |
+| 6 | `06-podium.png` | Crown the winners |
+| 7 | `07-new-game.png` | 8 formats, ready in 30 seconds |
+
+| Store | Folder | Size (px) |
+|---|---|---|
+| App Store iPhone 6.9" | `store/ios/iphone-6.9/` | 1320 × 2868 |
+| App Store iPhone 6.5" | `store/ios/iphone-6.5/` | 1284 × 2778 |
+| App Store iPad 13" | `store/ios/ipad-13/` | 2064 × 2752 |
+| Play phone | `store/android/phone/` | 1080 × 1920 |
+| Play 7" tablet | `store/android/tablet-7/` | 1200 × 1920 |
+| Play 10" tablet | `store/android/tablet-10/` | 1600 × 2560 |
+
+## Privacy answers
+
+Source of truth: https://padel-americanoo.com/privacy. The apps have **no accounts** (sign-in exists only on
+the website), use Firebase Analytics without advertising identifiers (Android removes `AD_ID` and ad
+services permissions), and don't use push notifications.
+
+### App Store: App Privacy
+
+- **Tracking:** No. No data is used to track users; no IDFA; no App Tracking Transparency prompt.
+- **Data linked to the user:** None (no accounts in the app).
+- **Data not linked to the user:**
+
+| Apple category | Data | Purpose |
+|---|---|---|
+| Location → Coarse Location | Country/region derived from IP by Firebase Analytics | Analytics |
+| Identifiers → Device ID | Firebase app-instance ID | Analytics |
+| Usage Data → Product Interaction | In-app events such as "game created" (never player names or scores) | Analytics |
+| User Content → Other User Content | Game name, player names, scores stored on our servers for sharing | App Functionality |
+
+Check the Firebase Analytics row against Google's current "Firebase data disclosure for App Store"
+guidance before submitting.
+
+**Permission strings (already in `apps/ios/project.yml`):**
+- Camera: "Scan a game's QR code or game code to join it."
+- Photo library: "Read a game's QR code or game code from a photo or screenshot."
+
+### Google Play: Data safety
+
+- **Collects data:** Yes. **Shares data with third parties:** No (Cloudflare and Google act as service providers).
+- **Encrypted in transit:** Yes (HTTPS).
+- **Users can request deletion:** Yes, https://padel-americanoo.com/delete-account (games on servers also auto-delete 90 days after the last change).
+- **Account creation:** None in the app.
+
+| Play category | Data type | Collected | Optional | Purpose |
+|---|---|---|---|---|
+| Location | Approximate location | Yes | No | Analytics |
+| App activity | App interactions | Yes | No | Analytics |
+| App activity | Other user-generated content (game and player names, scores) | Yes | No | App functionality |
+| Device or other IDs | Device or other IDs (Firebase app-instance ID) | Yes | No | Analytics |
+
+Camera frames and picked photos are processed on the device only and are never uploaded, so they are not declared.
+
+**Permissions:** `INTERNET`, `CAMERA` (QR/code scanning), `POST_NOTIFICATIONS` and `POST_PROMOTED_NOTIFICATIONS`
+(the "Follow in notifications" live game). Advertising ID: **not used**, declare "No" in the Advertising ID form.
+
+## Ratings and other forms
+
+- **Ads:** No.
+- **Target audience:** 13+ (the privacy policy says the service is not directed at children under 13).
+- **Age rating questionnaire:** no violence, sexual content, profanity, gambling, drugs or unrestricted web access.
+  Expected: App Store 4+, IARC Everyone / PEGI 3. User-generated content is limited to game and player
+  names that people see only when given the game's code or link; there is no chat or public feed.
+- **News app / government / health / financial features:** No.
+- **Encryption (App Store export compliance):** only standard HTTPS, so exempt (`ITSAppUsesNonExemptEncryption` = NO).
+- **Sign-in required for review:** No. Reviewers can create a game immediately; the home screen starts empty.
+- **Review notes:**
+
+```
+No account is needed. Tap New game, add 4+ player names and start. To test sharing, open the share menu for a QR code, code and link; the same game opens at https://padel-americanoo.com/g/<CODE>. Scanning a QR code needs the camera; a photo or screenshot of a code also works.
+```
+
+## Not in this release
+
+- Sign-in inside the apps (website only).
+- Push notifications: widgets and Live Activities update while the app runs or polls, not with the app closed.
+- Wear OS / Apple Watch app (Wear OS work is in progress, not shipped).
+- Localisations other than English.

@@ -22,5 +22,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/support"), lastModified: UPDATED, priority: 0.4 },
     { url: absoluteUrl("/privacy"), lastModified: UPDATED, priority: 0.2 },
     { url: absoluteUrl("/terms"), lastModified: UPDATED, priority: 0.2 },
+    { url: absoluteUrl("/delete-account"), lastModified: UPDATED, priority: 0.2 },
   ];
 }

@@ -10,7 +10,7 @@ each platform, built from the generated design system (`make native-assets`).
 |---|---|---|
 | Store name | Americanoo: Padel Score | Americanoo: Padel Score |
 | Home-screen name | Americanoo (also the in-app home header) | Americanoo (also the in-app home header and empty widget) |
-| ID | `app.americanoo.ios` (widget `.widgets`, tests `.tests` / `.uitests`) | `app.americanoo.android` |
+| ID | `app.americanoo.ios` (widget `.widgets`, watch `.watchkitapp`, tests `.tests` / `.uitests` / `.watchuitests`) | `app.americanoo.android` (phone and Wear OS: same ID, same signing key) |
 | SKU | `americanoo-ios` | — |
 | Other | App Group `group.app.americanoo`, URL scheme `americanoo://` | URL scheme `americanoo://` |
 
@@ -43,6 +43,7 @@ this Mac instead of production.
 | Build | `build` (debug APK) · `release` (signed APK) · `bundle` (signed AAB for Play) | `build` (simulator) · `archive` (signed Release for App Store / TestFlight, `TEAM=…`) |
 | Test | `test` (shared Kotlin JVM + unit) · `ui-test` (`CLASS=…`) · `lint` | `test` (unit + widget render) · `ui-test` (`TEST=…`) · `test-all` |
 | Run | `emulator` (`AVD=Padel_Phone`) · `run` · `run-release` · `logs` · `uninstall` | `sim` (`SIM="iPhone 17 Pro"`) · `run` · `logs` · `uninstall` |
+| Watch | `wear-emulator` (`WEAR_AVD=Padel_Wear`) · `wear-build` · `wear-run` · `wear-bundle` | `watch-sim` (creates `WATCH_SIM` paired with `SIM`) · `watch-build` · `watch-run` (`JOIN=<organizer link>`) · `watch-test` |
 | Other | `sha` (debug + release signing fingerprints) · `clean` | `project` (XcodeGen) · `open` · `clean` |
 
 iOS simulator builds are arm64 only: the Kotlin framework has no x86_64 simulator slice.
@@ -94,6 +95,36 @@ All clients use the same cloud game API served by the web Worker (proxied to `ap
   entitlement, from `APPLE_TEAM_ID` in `apps/web/wrangler.jsonc`). `ANDROID_CERT_SHA256` holds the debug and upload-key
   fingerprints; add the Play App Signing fingerprint before release.
 
+## Watch apps
+
+Apple Watch (`apps/ios/PadelWatch`, SwiftUI, watchOS 10+, embedded in the iPhone app) and Wear OS
+(`apps/android/wear`, Compose for Wear OS Material 3, Wear OS 3+ / API 30) have the same three screens:
+
+1. **Home:** live games, plus *Start again* for the last 5 player groups (`recentGroups`: same players
+   in any order count once). A group opens its players and format; *Start* creates a new game with the
+   same players and settings (`GameRepository.rematch`). Creating a game from scratch stays on the phone.
+   A single live game opens straight away.
+2. **Game:** the current round, one row per court (pairs and score). Scroll to the bottom for
+   *Next round* (or *Finish game* after the last round; *N to score* while scores are missing).
+3. **Score:** turn the crown (or swipe) to the first pair's points; the other pair gets the rest of
+   the match points automatically (24 → 14 + 10). First-to-N picks the winner, then the loser's
+   points; no-scoring games pick the result.
+
+**Sync.** Each watch runs the shared `GameRepository` itself (KMP `watchosArm64` /
+`watchosDeviceArm64` / `watchosSimulatorArm64`, and the Android target on Wear OS). It keeps its own
+games, queues edits offline and syncs with padel-americanoo.com directly (watch Wi‑Fi/LTE or through
+the phone's connection), so the phone app doesn't have to be open. Editing needs a game's organizer
+key; the phone and the watch exchange the keys of their live, editable games:
+
+| | Apple Watch | Wear OS |
+|---|---|---|
+| Channel | WatchConnectivity application context (`apps/ios/Connectivity/KeySync.swift`, in both apps) | Data Layer items `/keys/phone` and `/keys/watch` (`KeySync.kt` in `:app` and `:wear`) |
+| Receive | `GameRepository.importKeys` joins each game with its organizer link | same |
+
+Games started on the watch therefore show up, editable, on the phone and the other way round.
+Simulator/emulator runs without a paired phone: iOS `make ios-watch-run JOIN=<organizer link>`,
+Android debug `adb shell am start -n app.americanoo.android/app.americanoo.wear.MainActivity --es join <organizer link>`.
+
 ## Live game surfaces
 
 | | iOS | Android |
@@ -110,7 +141,8 @@ Android (Firebase is wired in; messaging is not added yet).
 
 | Command | What |
 |---|---|
-| `make mobile-test` | Kotlin engine vs `packages/engine/fixtures` (JVM + iOS sim), repository and link tests, Android unit tests |
+| `make mobile-test` | Kotlin engine vs `packages/engine/fixtures` (JVM + iOS and watchOS sims), repository, recent groups, key sync and link tests, Android + Wear unit tests |
+| `make ios-watch-test` | Apple Watch UI flow against the deployed API: open a live game, score both courts, *Next round* (checked on the server), *Start again* |
 | `PADEL_LIVE_URL=https://padel-americanoo.com ./gradlew jvmTest` (in `apps/mobile-shared`) | repository against the deployed API |
 | `make ios-test` / `make ios-ui-test` | iOS unit + widget render tests / UI tests against the deployed API (create → score → web sees it; join by link; web edits reach the phone; Live Activity) |
 | `make android-ui-test` | same flows on a running Android emulator |
@@ -140,5 +172,8 @@ brand (home header, feature graphic); regenerate all of them after UI or brand c
   automatic signing does both); upload an APNs key to Firebase.
 - Android: after the first Play upload, add the Play App Signing SHA-1/SHA-256 to Firebase (then
   re-download `google-services.json`) and the SHA-256 to `ANDROID_CERT_SHA256`.
-- Android toolchain: AGP 8.13 / compileSdk 36; the newest androidx (navigation 2.10, lifecycle 2.11)
+- Watches: App Store Connect needs Apple Watch screenshots (the watch app ships inside the iPhone
+  app). Google Play needs the Wear OS form factor enabled, Wear screenshots, and the `:wear` bundle
+  (`make android-wear-bundle`) uploaded to the Wear OS track with the same signing key.
+- Android toolchain: AGP 8.13 / compileSdk 36; Wear Compose 1.7 also needs AGP 9.1 + SDK 37 (1.6 in use); the newest androidx (navigation 2.10, lifecycle 2.11)
   and OkHttp 5.5 need AGP 9.1 + SDK 37 (the app uses Ktor's Android engine meanwhile).

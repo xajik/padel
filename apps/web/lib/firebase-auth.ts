@@ -6,12 +6,14 @@
  */
 import { getApp, getApps, initializeApp } from "firebase/app";
 import {
+  deleteUser,
   getAuth,
   getRedirectResult,
   GoogleAuthProvider,
   linkWithPopup,
   linkWithRedirect,
   onAuthStateChanged,
+  reauthenticateWithPopup,
   signInAnonymously,
   signInWithCredential,
   signInWithPopup,
@@ -90,4 +92,29 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
 
 export async function signOut(): Promise<void> {
   await firebaseSignOut(auth());
+}
+
+export type DeleteAccountResult = "deleted" | "cancelled";
+
+/**
+ * Deletes the signed-in Firebase user. Firebase asks for a recent sign-in first, so the user
+ * confirms with Google again when their session is older than a few minutes.
+ */
+export async function deleteAccount(): Promise<DeleteAccountResult> {
+  const user = auth().currentUser;
+  if (!user || user.isAnonymous) return "cancelled";
+  try {
+    await deleteUser(user);
+  } catch (err) {
+    if (errorCode(err) !== "auth/requires-recent-login") throw err;
+    try {
+      await reauthenticateWithPopup(user, new GoogleAuthProvider());
+    } catch (reauthErr) {
+      const code = errorCode(reauthErr);
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return "cancelled";
+      throw reauthErr;
+    }
+    await deleteUser(user);
+  }
+  return "deleted";
 }

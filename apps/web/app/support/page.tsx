@@ -73,12 +73,13 @@ const FAQ: { id: string; q: string; a: React.ReactNode; text: string }[] = [
   {
     id: "delete",
     q: "How do I delete a game or my data?",
-    text: "On iPhone, touch and hold a game on the home screen and choose Remove from this phone. On Android, clear the app's storage or uninstall it. Games on our servers are deleted automatically 90 days after their last change, or on request by email.",
+    text: "On iPhone, touch and hold a game on the home screen and choose Remove from this phone. On Android, clear the app's storage or uninstall it. Games on our servers are deleted automatically 90 days after their last change, or on request by email. A website account can be deleted from My games.",
     a: (
       <>
         On iPhone, touch and hold a game on the home screen and choose <strong>Remove from this phone</strong>. On Android, clear
         the app’s storage or uninstall it. Games on our servers are deleted automatically 90 days after their last change, or
-        sooner on request: see <Link href="/privacy#delete-data">Deleting your data</Link>.
+        sooner on request. Signed in on the website? You can delete your account yourself. See{" "}
+        <Link href="/delete-account">Delete your account and data</Link>.
       </>
     ),
   },

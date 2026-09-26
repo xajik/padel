@@ -16,9 +16,9 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 | `packages/design` | Design tokens (`tokens.json`) and the custom icon set (`icons.ts`, exported to `svg/` and generated into Swift/Kotlin for the native apps). |
 | `apps/web` | Next.js 16 (App Router) + shadcn/ui, deployed to Cloudflare Workers with OpenNext. |
 | `apps/mcp` | Remote MCP server Worker (stateless Streamable HTTP) + `GameRoom` Durable Objects that store games created by assistants. |
-| `apps/mobile-shared` | Kotlin Multiplatform module shared by both native apps: the engine port (passes `packages/engine/fixtures`), later the offline store and API client. |
-| `apps/ios` | Native iOS app "Americanoo" (`app.americanoo.ios`): SwiftUI, iOS 17+, XcodeGen project (`project.yml`). Links the KMP framework through a Gradle build phase. |
-| `apps/android` | Native Android app "Americanoo" (`app.americanoo.android`): Jetpack Compose + Material 3 (monochrome), includes `apps/mobile-shared` as a composite build. |
+| `apps/mobile-shared` | Kotlin Multiplatform module shared by the native apps and watch apps: the engine port (passes `packages/engine/fixtures`), the offline store and API client. |
+| `apps/ios` | Native iOS app "Americanoo" (`app.americanoo.ios`): SwiftUI, iOS 17+, XcodeGen project (`project.yml`). Links the KMP framework through a Gradle build phase. Includes the Apple Watch app (`PadelWatch`). |
+| `apps/android` | Native Android app "Americanoo" (`app.americanoo.android`): Jetpack Compose + Material 3 (monochrome), includes `apps/mobile-shared` as a composite build. `:wear` is the Wear OS app. |
 
 ## Run, test and deploy (`make help` lists everything)
 
@@ -39,7 +39,8 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 | | `make secret-web NAME=…` · `make secret-mcp NAME=…` | Set Worker secrets |
 | Other | `make types` · `make icons` · `make clean` | Regenerate types, export icons, remove build output |
 | Mobile | `make android-help` · `make ios-help` | Per-app Makefiles (`apps/android`, `apps/ios`): build, release, test, run, emulator/simulator, logs. Root forwards `make android-<target>` / `make ios-<target>`, e.g. `make ios-run LOCAL=1` |
-| | `make mobile-test` | Kotlin engine vs shared fixtures (JVM + iOS simulator) and Android unit tests |
+| | `make mobile-test` | Kotlin engine vs shared fixtures (JVM, iOS and watchOS simulators) and Android + Wear unit tests |
+| | `make ios-watch-run` · `make android-wear-run` | Apple Watch / Wear OS app: score the current round, next round, start a recent group again ([docs/MOBILE.md](docs/MOBILE.md#watch-apps)) |
 | | `make ios-project` · `make ios-test` | Generate/open the Xcode project · run iOS tests (`IOS_SIM=…`) |
 | | `make android` · `make android-build` | Install on a running emulator/device · build the APK |
 | | `make ios-ui-test` · `make android-ui-test` | End-to-end against the deployed API (phone ↔ web sync, links, Live Activity) |

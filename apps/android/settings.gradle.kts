@@ -20,6 +20,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "padel-android"
 include(":app")
+// Wear OS watch app: same applicationId as :app so the Data Layer pairs them.
+include(":wear")
 
 // Kotlin Multiplatform engine (+ data layer later); substitutes app.americanoo:shared.
 includeBuild("../mobile-shared")

@@ -4,6 +4,7 @@ options:
   bundleIdPrefix: app.americanoo
   deploymentTarget:
     iOS: "17.0"
+    watchOS: "10.0"
   createIntermediateGroups: true
   developmentLanguage: en
 settings:
@@ -27,6 +28,7 @@ targets:
     sources:
       - path: Padel
       - path: Shared
+      - path: Connectivity
       # Also in the app so its tests can render the widget and Live Activity views.
       - path: PadelWidgets/WidgetViews.swift
     entitlements:
@@ -36,6 +38,8 @@ targets:
         com.apple.developer.associated-domains: [applinks:padel-americanoo.com]
     dependencies:
       - target: PadelWidgets
+      # Apple Watch app, embedded under Watch/ and installed on the paired watch.
+      - target: PadelWatch
       - package: Firebase
         product: FirebaseCore
       - package: Firebase
@@ -105,6 +109,49 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         # The extension doesn't use the Kotlin framework.
         OTHER_LDFLAGS: "$(inherited)"
+  PadelWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - path: PadelWatch
+      - path: Connectivity
+    info:
+      path: PadelWatch/Info.plist
+      properties:
+        CFBundleDisplayName: Americanoo
+        WKApplication: true
+        WKCompanionAppBundleIdentifier: app.americanoo.ios
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.americanoo.ios.watchkitapp
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SKIP_INSTALL: YES
+        # Same Kotlin framework as the phone, built for watchOS (arm64_32 / arm64 / simulator).
+        OTHER_LDFLAGS: "$(inherited) -framework PadelShared"
+        # Embedded builds (e.g. iPhone tests) would add x86_64: the Kotlin framework has no such slice.
+        EXCLUDED_ARCHS[sdk=watchsimulator*]: x86_64
+    preBuildScripts:
+      - name: Build shared Kotlin framework
+        basedOnDependencyAnalysis: false
+        script: |
+          if [ "${OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED}" = "YES" ]; then exit 0; fi
+          cd "$SRCROOT/../mobile-shared"
+          ./gradlew :embedAndSignAppleFrameworkForXcode --console=plain
+  PadelWatchUITests:
+    type: bundle.ui-testing
+    platform: watchOS
+    sources:
+      - path: PadelWatchUITests
+    dependencies:
+      - target: PadelWatch
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: app.americanoo.ios.watchuitests
+        TEST_TARGET_NAME: PadelWatch
   PadelTests:
     type: bundle.unit-test
     platform: iOS
@@ -129,6 +176,14 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: app.americanoo.ios.uitests
         TEST_TARGET_NAME: Padel
 schemes:
+  PadelWatch:
+    build:
+      targets:
+        PadelWatch: all
+        PadelWatchUITests: [test]
+    test:
+      targets:
+        - PadelWatchUITests
   Padel:
     build:
       targets:

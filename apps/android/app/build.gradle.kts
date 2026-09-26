@@ -79,6 +79,9 @@ dependencies {
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
     implementation(libs.camera.mlkit)
+    // Organizer keys shared with the Wear OS app (wear/KeySync.kt).
+    implementation(libs.play.services.wearable)
+    implementation(libs.coroutines.play.services)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
 

@@ -17,6 +17,10 @@ endif
 APK_DEBUG   := app/build/outputs/apk/debug/app-debug.apk
 APK_RELEASE := app/build/outputs/apk/release/app-release.apk
 AAB_RELEASE := app/build/outputs/bundle/release/app-release.aab
+WEAR_AAB    := wear/build/outputs/bundle/release/wear-release.aab
+WEAR_AVD    ?= Padel_Wear
+# The connected Wear OS emulator/watch (phone and watch can run side by side).
+WEAR_SERIAL ?= $(shell $(ADB) devices -l 2>/dev/null | awk '/gwear|wear|watch/ {print $$1; exit}')
 
 .DEFAULT_GOAL := help
 
@@ -52,7 +56,7 @@ signing-check:
 .PHONY: test
 test: ## Shared Kotlin tests (JVM) + Android unit tests
 	cd ../mobile-shared && ./gradlew jvmTest --console=plain
-	$(GRADLE) :app:testDebugUnitTest
+	$(GRADLE) :app:testDebugUnitTest :wear:testDebugUnitTest
 
 .PHONY: ui-test
 ui-test: device ## Instrumented tests on the running emulator/device (CLASS=app.americanoo.android.PadelFlowTest for one)
@@ -93,6 +97,29 @@ logs: device ## Logcat for the running app
 .PHONY: uninstall
 uninstall: device ## Remove the app from the device
 	$(ADB) uninstall $(APP_ID)
+
+## Wear OS (apps/android/wear, same applicationId; pairs with the phone app for organizer keys)
+
+.PHONY: wear-build
+wear-build: ## Wear OS debug APK
+	$(GRADLE) :wear:assembleDebug
+	@echo "→ wear/build/outputs/apk/debug/wear-debug.apk"
+
+.PHONY: wear-bundle
+wear-bundle: signing-check ## Signed Wear OS App Bundle (Play: Wear OS form factor)
+	$(GRADLE) :wear:bundleRelease
+	@echo "→ $(WEAR_AAB)"
+
+.PHONY: wear-run
+wear-run: ## Build, install and launch on the Wear OS emulator/watch
+	@test -n "$(WEAR_SERIAL)" || (echo "No Wear OS device: run 'make wear-emulator'" && exit 1)
+	ANDROID_SERIAL=$(WEAR_SERIAL) $(GRADLE) :wear:installDebug
+	$(ADB) -s $(WEAR_SERIAL) shell am start -n $(APP_ID)/app.americanoo.wear.MainActivity
+
+.PHONY: wear-emulator
+wear-emulator: ## Start the Wear OS AVD (WEAR_AVD=Padel_Wear) in the background
+	nohup $(EMULATOR) -avd $(WEAR_AVD) -no-snapshot-save >/dev/null 2>&1 &
+	@echo "Booting $(WEAR_AVD)… pair it with the phone emulator in the Wear OS app, or use 'adb -s <phone> forward tcp:5601 tcp:5601'"
 
 ## Other
 

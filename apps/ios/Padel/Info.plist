@@ -33,10 +33,15 @@
 	<string>1</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Scan a game's QR code to join it.</string>
+	<string>Scan a game's QR code or game code to join it.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Read a game's QR code from a photo or screenshot.</string>
+	<string>Read a game's QR code or game code from a photo or screenshot.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIAppFonts</key>

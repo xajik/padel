@@ -4,6 +4,36 @@ iOS (`apps/ios`, SwiftUI) and Android (`apps/android`, Jetpack Compose) share on
 Multiplatform module (`apps/mobile-shared`): the engine port and the data layer. UI is native on
 each platform, built from the generated design system (`make native-assets`).
 
+## Build, run and test
+
+Each app has its own Makefile (`make help` inside the folder); from the repo root the same targets
+run as `make android-<target>` / `make ios-<target>`. `LOCAL=1` points either app at `make dev` on
+this Mac instead of production.
+
+| | Android (`apps/android`) | iOS (`apps/ios`) |
+|---|---|---|
+| Build | `build` (debug APK) · `release` (signed APK) · `bundle` (signed AAB for Play) | `build` (simulator) · `archive` (signed Release for App Store / TestFlight, `TEAM=…`) |
+| Test | `test` (shared Kotlin JVM + unit) · `ui-test` (`CLASS=…`) · `lint` | `test` (unit + widget render) · `ui-test` (`TEST=…`) · `test-all` |
+| Run | `emulator` (`AVD=Padel_Phone`) · `run` · `run-release` · `logs` · `uninstall` | `sim` (`SIM="iPhone 17 Pro"`) · `run` · `logs` · `uninstall` |
+| Other | `sha` (debug + release signing fingerprints) · `clean` | `project` (XcodeGen) · `open` · `clean` |
+
+iOS simulator builds are arm64 only: the Kotlin framework has no x86_64 simulator slice.
+
+## Firebase and signing
+
+Firebase project `padel-americanoo`. The per-app config files are gitignored (public repo) and live next to each app:
+
+| | File | Init |
+|---|---|---|
+| Android `app.padel.android` | `apps/android/app/google-services.json` | Google services Gradle plugin + Firebase BoM (Analytics); auto-initialised |
+| iOS `app.padel.ios` (team `83S2462FEL`) | `apps/ios/Padel/GoogleService-Info.plist` | Firebase SPM package (Core, Analytics); `FirebaseApp.configure()` in `PadelApp.swift`'s `AppDelegate` |
+
+Without the files (CI, forks) both apps build and run with Firebase off. Android release builds are
+signed with the upload key `apps/android/release.jks` (alias `padel`), configured by
+`apps/android/keystore.properties`; both are gitignored and must be backed up. Without them release
+builds are unsigned and `make release` / `make bundle` refuse to run. Fingerprints for Firebase and
+App Links: `make android-sha`.
+
 ## How the apps and the web work together
 
 All clients use the same cloud game API served by the web Worker (proxied to `apps/mcp`):
@@ -24,11 +54,16 @@ All clients use the same cloud game API served by the web Worker (proxied to `ap
   the browser). Until the Firestore repository lands, that's the only way to follow a web game elsewhere.
 - **Codes, links, QR**: `GameLinks` parses a code, `https://…/g/CODE[?key=…]`, `…/join?code=…` and
   `padel://g/CODE[?key=…]`. QR codes encode the https spectator link, so they open the app where
-  installed and the web everywhere else. Joining: type the code, paste a link, scan (VisionKit /
-  Google code scanner) or pick a photo/screenshot of a QR.
+  installed and the web everywhere else. Joining: type the code, paste a link, **scan** with the
+  camera, or pick a **photo/screenshot**. Scanning and photos read both QR codes and a game code
+  written or shown anywhere (iOS: VisionKit live scanner, Core Image QR + Vision text; Android:
+  CameraX + ML Kit barcode/text, zxing + ML Kit for photos). `GameLinks.candidates` ranks what was
+  read and `joinScanned` tries candidates until the server knows one, so a word that merely looks
+  like a code ("SCREEN") doesn't block the real one.
 - **Verified links**: the web serves `/.well-known/assetlinks.json` (Android, from
   `ANDROID_CERT_SHA256`) and `/.well-known/apple-app-site-association` (iOS, once `APPLE_TEAM_ID` is
-  set in `apps/web/wrangler.jsonc`). Add the Play App Signing fingerprint before release.
+  set in `apps/web/wrangler.jsonc`). `ANDROID_CERT_SHA256` holds the debug and upload-key
+  fingerprints; add the Play App Signing fingerprint before release.
 
 ## Live game surfaces
 
@@ -40,7 +75,7 @@ All clients use the same cloud game API served by the web Worker (proxied to `ap
 
 Both update whenever the game changes on the phone or through polling. **Limit:** with the app
 closed there are no remote updates yet; that needs APNs push tokens for Live Activities and FCM for
-Android (planned with Firebase).
+Android (Firebase is wired in; messaging is not added yet).
 
 ## Testing
 
@@ -50,6 +85,11 @@ Android (planned with Firebase).
 | `PADEL_LIVE_URL=https://padel-web.xajik0.workers.dev ./gradlew jvmTest` (in `apps/mobile-shared`) | repository against the deployed API |
 | `make ios-test` / `make ios-ui-test` | iOS unit + widget render tests / UI tests against the deployed API (create → score → web sees it; join by link; web edits reach the phone; Live Activity) |
 | `make android-ui-test` | same flows on a running Android emulator |
+| `make dev` then `make e2e-local` | everything above against the **local stack** (web :3100 + MCP :8788, local storage; nothing touches production), plus a cross-device run on one game (web creates → iPhone scores court 1 → Android sees it and scores court 2 → iPhone sees Android's score → server and web agree) and joining from a photo that shows only a game code through each platform's photo picker |
+
+Local runs point the apps elsewhere: iOS `-baseURL http://localhost:3100` (launch argument; plain http is
+allowed only for local-network hosts), Android `-Ppadel.baseUrl=http://10.0.2.2:3100` (debug builds allow
+cleartext to the host machine only).
 
 ## Store assets
 
@@ -64,8 +104,9 @@ and light appearance.
 
 ## Before release
 
-- Apple: set `DEVELOPMENT_TEAM` (`apps/ios/project.yml`) and `APPLE_TEAM_ID`; register the App Group
-  `group.app.padel` and the Associated Domains capability.
-- Android: release signing, Play App Signing fingerprint in `ANDROID_CERT_SHA256`.
+- Apple: set `DEVELOPMENT_TEAM` (`apps/ios/project.yml`) and `APPLE_TEAM_ID` to `83S2462FEL`; register
+  the App Group `group.app.padel` and the Associated Domains capability; upload an APNs key to Firebase.
+- Android: after the first Play upload, add the Play App Signing SHA-1/SHA-256 to Firebase (then
+  re-download `google-services.json`) and the SHA-256 to `ANDROID_CERT_SHA256`.
 - Android toolchain: AGP 8.13 / compileSdk 36; the newest androidx (navigation 2.10, lifecycle 2.11)
   and OkHttp 5.5 need AGP 9.1 + SDK 37 (the app uses Ktor's Android engine meanwhile).

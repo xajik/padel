@@ -69,6 +69,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         e.message ?: "Could not reach the game server."
     }
 
+    /** Join from scanned content: QR payloads and/or text recognised in a photo or the camera. */
+    suspend fun joinScanned(text: String): String? = try {
+        val g = repo.joinScanned(text)
+        _navigate.emit(g.code)
+        null
+    } catch (e: Exception) {
+        e.message ?: "Could not reach the game server."
+    }
+
     fun handleLink(uri: String) {
         if (GameLinks.parse(uri) == null) return
         viewModelScope.launch { join(uri)?.let { message.value = it } }

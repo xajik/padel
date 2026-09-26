@@ -25,6 +25,6 @@
     "NEXT_PUBLIC_SITE_URL": "https://padel-web.xajik0.workers.dev",
     // Native app links (lib/native-apps.ts). APPLE_TEAM_ID is added once the Apple Developer account exists.
     // Android: add the Play App Signing SHA-256 next to the development (debug) certificate.
-    "ANDROID_CERT_SHA256": "9A:B3:CA:5D:54:97:5C:B7:52:3C:CE:CC:CE:AC:79:19:41:88:88:D6:CE:2E:F1:A6:38:DE:6E:2B:B1:FC:DF:AE"
+    "ANDROID_CERT_SHA256": "9A:B3:CA:5D:54:97:5C:B7:52:3C:CE:CC:CE:AC:79:19:41:88:88:D6:CE:2E:F1:A6:38:DE:6E:2B:B1:FC:DF:AE,29:97:4B:0D:B2:E5:C9:B4:13:3A:59:87:C6:CC:97:AA:50:54:59:B7:20:CE:85:FC:44:58:8C:A0:D3:0E:DD:9D"
   }
 }

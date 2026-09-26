@@ -126,11 +126,27 @@ e2e-mcp: ## End-to-end MCP tool flow against URL/mcp (URL=...)
 e2e-rest: ## End-to-end REST game API flow (OpenAPI path, e.g. Meta Muse) against URL
 	node scripts/rest-e2e.mjs $(URL)
 
-.PHONY: e2e-local
-e2e-local: ## E2E against the local MCP worker directly
+.PHONY: e2e-mcp-local
+e2e-mcp-local: ## E2E against the local MCP worker directly
 	node scripts/mcp-e2e.mjs http://localhost:$(MCP_PORT)/mcp
 
 ## ---------- Mobile (SwiftUI · Compose · KMP) ----------
+
+# Per-app Makefiles: `make android-<target>` / `make ios-<target>` forward to apps/android and apps/ios
+# (e.g. make android-run, make ios-run LOCAL=1). Explicit targets below take precedence.
+android-%:
+	@$(MAKE) --no-print-directory -C $(ANDROID) $*
+
+ios-%:
+	@$(MAKE) --no-print-directory -C $(IOS) $*
+
+.PHONY: android-help
+android-help: ## Android targets (build, release, bundle, test, ui-test, run, emulator, sha, …)
+	@$(MAKE) --no-print-directory -C $(ANDROID) help
+
+.PHONY: ios-help
+ios-help: ## iOS targets (build, archive, test, ui-test, run, sim, logs, …)
+	@$(MAKE) --no-print-directory -C $(IOS) help
 
 .PHONY: fixtures
 fixtures: ## Regenerate engine fixtures shared with the Kotlin port (after engine changes)
@@ -170,6 +186,10 @@ android-screenshots: ## Play Store screenshots (phone, 7" and 10" tablet) into s
 .PHONY: android-ui-test
 android-ui-test: ## Android instrumented tests against the deployed API (needs a running emulator)
 	cd $(ANDROID) && ./gradlew :app:connectedDebugAndroidTest --console=plain -Pandroid.testInstrumentationRunnerArguments.class=app.padel.android.PadelFlowTest
+
+.PHONY: e2e-local
+e2e-local: ## Apps end-to-end on the local stack (needs make dev + an Android emulator): iOS, Android, cross-device
+	scripts/e2e-local.sh
 
 .PHONY: android
 android: ## Build the Android debug APK and install it on a running device/emulator

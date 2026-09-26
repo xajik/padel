@@ -9,7 +9,7 @@ final class StoreScreenshots: XCTestCase {
         guard ProcessInfo.processInfo.environment["STORE_SCREENSHOTS"] == "1" else { throw XCTSkip("Store screenshots run via make ios-screenshots") }
         continueAfterFailure = true
         app = XCUIApplication()
-        app.launchArguments = ["-reset", "-demo", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments = ["-reset", "-demo", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"] + TestServer.appArguments
         app.launch()
     }
 

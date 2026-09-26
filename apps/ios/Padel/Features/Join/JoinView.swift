@@ -1,4 +1,3 @@
-import CoreImage
 import PhotosUI
 @preconcurrency import PadelShared
 import SwiftUI
@@ -22,7 +21,7 @@ struct JoinView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Tokens.Space.s4) {
-                    Text("Enter the 6-character code from the organizer, or scan their QR code.")
+                    Text("Enter the 6-character code from the organizer, or scan their QR code or game code.")
                         .font(.geist(Tokens.FontSize.base))
                         .foregroundStyle(Palette.mutedForeground)
                     TextField("K7Q2MX", text: $input)
@@ -52,12 +51,14 @@ struct JoinView: View {
 
                     HStack(spacing: Tokens.Space.s2) {
                         if canScan {
-                            Button { scanning = true } label: { Label("Scan QR", systemImage: "qrcode.viewfinder") }
+                            Button { scanning = true } label: { Label("Scan code", systemImage: "qrcode.viewfinder") }
+                                .accessibilityHint("Point the camera at a QR code or a game code")
                                 .buttonStyle(SecondaryButtonStyle())
                         }
                         PhotosPicker(selection: $photo, matching: .images) {
-                            Label("QR from photo", systemImage: "photo")
+                            Label("From photo", systemImage: "photo")
                         }
+                        .accessibilityHint("A photo or screenshot with a QR code or a game code")
                         .buttonStyle(SecondaryButtonStyle())
                     }
                     PasteButton(payloadType: String.self) { strings in
@@ -81,20 +82,16 @@ struct JoinView: View {
             .onChange(of: photo) { _, item in
                 guard let item else { return }
                 Task {
-                    if let data = try? await item.loadTransferable(type: Data.self), let text = Self.decodeQR(data) {
-                        input = text
-                        await join(text)
-                    } else {
-                        error = "No QR code found in that image."
-                    }
+                    var text = ""
+                    if let data = try? await item.loadTransferable(type: Data.self) { text = await ScanReader.read(data) }
                     photo = nil
+                    await joinScanned(text, source: "that image")
                 }
             }
             .fullScreenCover(isPresented: $scanning) {
-                QRScannerView { text in
+                CodeScannerView { text in
                     scanning = false
-                    input = text
-                    Task { await join(text) }
+                    Task { await joinScanned(text, source: "the camera") }
                 }
                 .ignoresSafeArea()
                 .overlay(alignment: .topTrailing) {
@@ -114,19 +111,26 @@ struct JoinView: View {
         joining = false
     }
 
-    static func decodeQR(_ data: Data) -> String? {
-        guard let image = CIImage(data: data),
-              let detector = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]) else { return nil }
-        return detector.features(in: image).compactMap { ($0 as? CIQRCodeFeature)?.messageString }.first { GameLinks.shared.parse(input: $0) != nil }
+    /// Photo or camera: QR payloads and recognised text, confirmed against the server.
+    private func joinScanned(_ text: String, source: String) async {
+        guard ScanReader.hasGame(text) else {
+            error = "No QR code or game code found in \(source)."
+            return
+        }
+        if let code = GameLinks.shared.candidates(text: text).first?.code { input = code }
+        joining = true
+        error = await model.joinScanned(text)
+        joining = false
     }
 }
 
-/// Live camera QR scanning (VisionKit). Only offered on devices that support it.
-struct QRScannerView: UIViewControllerRepresentable {
+/// Live camera scanning (VisionKit) of QR codes and game codes written or shown anywhere.
+/// Only offered on devices that support it.
+struct CodeScannerView: UIViewControllerRepresentable {
     let onFound: (String) -> Void
 
     func makeUIViewController(context: Context) -> DataScannerViewController {
-        let vc = DataScannerViewController(recognizedDataTypes: [.barcode(symbologies: [.qr])], isHighlightingEnabled: true)
+        let vc = DataScannerViewController(recognizedDataTypes: [.barcode(symbologies: [.qr]), .text()], isHighlightingEnabled: true)
         vc.delegate = context.coordinator
         try? vc.startScanning()
         return vc
@@ -142,12 +146,19 @@ struct QRScannerView: UIViewControllerRepresentable {
         init(onFound: @escaping (String) -> Void) { self.onFound = onFound }
 
         func dataScanner(_ scanner: DataScannerViewController, didAdd items: [RecognizedItem], allItems: [RecognizedItem]) {
-            for case let .barcode(code) in items {
-                if !done, let text = code.payloadStringValue, GameLinks.shared.parse(input: text) != nil {
-                    done = true
-                    UINotificationFeedbackGenerator().notificationOccurred(.success)
-                    onFound(text)
+            // Everything in view at once, so a QR wins over nearby text and a code split across
+            // lines still reads as one.
+            let text = allItems.map { item -> String in
+                switch item {
+                case .barcode(let code): code.payloadStringValue ?? ""
+                case .text(let text): text.transcript
+                @unknown default: ""
                 }
+            }.joined(separator: "\n")
+            if !done, ScanReader.hasGame(text) {
+                done = true
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                onFound(text)
             }
         }
     }

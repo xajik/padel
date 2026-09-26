@@ -1,8 +1,5 @@
 package app.padel.android.ui.join
 
-import android.content.Context
-import android.graphics.BitmapFactory
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -45,17 +42,7 @@ import app.padel.android.ui.theme.PadelTheme
 import app.padel.android.ui.theme.Space
 import app.padel.android.ui.theme.StateColors
 import app.padel.data.GameLinks
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.DecodeHintType
-import com.google.zxing.MultiFormatReader
-import com.google.zxing.RGBLuminanceSource
-import com.google.zxing.common.HybridBinarizer
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /** Join by code (web `/join`), pasted link, camera QR scan or a QR in a photo/screenshot. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,13 +67,28 @@ fun JoinScreen(model: AppViewModel, onBack: () -> Unit) {
         }
     }
 
-    val photo = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
+    var scanning by remember { mutableStateOf(false) }
+
+    /** Photo or camera: QR payloads and recognised text, confirmed against the server. */
+    fun joinScanned(text: String, source: String) {
+        if (!ScanReader.hasGame(text)) {
+            error = "No QR code or game code found in $source."
+            return
+        }
+        GameLinks.candidates(text).firstOrNull()?.let { input = it.code }
+        joining = true
         scope.launch {
-            val text = withContext(Dispatchers.Default) { decodeQr(context, uri) }
-            if (text != null) { input = text; join(text) } else error = "No QR code found in that image."
+            error = model.joinScanned(text)
+            joining = false
         }
     }
+
+    val photo = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch { joinScanned(ScanReader.read(context, uri), "that image") }
+    }
+
+    if (scanning) CodeScanner(onFound = { scanning = false; joinScanned(it, "the camera") }, onDismiss = { scanning = false })
 
     Scaffold(
         topBar = {
@@ -98,7 +100,7 @@ fun JoinScreen(model: AppViewModel, onBack: () -> Unit) {
         },
     ) { padding ->
         Column(Modifier.padding(padding).padding(Space.s4), verticalArrangement = Arrangement.spacedBy(Space.s4)) {
-            Text("Enter the 6-character code from the organizer, or scan their QR code.", style = MaterialTheme.typography.bodyLarge, color = PadelTheme.colors.mutedForeground)
+            Text("Enter the 6-character code from the organizer, or scan their QR code or game code.", style = MaterialTheme.typography.bodyLarge, color = PadelTheme.colors.mutedForeground)
             OutlinedTextField(
                 input, { input = it; error = null },
                 Modifier.fillMaxWidth().testTag("join-code"),
@@ -111,14 +113,8 @@ fun JoinScreen(model: AppViewModel, onBack: () -> Unit) {
             error?.let { Text(it, color = StateColors.error, style = MaterialTheme.typography.bodyMedium) }
             PrimaryButton(if (joining) "Joining…" else "Join game", { join(input) }, Modifier.testTag("join-submit"), enabled = GameLinks.parse(input) != null && !joining)
             Row(horizontalArrangement = Arrangement.spacedBy(Space.s2)) {
-                SecondaryButton("Scan QR", {
-                    // Google code scanner: no camera permission, UI provided by Play services.
-                    val options = GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
-                    GmsBarcodeScanning.getClient(context, options).startScan()
-                        .addOnSuccessListener { code -> code.rawValue?.let { input = it; join(it) } }
-                        .addOnFailureListener { error = "Camera scanning isn't available here. Try a photo or the code." }
-                }, Modifier.weight(1f), icon = PadelIcon.Scoreboard)
-                SecondaryButton("QR from photo", { photo.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }, Modifier.weight(1f))
+                SecondaryButton("Scan code", { scanning = true }, Modifier.weight(1f).testTag("scan-code"), icon = PadelIcon.Scoreboard)
+                SecondaryButton("From photo", { photo.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }, Modifier.weight(1f).testTag("from-photo"))
             }
             SecondaryButton("Paste link", {
                 clipboard.getText()?.text?.let { input = it; join(it) }
@@ -126,10 +122,3 @@ fun JoinScreen(model: AppViewModel, onBack: () -> Unit) {
         }
     }
 }
-
-private fun decodeQr(context: Context, uri: Uri): String? = runCatching {
-    val bitmap = context.contentResolver.openInputStream(uri).use { BitmapFactory.decodeStream(it) } ?: return null
-    val pixels = IntArray(bitmap.width * bitmap.height).also { bitmap.getPixels(it, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height) }
-    val source = RGBLuminanceSource(bitmap.width, bitmap.height, pixels)
-    MultiFormatReader().decode(BinaryBitmap(HybridBinarizer(source)), mapOf(DecodeHintType.TRY_HARDER to true)).text
-}.getOrNull()?.takeIf { GameLinks.parse(it) != null }

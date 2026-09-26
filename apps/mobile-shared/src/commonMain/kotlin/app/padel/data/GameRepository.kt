@@ -118,6 +118,27 @@ class GameRepository(
         return joined
     }
 
+    /**
+     * Joins the game found in scanned content (QR payloads and/or text recognised in a photo or
+     * the camera). Tries [GameLinks.candidates] in order until the server knows one, so a word
+     * that merely looks like a code doesn't stop a real code further down.
+     */
+    @Throws(ApiException::class, CancellationException::class)
+    suspend fun joinScanned(text: String): LocalGame {
+        val candidates = GameLinks.candidates(text).take(MAX_SCAN_CANDIDATES)
+        if (candidates.isEmpty()) throw ApiException("NO_CODE", "No game code or QR code found.", 400)
+        var notFound: ApiException? = null
+        for (c in candidates) {
+            try {
+                return join(GameLinks.input(c))
+            } catch (e: ApiException) {
+                if (e.code != "NOT_FOUND") throw e
+                notFound = e
+            }
+        }
+        throw notFound!!
+    }
+
     fun remove(code: String) = scope.launch { update { list -> list.filterNot { it.code == code } } }
 
     /** Forget every game on this device (tests, screenshot runs). */
@@ -282,6 +303,7 @@ class GameRepository(
 
     companion object {
         const val STORE_KEY = "padel.games.v1"
+        private const val MAX_SCAN_CANDIDATES = 5
         /** Device and server clocks differ; don't discard a server state for being a few seconds "older". */
         private const val CLOCK_SKEW_MS = 5_000L
     }

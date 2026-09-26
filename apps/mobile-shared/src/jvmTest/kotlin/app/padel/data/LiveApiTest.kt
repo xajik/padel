@@ -31,7 +31,8 @@ class LiveApiTest {
         phone.sync(g.code)
 
         // What the web app loads for /g/{code}.
-        val web = HttpClient.newHttpClient()
+        // HTTP/1.1: the default h2c upgrade on plain http:// is dropped by the local Next dev server.
+        val web = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build()
         val json = web.send(HttpRequest.newBuilder(URI("$base/api/games/${g.code}")).build(), HttpResponse.BodyHandlers.ofString()).body()
         val remote = PadelJson.decodeFromString(GameEnvelope.serializer(), json).game
         assertEquals(phone.game(g.code)!!.game.state, remote.state)

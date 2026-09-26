@@ -1,7 +1,20 @@
+import FirebaseCore
 import SwiftUI
+
+final class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // GoogleService-Info.plist is gitignored (public repo): builds without it (CI, forks) skip Firebase.
+        if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
+            FirebaseApp.configure()
+        }
+        return true
+    }
+}
 
 @main
 struct PadelApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @State private var model = AppModel()
     @Environment(\.scenePhase) private var scenePhase
 

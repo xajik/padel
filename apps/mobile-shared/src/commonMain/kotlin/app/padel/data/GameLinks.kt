@@ -36,6 +36,36 @@ object GameLinks {
         return if (isValidCode(candidate)) JoinTarget(candidate, key) else null
     }
 
+    private val linkRe = Regex("""(?:https?://\S+|$SCHEME://\S+)""")
+    private val codeRe6 = Regex("(?<![A-Za-z0-9])[$ALPHABET]{6}(?![A-Za-z0-9])")
+    /** Letter-spaced codes as OCR reads the share sheet's tracked font: "K 7 Q 2 M X". */
+    private val spacedRe = Regex("(?<![A-Za-z0-9])([$ALPHABET])(?: ([$ALPHABET])){5}(?![A-Za-z0-9])")
+
+    /**
+     * Every game a scan might point to, most likely first. [text] is whatever was read from a
+     * photo or the camera: QR payloads and/or recognised text (a screenshot of the share sheet,
+     * a code on a whiteboard). Links win; then all-caps 6-character codes, preferring ones with a
+     * digit or next to the word "code". Plain words that happen to fit ("COURTS") may appear, so
+     * callers confirm with the server ([GameRepository.joinScanned]).
+     */
+    fun candidates(text: String): List<JoinTarget> {
+        val out = linkedMapOf<String, JoinTarget>()
+        linkRe.findAll(text).mapNotNull { parse(it.value.trimEnd('.', ',', ')', ']')) }.forEach { out.getOrPut(it.code) { it } }
+        val codes = codeRe6.findAll(text).map { it.value to it.range.first } +
+            spacedRe.findAll(text).map { it.value.replace(" ", "") to it.range.first }
+        codes
+            .sortedByDescending { (code, at) ->
+                val labelled = text.substring(maxOf(0, at - 24), at).contains("code", ignoreCase = true)
+                (if (code.any(Char::isDigit)) 2 else 0) + (if (labelled) 1 else 0)
+            }
+            .forEach { (code, _) -> out.getOrPut(code) { JoinTarget(code) } }
+        return out.values.toList()
+    }
+
+    /** A target as input for [GameRepository.join]. */
+    fun input(target: JoinTarget): String =
+        target.organizerKey?.let { "$SCHEME://g/${target.code}?key=$it" } ?: target.code
+
     fun spectatorUrl(baseUrl: String, code: String) = "${baseUrl.trimEnd('/')}/g/$code"
 
     /** Opens the game with edit rights on the web or another phone. Share only with co-organizers. */

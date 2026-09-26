@@ -16,6 +16,10 @@ settings:
     ENABLE_USER_SCRIPT_SANDBOXING: NO
     # Shared Kotlin Multiplatform module, built for the current SDK/arch by embedAndSignAppleFrameworkForXcode.
     FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../mobile-shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: "12.19.0"
 targets:
   Padel:
     type: application
@@ -29,6 +33,10 @@ targets:
       path: Padel/Padel.entitlements
     dependencies:
       - target: PadelWidgets
+      - package: Firebase
+        product: FirebaseCore
+      - package: Firebase
+        product: FirebaseAnalytics
     info:
       path: Padel/Info.plist
       properties:
@@ -38,8 +46,11 @@ targets:
           - CFBundleURLName: app.padel.link
             CFBundleURLSchemes: [padel]
         NSSupportsLiveActivities: true
-        NSCameraUsageDescription: Scan a game's QR code to join it.
-        NSPhotoLibraryUsageDescription: Read a game's QR code from a photo or screenshot.
+        # Only local-network hosts (make dev on localhost) may use plain http; everything else stays https.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        NSCameraUsageDescription: Scan a game's QR code or game code to join it.
+        NSPhotoLibraryUsageDescription: Read a game's QR code or game code from a photo or screenshot.
         UILaunchScreen:
           UIColorName: LaunchBackground
         UIAppFonts:
@@ -57,7 +68,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.padel.ios
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        OTHER_LDFLAGS: "$(inherited) -framework PadelShared"
+        # -ObjC: Firebase Analytics' Objective-C categories.
+        OTHER_LDFLAGS: "$(inherited) -ObjC -framework PadelShared"
         TARGETED_DEVICE_FAMILY: "1,2"
     preBuildScripts:
       - name: Build shared Kotlin framework

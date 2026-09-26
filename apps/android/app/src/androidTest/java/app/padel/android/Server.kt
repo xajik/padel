@@ -6,7 +6,7 @@ import java.net.URL
 
 /** Direct calls to the deployed API, standing in for the web app / an AI agent. */
 object Server {
-    const val BASE = PadelApplication.BASE_URL
+    val BASE: String = PadelApplication.BASE_URL
 
     fun request(path: String, method: String = "GET", body: JSONObject? = null, key: String? = null): JSONObject {
         val c = URL("$BASE/$path").openConnection() as HttpURLConnection

@@ -35,7 +35,7 @@ class PadelApplication : Application() {
     }
 
     companion object {
-        const val BASE_URL = "https://padel-web.xajik0.workers.dev"
+        val BASE_URL: String = BuildConfig.PADEL_BASE_URL
     }
 }
 

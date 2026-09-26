@@ -2,13 +2,13 @@ import XCTest
 
 /// End-to-end on the simulator against the deployed web API (same backend as the web app).
 final class PadelUITests: XCTestCase {
-    static let base = "https://padel-web.xajik0.workers.dev"
+    static let base = TestServer.base
     var app: XCUIApplication!
 
     override func setUp() {
         continueAfterFailure = false
         app = XCUIApplication()
-        app.launchArguments = ["-reset"]
+        app.launchArguments = ["-reset"] + TestServer.appArguments
         app.launch()
     }
 

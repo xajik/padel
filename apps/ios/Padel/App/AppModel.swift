@@ -13,7 +13,8 @@ enum Route: Hashable {
 @Observable
 final class AppModel {
     /// Same deployment as the web app, so links, codes and QR codes work across both.
-    static let baseURL = "https://padel-web.xajik0.workers.dev"
+    /// Local end-to-end runs point the app at `make dev` with `-baseURL http://localhost:3100`.
+    static let baseURL = UserDefaults.standard.string(forKey: "baseURL") ?? "https://padel-web.xajik0.workers.dev"
 
     let repo: GameRepository
     private(set) var games: [LocalGame] = []
@@ -94,6 +95,18 @@ final class AppModel {
     func join(_ input: String) async -> String? {
         do {
             let g = try await repo.join(input: input)
+            showJoin = false
+            path = [.game(g.code)]
+            return nil
+        } catch {
+            return (error as NSError).kotlinMessage
+        }
+    }
+
+    /// Join from scanned content: QR payloads and/or text recognised in a photo or the camera.
+    func joinScanned(_ text: String) async -> String? {
+        do {
+            let g = try await repo.joinScanned(text: text)
             showJoin = false
             path = [.game(g.code)]
             return nil

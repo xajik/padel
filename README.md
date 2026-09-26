@@ -37,10 +37,12 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 | | `make rollback-web` · `make rollback-mcp` | Roll back to the previous version |
 | | `make secret-web NAME=…` · `make secret-mcp NAME=…` | Set Worker secrets |
 | Other | `make types` · `make icons` · `make clean` | Regenerate types, export icons, remove build output |
-| Mobile | `make mobile-test` | Kotlin engine vs shared fixtures (JVM + iOS simulator) and Android unit tests |
+| Mobile | `make android-help` · `make ios-help` | Per-app Makefiles (`apps/android`, `apps/ios`): build, release, test, run, emulator/simulator, logs. Root forwards `make android-<target>` / `make ios-<target>`, e.g. `make ios-run LOCAL=1` |
+| | `make mobile-test` | Kotlin engine vs shared fixtures (JVM + iOS simulator) and Android unit tests |
 | | `make ios-project` · `make ios-test` | Generate/open the Xcode project · run iOS tests (`IOS_SIM=…`) |
 | | `make android` · `make android-build` | Install on a running emulator/device · build the APK |
 | | `make ios-ui-test` · `make android-ui-test` | End-to-end against the deployed API (phone ↔ web sync, links, Live Activity) |
+| | `make dev` then `make e2e-local` | Both apps against the local stack, including a cross-device game (web → iPhone → Android) |
 | | `make ios-screenshots` · `make android-screenshots` | App Store / Play Store screenshots into `store/` |
 | | `make fixtures` · `make native-assets` | After engine changes: regenerate fixtures · after design changes: regenerate Swift/Kotlin tokens, icons, fonts |
 
@@ -61,3 +63,5 @@ Supplying these switches on the real integrations (see `lib/config.ts` and docs/
 | `NEXT_PUBLIC_AMPLITUDE_API_KEY` | Product analytics (`TODO(amplitude)` in `lib/analytics.ts`) |
 
 `NEXT_PUBLIC_*` values are inlined at build time. Set them in `apps/web/.env.production` or in CI before `opennextjs-cloudflare build`.
+
+The native apps read Firebase from gitignored files (`apps/android/app/google-services.json`, `apps/ios/Padel/GoogleService-Info.plist`) and sign Android releases with the gitignored `apps/android/release.jks` + `keystore.properties`. Without them the apps still build and run with Firebase off. Details: [docs/MOBILE.md](docs/MOBILE.md#firebase-and-signing).

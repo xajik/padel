@@ -4,7 +4,7 @@ import XCTest
 final class LiveActivityUITests: XCTestCase {
     func testFollowOnLockScreenShowsLiveActivity() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["-reset"]
+        app.launchArguments = ["-reset"] + TestServer.appArguments
         app.launch()
         app.buttons["new-game"].tap()
         app.buttons["start-game"].tap()

@@ -198,6 +198,15 @@ class GameRepositoryTest {
     }
 
     @Test
+    fun joinScannedSkipsWordsThatAreNotGames() = runTest {
+        val code = repo().create("", defaultSettings(ModeId.Americano, 8), names).code
+        // "SCREEN" looks like a code but no such game exists; the real code further down wins.
+        val g = repo().joinScanned("SCREEN\nGame code\n$code")
+        assertEquals(code, g.code)
+        assertFailsWith<ApiException> { repo().joinScanned("Nothing here") }.also { assertEquals("NO_CODE", it.code) }
+    }
+
+    @Test
     fun gamesPersistAcrossLaunches() = runTest {
         val store = MemoryStore()
         val code = repo(store).create("Kept", defaultSettings(ModeId.Americano, 8), names).code
@@ -221,6 +230,20 @@ class GameLinksTest {
         assertNull(GameLinks.parse("OOOOOO"), "O is not in the alphabet")
         assertNull(GameLinks.parse(""))
         assertEquals("https://x.dev/g/K7Q2MX?key=k", GameLinks.organizerUrl("https://x.dev/", "K7Q2MX", "k"))
+    }
+
+    @Test
+    fun findsCodesInScannedText() {
+        // Screenshot of the share sheet (OCR keeps the tracked code letter-spaced).
+        assertEquals(listOf("K7Q2MX"), GameLinks.candidates("Share game\nAnyone with the link can follow\nGame code\nK 7 Q 2 M X\nShare link").map { it.code })
+        // QR payload plus OCR text: the link (with its key) comes first.
+        assertEquals(
+            listOf(JoinTarget("K7Q2MX", "abc"), JoinTarget("B8RARS")),
+            GameLinks.candidates("https://padel-web.xajik0.workers.dev/g/K7Q2MX?key=abc\nGame code B8RARS"),
+        )
+        // Words that fit the alphabet (no O, I, L, 0, 1) rank after real-looking codes; mixed-case words are ignored.
+        assertEquals(listOf("TV9WXN", "SCREEN"), GameLinks.candidates("SCREEN Tuesday Club Night TV9WXN Screen").map { it.code })
+        assertEquals(emptyList(), GameLinks.candidates("Americano · 8 players · 2 courts"))
     }
 
     @Test

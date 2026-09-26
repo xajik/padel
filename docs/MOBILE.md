@@ -9,7 +9,7 @@ each platform, built from the generated design system (`make native-assets`).
 | | iOS | Android |
 |---|---|---|
 | Store name | Americanoo: Padel Score | Americanoo: Padel Score |
-| Home-screen name | Americanoo | Americanoo |
+| Home-screen name | Americanoo (also the in-app home header) | Americanoo (also the in-app home header and empty widget) |
 | ID | `app.americanoo.ios` (widget `.widgets`, tests `.tests` / `.uitests`) | `app.americanoo.android` |
 | SKU | `americanoo-ios` | — |
 | Other | App Group `group.app.americanoo`, URL scheme `americanoo://` | URL scheme `americanoo://` |
@@ -113,7 +113,9 @@ cleartext to the host machine only).
 | `npm run app-icons -w @padel/design` | iOS App Icon 1024, `store/android/play-icon-512.png`, `store/android/feature-graphic.png` |
 
 Screenshots come from the real apps with demo games (`-demo` / `demo` extra), a clean 9:41 status bar
-and light appearance.
+and light appearance. Each size has the same 7 shots in upload order: `01-game`, `02-score-pad`,
+`03-leaderboard`, `04-share-qr`, `05-home`, `06-podium`, `07-new-game`. They show the Americanoo
+brand (home header, feature graphic); regenerate all of them after UI or brand changes.
 
 ## Before release
 

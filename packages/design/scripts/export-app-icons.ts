@@ -35,7 +35,7 @@ render(icon(512), 512, 512, new URL('store/android/play-icon-512.png', root));
 render(
   `<div style="width:1024px;height:500px;display:flex;align-items:center;gap:40px;padding:0 90px;box-sizing:border-box;font-family:Geist,-apple-system,Helvetica,sans-serif;color:${FG}">
      ${mark(200)}
-     <div><div style="font-size:68px;font-weight:700;letter-spacing:-1px">Padel</div>
+     <div><div style="font-size:68px;font-weight:700;letter-spacing:-1px">Americanoo</div>
      <div style="font-size:30px;color:#A3A3A3;margin-top:12px;line-height:1.3">Americano, Mexicano &amp; more.<br>Fair rotations. Live scores.</div></div>
    </div>`,
   1024,

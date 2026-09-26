@@ -61,7 +61,7 @@ fun HomeScreen(model: AppViewModel, snackbar: SnackbarHostState, onNew: () -> Un
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         PadelIconView(PadelIcon.Logo, 22.dp)
                         Spacer(Modifier.width(Space.s2))
-                        Text("Padel", style = MaterialTheme.typography.titleLarge)
+                        Text("Americanoo", style = MaterialTheme.typography.titleLarge)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),

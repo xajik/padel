@@ -81,7 +81,7 @@ private fun Content(context: Context, g: LocalGame?) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(ImageProvider(R.drawable.ic_logo), null, GlanceModifier.size(18.dp), colorFilter = ColorFilter.tint(fg))
             Spacer(GlanceModifier.width(6.dp))
-            Text(g?.game?.name ?: "Padel", style = TextStyle(color = fg, fontSize = 14.sp, fontWeight = FontWeight.Bold), maxLines = 1)
+            Text(g?.game?.name ?: "Americanoo", style = TextStyle(color = fg, fontSize = 14.sp, fontWeight = FontWeight.Bold), maxLines = 1)
         }
         Spacer(GlanceModifier.height(4.dp))
         if (g == null) {

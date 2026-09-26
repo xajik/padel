@@ -23,7 +23,7 @@ struct HomeView: View {
             ToolbarItem(placement: .principal) {
                 HStack(spacing: Tokens.Space.s2) {
                     PadelIcon.logo.view(22)
-                    Text("Padel").font(.geist(Tokens.FontSize.lg, weight: .semibold, relativeTo: .headline))
+                    Text("Americanoo").font(.geist(Tokens.FontSize.lg, weight: .semibold, relativeTo: .headline))
                 }
                 .foregroundStyle(Palette.foreground)
                 .accessibilityAddTraits(.isHeader)

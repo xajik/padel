@@ -40,7 +40,7 @@ targets:
     info:
       path: Padel/Info.plist
       properties:
-        CFBundleDisplayName: Padel
+        CFBundleDisplayName: Padel Score
         # padel://g/CODE?key=… from QR codes, widgets and the Live Activity.
         CFBundleURLTypes:
           - CFBundleURLName: app.padel.link
@@ -89,7 +89,7 @@ targets:
     info:
       path: PadelWidgets/Info.plist
       properties:
-        CFBundleDisplayName: Padel
+        CFBundleDisplayName: Padel Score
         UIAppFonts:
           - Geist.ttf
           - GeistMono.ttf

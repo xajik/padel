@@ -11,8 +11,8 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     # Set by scripts/bump-version.sh on every tag (make tag / make release); same for app, widgets and watch.
-    MARKETING_VERSION: "0.10.0"
-    CURRENT_PROJECT_VERSION: "2"
+    MARKETING_VERSION: "0.11.0"
+    CURRENT_PROJECT_VERSION: "3"
     DEVELOPMENT_TEAM: ""
     # The Kotlin framework build (below) runs Gradle outside the sandbox.
     ENABLE_USER_SCRIPT_SANDBOXING: NO

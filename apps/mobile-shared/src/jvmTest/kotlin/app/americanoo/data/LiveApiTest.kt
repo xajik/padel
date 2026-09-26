@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 
 /**
  * Talks to a real deployment, so a phone game and the web see the same thing.
- * Opt-in: PADEL_LIVE_URL=https://padel-web.xajik0.workers.dev ./gradlew jvmTest
+ * Opt-in: PADEL_LIVE_URL=https://padel-americanoo.com ./gradlew jvmTest
  */
 class LiveApiTest {
     private val base = System.getenv("PADEL_LIVE_URL")

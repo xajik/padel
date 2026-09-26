@@ -16,7 +16,7 @@
     { "name": "REQUEST_LIMITER", "namespace_id": "4102", "simple": { "limit": 120, "period": 60 } }
   ],
   "vars": {
-    "SITE_URL": "https://padel-web.xajik0.workers.dev",
-    "ALLOWED_HOSTS": "padel-web.xajik0.workers.dev,padel-mcp.xajik0.workers.dev,localhost,127.0.0.1"
+    "SITE_URL": "https://padel-americanoo.com",
+    "ALLOWED_HOSTS": "padel-americanoo.com,www.padel-americanoo.com,padel-web.xajik0.workers.dev,padel-mcp.xajik0.workers.dev,localhost,127.0.0.1"
   }
 }

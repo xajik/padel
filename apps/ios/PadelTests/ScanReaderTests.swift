@@ -14,7 +14,7 @@ final class ScanReaderTests: XCTestCase {
     }
 
     func testReadsQRCode() throws {
-        let url = "https://padel-web.xajik0.workers.dev/g/K7Q2MX"
+        let url = "https://padel-americanoo.com/g/K7Q2MX"
         let text = ScanReader.read(try image(QRCodeView(text: url).frame(width: 240, height: 240).background(.white)))
         XCTAssertEqual(GameLinks.shared.candidates(text: text).first?.code, "K7Q2MX")
     }

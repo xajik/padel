@@ -21,7 +21,7 @@ android {
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Game API. Local end-to-end runs: ./gradlew … -Ppadel.baseUrl=http://10.0.2.2:3100 (make dev on the host).
-        buildConfigField("String", "PADEL_BASE_URL", "\"${providers.gradleProperty("padel.baseUrl").getOrElse("https://padel-web.xajik0.workers.dev")}\"")
+        buildConfigField("String", "PADEL_BASE_URL", "\"${providers.gradleProperty("padel.baseUrl").getOrElse("https://padel-americanoo.com")}\"")
 
     }
 

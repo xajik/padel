@@ -3,7 +3,7 @@ import { MODE_GUIDES } from "@padel/content";
 import { scheduleCombos, scheduleSlug } from "@/lib/schedule";
 import { absoluteUrl } from "@/lib/site";
 
-const UPDATED = new Date("2026-09-24");
+const UPDATED = new Date("2026-09-26");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -18,6 +18,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
     { url: absoluteUrl("/docs/mcp"), lastModified: UPDATED, priority: 0.5 },
     { url: absoluteUrl("/docs/muse"), lastModified: UPDATED, priority: 0.5 },
+    { url: absoluteUrl("/app"), lastModified: UPDATED, priority: 0.7 },
+    { url: absoluteUrl("/support"), lastModified: UPDATED, priority: 0.4 },
     { url: absoluteUrl("/privacy"), lastModified: UPDATED, priority: 0.2 },
+    { url: absoluteUrl("/terms"), lastModified: UPDATED, priority: 0.2 },
   ];
 }

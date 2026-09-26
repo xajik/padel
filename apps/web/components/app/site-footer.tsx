@@ -29,7 +29,10 @@ export function SiteFooter() {
             <li><Link href="/docs/mcp" className="hover:text-foreground">Connect your AI assistant</Link></li>
             <li><Link href="/docs/muse" className="hover:text-foreground">Meta Muse connector</Link></li>
             <li><Link href="/llms.txt" className="hover:text-foreground">llms.txt</Link></li>
-            <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
+            <li><Link href="/app" className="hover:text-foreground">iPhone & Android app</Link></li>
+            <li><Link href="/support" className="hover:text-foreground">Help & Support</Link></li>
+            <li><Link href="/privacy" className="hover:text-foreground">Privacy Policy</Link></li>
+            <li><Link href="/terms" className="hover:text-foreground">Terms of Use</Link></li>
           </ul>
         </nav>
       </div>

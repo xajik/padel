@@ -20,6 +20,25 @@ const nextConfig: NextConfig = {
       { source: "/me/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }] },
     ];
   },
+  async redirects() {
+    return [
+      // One canonical host: www → apex for everything.
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.padel-americanoo.com" }],
+        destination: "https://padel-americanoo.com/:path*",
+        permanent: true,
+      },
+      // The old workers.dev address: pages move to the domain; MCP, API and app-link files keep answering there
+      // so connected assistants and API clients don't break.
+      {
+        source: "/:path((?!mcp|api|\\.well-known).*)",
+        has: [{ type: "host", value: "padel-web.xajik0.workers.dev" }],
+        destination: "https://padel-americanoo.com/:path",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return {
       beforeFiles: [

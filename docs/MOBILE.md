@@ -14,6 +14,21 @@ each platform, built from the generated design system (`make native-assets`).
 | SKU | `americanoo-ios` | — |
 | Other | App Group `group.app.americanoo`, URL scheme `americanoo://` | URL scheme `americanoo://` |
 
+Store listing URLs (web app, `apps/web/app`; contact and publisher in `lib/site.ts` `LEGAL`):
+
+| Field | URL |
+|---|---|
+| Marketing (App Store) / Website (Play) | https://padel-americanoo.com/app |
+| Support (App Store) | https://padel-americanoo.com/support (`/help` redirects here) |
+| Privacy Policy (both stores) | https://padel-americanoo.com/privacy |
+| Data deletion (Play Data safety) | https://padel-americanoo.com/privacy#delete-data |
+| Terms of Use / EULA | https://padel-americanoo.com/terms |
+| Support email | support@padel-americanoo.com |
+
+When the listings go live, set `NATIVE_APP.appStoreUrl` / `playStoreUrl` in `apps/web/lib/site.ts` to
+show the store buttons on `/app`. The Android app disables the advertising ID (`AD_ID` and ad services
+permissions removed), as the privacy policy states.
+
 Kotlin sources live under `app.americanoo.*` (`android`, `data`, `engine`); the Gradle coordinates
 of the shared module are `app.americanoo:shared`.
 
@@ -73,9 +88,10 @@ All clients use the same cloud game API served by the web Worker (proxied to `ap
   CameraX + ML Kit barcode/text, zxing + ML Kit for photos). `GameLinks.candidates` ranks what was
   read and `joinScanned` tries candidates until the server knows one, so a word that merely looks
   like a code ("SCREEN") doesn't block the real one.
-- **Verified links**: the web serves `/.well-known/assetlinks.json` (Android, from
-  `ANDROID_CERT_SHA256`) and `/.well-known/apple-app-site-association` (iOS, once `APPLE_TEAM_ID` is
-  set in `apps/web/wrangler.jsonc`). `ANDROID_CERT_SHA256` holds the debug and upload-key
+- **Verified links** on `padel-americanoo.com`: the web serves `/.well-known/assetlinks.json` (Android
+  App Links, `autoVerify` host in the manifest, from `ANDROID_CERT_SHA256`) and
+  `/.well-known/apple-app-site-association` (iOS Universal Links, `applinks:padel-americanoo.com`
+  entitlement, from `APPLE_TEAM_ID` in `apps/web/wrangler.jsonc`). `ANDROID_CERT_SHA256` holds the debug and upload-key
   fingerprints; add the Play App Signing fingerprint before release.
 
 ## Live game surfaces
@@ -95,7 +111,7 @@ Android (Firebase is wired in; messaging is not added yet).
 | Command | What |
 |---|---|
 | `make mobile-test` | Kotlin engine vs `packages/engine/fixtures` (JVM + iOS sim), repository and link tests, Android unit tests |
-| `PADEL_LIVE_URL=https://padel-web.xajik0.workers.dev ./gradlew jvmTest` (in `apps/mobile-shared`) | repository against the deployed API |
+| `PADEL_LIVE_URL=https://padel-americanoo.com ./gradlew jvmTest` (in `apps/mobile-shared`) | repository against the deployed API |
 | `make ios-test` / `make ios-ui-test` | iOS unit + widget render tests / UI tests against the deployed API (create → score → web sees it; join by link; web edits reach the phone; Live Activity) |
 | `make android-ui-test` | same flows on a running Android emulator |
 | `make dev` then `make e2e-local` | everything above against the **local stack** (web :3100 + MCP :8788, local storage; nothing touches production), plus a cross-device run on one game (web creates → iPhone scores court 1 → Android sees it and scores court 2 → iPhone sees Android's score → server and web agree) and joining from a photo that shows only a game code through each platform's photo picker |
@@ -119,8 +135,9 @@ brand (home header, feature graphic); regenerate all of them after UI or brand c
 
 ## Before release
 
-- Apple: set `DEVELOPMENT_TEAM` (`apps/ios/project.yml`) and `APPLE_TEAM_ID` to `83S2462FEL`; register
-  the App Group `group.app.americanoo` and the Associated Domains capability; upload an APNs key to Firebase.
+- Apple: set `DEVELOPMENT_TEAM` (`apps/ios/project.yml`) to `83S2462FEL`; enable the App Group
+  `group.app.americanoo` and Associated Domains capabilities on the App ID (`make ios-archive` with
+  automatic signing does both); upload an APNs key to Firebase.
 - Android: after the first Play upload, add the Play App Signing SHA-1/SHA-256 to Firebase (then
   re-download `google-services.json`) and the SHA-256 to `ANDROID_CERT_SHA256`.
 - Android toolchain: AGP 8.13 / compileSdk 36; the newest androidx (navigation 2.10, lifecycle 2.11)

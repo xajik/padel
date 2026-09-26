@@ -36,7 +36,7 @@ class ScanReaderTest {
 
     @Test
     fun readsQrCode() = runBlocking {
-        val text = ScanReader.read(qrBitmap("https://padel-web.xajik0.workers.dev/g/K7Q2MX?key=abc", 600))
+        val text = ScanReader.read(qrBitmap("https://padel-americanoo.com/g/K7Q2MX?key=abc", 600))
         assertEquals("K7Q2MX", GameLinks.candidates(text).first().code)
         assertEquals("abc", GameLinks.candidates(text).first().organizerKey)
     }

@@ -31,6 +31,9 @@ targets:
       - path: PadelWidgets/WidgetViews.swift
     entitlements:
       path: Padel/Padel.entitlements
+      properties:
+        # Universal Links: https://padel-americanoo.com/g/… opens the app (AASA served by apps/web).
+        com.apple.developer.associated-domains: [applinks:padel-americanoo.com]
     dependencies:
       - target: PadelWidgets
       - package: Firebase

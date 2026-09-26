@@ -18,12 +18,22 @@
     { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "padel-web-opennext-cache" }
   ],
   "observability": { "enabled": true },
+  // Production domain (zone on this Cloudflare account; DNS + certificates are managed by the custom domains).
+  // www and the workers.dev address redirect to the apex (next.config.ts), except the MCP / API endpoints.
+  "routes": [
+    { "pattern": "padel-americanoo.com", "custom_domain": true },
+    { "pattern": "www.padel-americanoo.com", "custom_domain": true }
+  ],
+  // Keep padel-web.xajik0.workers.dev alive (MCP connectors and API clients configured before the domain);
+  // Wrangler turns it off by default once routes are set.
+  "workers_dev": true,
   // No version / preview URLs: the only public web entry point is the production URL.
   "preview_urls": false,
   "vars": {
     // Public config. Firebase / Amplitude keys are added once provided (docs/REQUIREMENTS.md §12).
-    "NEXT_PUBLIC_SITE_URL": "https://padel-web.xajik0.workers.dev",
-    // Native app links (lib/native-apps.ts). APPLE_TEAM_ID is added once the Apple Developer account exists.
+    "NEXT_PUBLIC_SITE_URL": "https://padel-americanoo.com",
+    // Native app links (lib/native-apps.ts): Apple Universal Links and Android App Links on padel-americanoo.com.
+    "APPLE_TEAM_ID": "83S2462FEL",
     // Android: add the Play App Signing SHA-256 next to the development (debug) certificate.
     "ANDROID_CERT_SHA256": "9A:B3:CA:5D:54:97:5C:B7:52:3C:CE:CC:CE:AC:79:19:41:88:88:D6:CE:2E:F1:A6:38:DE:6E:2B:B1:FC:DF:AE,29:97:4B:0D:B2:E5:C9:B4:13:3A:59:87:C6:CC:97:AA:50:54:59:B7:20:CE:85:FC:44:58:8C:A0:D3:0E:DD:9D"
   }

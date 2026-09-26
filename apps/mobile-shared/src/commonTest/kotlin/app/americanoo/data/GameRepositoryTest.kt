@@ -163,7 +163,7 @@ class GameRepositoryTest {
         val code = repo().create("", defaultSettings(ModeId.Americano, 8), names).code
 
         val organizer = repo()
-        val o = organizer.join("https://padel-web.xajik0.workers.dev/g/$code?key=key-$code")
+        val o = organizer.join("https://padel-americanoo.com/g/$code?key=key-$code")
         assertTrue(o.canEdit)
         organizer.score(code, 0, 0, 10, null)
         organizer.sync(code)
@@ -221,8 +221,8 @@ class GameLinksTest {
     fun parsesEverythingPeopleShare() {
         assertEquals(JoinTarget("K7Q2MX"), GameLinks.parse("K7Q2MX"))
         assertEquals(JoinTarget("K7Q2MX"), GameLinks.parse("  k7q2mx "))
-        assertEquals(JoinTarget("K7Q2MX"), GameLinks.parse("https://padel-web.xajik0.workers.dev/g/K7Q2MX"))
-        assertEquals(JoinTarget("K7Q2MX"), GameLinks.parse("https://padel-web.xajik0.workers.dev/g/K7Q2MX/tv"))
+        assertEquals(JoinTarget("K7Q2MX"), GameLinks.parse("https://padel-americanoo.com/g/K7Q2MX"))
+        assertEquals(JoinTarget("K7Q2MX"), GameLinks.parse("https://padel-americanoo.com/g/K7Q2MX/tv"))
         assertEquals(JoinTarget("K7Q2MX", "a%b"), GameLinks.parse("https://x.dev/g/K7Q2MX?key=a%25b"))
         assertEquals(JoinTarget("K7Q2MX", "3wOuAP0s"), GameLinks.parse("americanoo://g/K7Q2MX?key=3wOuAP0s"))
         assertEquals(JoinTarget("K7Q2MX"), GameLinks.parse("https://x.dev/join?code=K7Q2MX"))
@@ -239,7 +239,7 @@ class GameLinksTest {
         // QR payload plus OCR text: the link (with its key) comes first.
         assertEquals(
             listOf(JoinTarget("K7Q2MX", "abc"), JoinTarget("B8RARS")),
-            GameLinks.candidates("https://padel-web.xajik0.workers.dev/g/K7Q2MX?key=abc\nGame code B8RARS"),
+            GameLinks.candidates("https://padel-americanoo.com/g/K7Q2MX?key=abc\nGame code B8RARS"),
         )
         // Words that fit the alphabet (no O, I, L, 0, 1) rank after real-looking codes; mixed-case words are ignored.
         assertEquals(listOf("TV9WXN", "SCREEN"), GameLinks.candidates("SCREEN Tuesday Club Night TV9WXN Screen").map { it.code })

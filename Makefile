@@ -12,7 +12,7 @@ MCP        := apps/mcp
 
 WEB_PORT   ?= 3100
 MCP_PORT   ?= 8788
-PROD_URL   ?= https://padel-web.xajik0.workers.dev
+PROD_URL   ?= https://padel-americanoo.com
 MCP_PROD   ?= https://padel-mcp.xajik0.workers.dev
 R2_BUCKET  ?= padel-web-opennext-cache
 

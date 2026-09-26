@@ -2,8 +2,9 @@
 
 Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotations, live scores and a leaderboard. No sign-up. AI assistants can run games through an MCP server.
 
-- **Live:** https://padel-web.xajik0.workers.dev
-- **MCP endpoint:** https://padel-web.xajik0.workers.dev/mcp · [connection guide](https://padel-web.xajik0.workers.dev/docs/mcp)
+- **Live:** https://padel-americanoo.com
+- **MCP endpoint:** https://padel-americanoo.com/mcp · [connection guide](https://padel-americanoo.com/docs/mcp)
+- **Apps, help & legal:** [/app](https://padel-americanoo.com/app) · [/support](https://padel-americanoo.com/support) · [/privacy](https://padel-americanoo.com/privacy) · [/terms](https://padel-americanoo.com/terms) · support@padel-americanoo.com
 - **Product:** [docs/PRD.md](docs/PRD.md) · **Requirements:** [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) · **Native apps:** [docs/MOBILE.md](docs/MOBILE.md)
 
 ## Layout
@@ -47,6 +48,17 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 | | `make fixtures` · `make native-assets` | After engine changes: regenerate fixtures · after design changes: regenerate Swift/Kotlin tokens, icons, fonts |
 
 The web Worker binds to `padel-mcp` (service binding `MCP`) and serves it at `/mcp` and `/api/games/*`, so always deploy MCP first (`make deploy` does). The OpenNext incremental cache lives in the R2 bucket `padel-web-opennext-cache`.
+
+### Domain and email (Cloudflare)
+
+| | Setup |
+|---|---|
+| `padel-americanoo.com` | Registered on Cloudflare; custom domain of the `padel-web` Worker (`routes` in `apps/web/wrangler.jsonc`, DNS + TLS managed by Cloudflare) |
+| `www.padel-americanoo.com` | Custom domain of the same Worker; 308 to the apex (`redirects` in `apps/web/next.config.ts`) |
+| `padel-web.xajik0.workers.dev` | Kept on (`workers_dev: true`) for existing MCP/API clients: `/mcp`, `/api/*`, `/.well-known/*` answer there, every other page 308s to the domain |
+| `padel-mcp.xajik0.workers.dev` | MCP Worker, reached by the web Worker through the `MCP` service binding; `ALLOWED_HOSTS` lists every public host |
+| Email | Cloudflare Email Routing: `support@` and a catch-all forward to the owner's inbox (`wrangler email routing rules list padel-americanoo.com`); MX, SPF and DKIM are managed by Email Routing |
+| Firebase Auth | `padel-americanoo.com` and `www.` are authorized domains for Google sign-in |
 
 ## Credentials (pending)
 

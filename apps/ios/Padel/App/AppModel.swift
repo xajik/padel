@@ -14,7 +14,7 @@ enum Route: Hashable {
 final class AppModel {
     /// Same deployment as the web app, so links, codes and QR codes work across both.
     /// Local end-to-end runs point the app at `make dev` with `-baseURL http://localhost:3100`.
-    static let baseURL = UserDefaults.standard.string(forKey: "baseURL") ?? "https://padel-web.xajik0.workers.dev"
+    static let baseURL = UserDefaults.standard.string(forKey: "baseURL") ?? "https://padel-americanoo.com"
 
     let repo: GameRepository
     private(set) var games: [LocalGame] = []

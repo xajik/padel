@@ -19,7 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { isFirebaseConfigured } from "@/lib/config";
 import { useAuth } from "./auth-provider";
 
-/** Self-service account deletion for Google sign-in on the website (/me and /delete-account). */
+/** Self-service account deletion (Google or Apple sign-in) on the website (/me and /delete-account). */
 export function DeleteAccountCard({ showWhenSignedOut = false }: { showWhenSignedOut?: boolean }) {
   const { user, ready, deleteAccount } = useAuth();
   const [open, setOpen] = useState(false);
@@ -34,9 +34,9 @@ export function DeleteAccountCard({ showWhenSignedOut = false }: { showWhenSigne
         <p className="font-medium">You’re not signed in on this browser</p>
         <p className="text-sm text-muted-foreground">
           {isFirebaseConfigured
-            ? "To delete your account here, sign in with the same Google account first (menu at the top right), then come back to this page. Or email us using the steps below."
+            ? "To delete your account here, sign in with the same Google or Apple account first (menu at the top right), then come back to this page. Or email us using the steps below."
             : "Accounts are not available on this site right now. Email us using the steps below."}{" "}
-          The apps don’t use accounts: see <Link href="#app" className="underline underline-offset-4">Deleting app data</Link>.
+          For data kept in the apps, see <Link href="#app" className="underline underline-offset-4">Deleting app data</Link>.
         </p>
       </div>
     );
@@ -71,8 +71,8 @@ export function DeleteAccountCard({ showWhenSignedOut = false }: { showWhenSigne
           <DialogHeader>
             <DialogTitle>Delete your account?</DialogTitle>
             <DialogDescription>
-              Your Google sign-in, name, email address and profile photo are deleted right away. This can’t be undone. You may
-              be asked to confirm with Google.
+              Your sign-in, name, email address, profile photo and the games list of your account are deleted right away. This
+              can’t be undone. You may be asked to confirm with Google or Apple.
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center justify-between gap-4 rounded-lg border p-3">

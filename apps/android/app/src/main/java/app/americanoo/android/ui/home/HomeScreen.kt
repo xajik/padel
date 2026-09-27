@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,8 +52,9 @@ import app.americanoo.engine.formatDuration
 /** Mirrors the web home (`/`): brand, primary actions, your games and the formats list. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(model: AppViewModel, snackbar: SnackbarHostState, onNew: () -> Unit, onJoin: () -> Unit, onOpen: (String) -> Unit) {
+fun HomeScreen(model: AppViewModel, snackbar: SnackbarHostState, onNew: () -> Unit, onJoin: () -> Unit, onOpen: (String) -> Unit, onAccount: () -> Unit) {
     val games by model.games.collectAsStateWithLifecycle()
+    val profile by model.account.profile.collectAsStateWithLifecycle()
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
@@ -62,6 +64,11 @@ fun HomeScreen(model: AppViewModel, snackbar: SnackbarHostState, onNew: () -> Un
                         PadelIconView(PadelIcon.Logo, 22.dp)
                         Spacer(Modifier.width(Space.s2))
                         Text("Americanoo", style = MaterialTheme.typography.titleLarge)
+                    }
+                },
+                actions = {
+                    TextButton(onClick = onAccount, modifier = Modifier.testTag("account")) {
+                        Text(if (profile?.isAnonymous == false) "Account" else "Sign in", color = PadelTheme.colors.foreground)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
@@ -75,7 +82,7 @@ fun HomeScreen(model: AppViewModel, snackbar: SnackbarHostState, onNew: () -> Un
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(Space.s2), modifier = Modifier.padding(bottom = Space.s3)) {
                     Text("Run your padel session", style = MaterialTheme.typography.headlineLarge)
-                    Text("Fair rotations, scores on court and a live leaderboard. No account needed.", style = MaterialTheme.typography.bodyLarge, color = PadelTheme.colors.mutedForeground)
+                    Text("Fair rotations, scores on court and a live leaderboard. No account needed; sign in to keep your games on every device.", style = MaterialTheme.typography.bodyLarge, color = PadelTheme.colors.mutedForeground)
                 }
             }
             item { PrimaryButton("New game", onNew, Modifier.testTag("new-game")) }

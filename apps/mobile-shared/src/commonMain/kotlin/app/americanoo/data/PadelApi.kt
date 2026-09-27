@@ -3,8 +3,10 @@ package app.americanoo.data
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -12,6 +14,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
@@ -35,7 +38,19 @@ internal val PadelJson = Json {
 class PadelApi internal constructor(val baseUrl: String, engine: HttpClientEngine) {
     constructor(baseUrl: String) : this(baseUrl, defaultEngine())
 
+    /** Signs every request with the user's Firebase ID token when set (see [AuthTokens]). */
+    var auth: AuthTokens? = null
+
     private val http = HttpClient(engine) {
+        install(
+            createClientPlugin("FirebaseAuth") {
+                onRequest { request, _ ->
+                    if (!request.headers.contains(HttpHeaders.Authorization)) {
+                        auth?.token()?.let { request.headers[HttpHeaders.Authorization] = "Bearer $it" }
+                    }
+                }
+            },
+        )
         expectSuccess = false
         install(ContentNegotiation) { json(PadelJson) }
         install(HttpTimeout) {
@@ -67,6 +82,23 @@ class PadelApi internal constructor(val baseUrl: String, engine: HttpClientEngin
             contentType(ContentType.Application.Json)
             setBody(PadelJson.encodeToString(CloudMutation.serializer(), mutation))
         }.decode()
+
+    /* Account (needs [auth]) */
+
+    internal suspend fun myGames(): List<AccountGame> = http.get("api/me/games").decode<AccountGamesResponse>().games
+
+    /** A fresh organizer key for a game the signed-in user owns or edits. */
+    internal suspend fun issueKey(code: String): String = http.post("api/games/$code/keys").decode<IssuedKey>().organizerKey
+
+    internal suspend fun merge(fromIdToken: String): Int =
+        http.post("api/me/merge") {
+            contentType(ContentType.Application.Json)
+            setBody(MergeRequest(fromIdToken))
+        }.decode<MergeResponse>().moved
+
+    internal suspend fun deleteAccount() {
+        http.delete("api/me").decode<DeletedResponse>()
+    }
 
     private suspend inline fun <reified T> HttpResponse.decode(): T {
         val text = bodyAsText()

@@ -51,6 +51,16 @@ class GameRepository(
 
     val baseUrl: String get() = api.baseUrl
 
+    /** Firebase ID tokens for the API; set by the phone apps once Firebase Auth is up (none on watches). */
+    var auth: AuthTokens?
+        get() = api.auth
+        set(value) {
+            api.auth = value
+        }
+
+    /** UID of the signed-in account, recorded as the owner of games created on this device. */
+    var accountUid: String? = null
+
     fun game(code: String): LocalGame? = _games.value.firstOrNull { it.code == resolve(code) }
 
     private val renamed = mutableMapOf<String, String>()
@@ -85,7 +95,7 @@ class GameRepository(
                 id = GameLinks.newCode() + t.toString(36),
                 code = GameLinks.newCode(),
                 name = name.trim().ifEmpty { modeInfo(settings.mode).name },
-                ownerUid = "app",
+                ownerUid = accountUid ?: "app",
                 status = GameStatus.Live,
                 source = "app",
                 createdAt = t,
@@ -169,6 +179,42 @@ class GameRepository(
         }
         throw notFound!!
     }
+
+    /* ------------------------------------------------------------------ */
+    /* Account                                                              */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Brings the signed-in account's games to this device: live games become editable (a fresh
+     * organizer key per device, so a paired watch works as before), finished ones are followed
+     * read-only as history. Returns how many games were added. Needs [auth].
+     */
+    @Throws(ApiException::class, CancellationException::class)
+    suspend fun syncAccount(): Int {
+        var added = 0
+        for (g in api.myGames()) {
+            val local = game(g.code)
+            if (local?.organizerKey != null || (local != null && g.status == GameStatus.Done)) continue
+            try {
+                val input = if (g.status == GameStatus.Live) GameLinks.organizerUrl(baseUrl, g.code, api.issueKey(g.code)) else g.code
+                join(input)
+                if (local == null) added++
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: ApiException) {
+                // Expired or no longer editable: skip it; the next sync tries again.
+            }
+        }
+        return added
+    }
+
+    /** After signing in to an existing account from an anonymous session: move that session's games (FR-3.4). */
+    @Throws(ApiException::class, CancellationException::class)
+    suspend fun mergeAnonymous(fromIdToken: String): Int = api.merge(fromIdToken)
+
+    /** Account deletion (FR-3.7): the server forgets the account's games list and rights. Call before deleting the Firebase user. */
+    @Throws(ApiException::class, CancellationException::class)
+    suspend fun deleteAccountData() = api.deleteAccount()
 
     fun remove(code: String) = scope.launch { update { list -> list.filterNot { it.code == code } } }
 
@@ -366,4 +412,4 @@ fun buildPlayers(mode: ModeId, names: List<String>, sides: List<Side>? = null): 
 }
 
 /** The mode id as the API spells it ("team-americano"). */
-internal fun ModeId.wire(): String = PadelJson.encodeToJsonElement(ModeId.serializer(), this).toString().trim('"')
+fun ModeId.wire(): String = PadelJson.encodeToJsonElement(ModeId.serializer(), this).toString().trim('"')

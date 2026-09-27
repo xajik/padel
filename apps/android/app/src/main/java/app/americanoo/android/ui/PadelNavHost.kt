@@ -18,6 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import app.americanoo.android.AppViewModel
+import app.americanoo.android.ui.account.AccountScreen
 import app.americanoo.android.ui.game.GameScreen
 import app.americanoo.android.ui.home.HomeScreen
 import app.americanoo.android.ui.join.JoinScreen
@@ -55,10 +56,11 @@ fun PadelNavHost(model: AppViewModel) {
     Box(Modifier.widthIn(max = 720.dp)) {
     NavHost(nav, startDestination = "home") {
         composable("home") {
-            HomeScreen(model, snackbar, onNew = { nav.navigate("new") }, onJoin = { nav.navigate("join") }, onOpen = { nav.navigate("game/$it") })
+            HomeScreen(model, snackbar, onNew = { nav.navigate("new") }, onJoin = { nav.navigate("join") }, onOpen = { nav.navigate("game/$it") }, onAccount = { nav.navigate("account") })
         }
         composable("new") { NewGameScreen(model, onBack = { nav.popBackStack() }) }
         composable("join") { JoinScreen(model, onBack = { nav.popBackStack() }) }
+        composable("account") { AccountScreen(model, onBack = { nav.popBackStack() }) }
         composable("game/{code}") { entry ->
             GameScreen(model, entry.arguments?.getString("code").orEmpty(), snackbar, onBack = { nav.popBackStack() })
         }

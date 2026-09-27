@@ -50,6 +50,7 @@ internal data class CreateGameRequest(
     val name: String,
     /** Mixicano only; the API rejects `null`, so other formats send an empty list. */
     val sides: List<String> = emptyList(),
+    val source: String = "app",
 )
 
 @Serializable

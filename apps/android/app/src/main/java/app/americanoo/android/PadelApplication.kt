@@ -20,12 +20,18 @@ class PadelApplication : Application() {
     lateinit var repository: GameRepository
         private set
 
+    /** Optional Google / Apple sign-in; signs the repository's API calls with Firebase ID tokens. */
+    lateinit var account: AccountManager
+        private set
+
 
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     override fun onCreate() {
         super.onCreate()
+        Analytics.start(this)
         repository = GameRepository(BASE_URL, PrefsStore(this))
+        account = AccountManager(this, repository, appScope).also { it.start() }
         GameNotifications.createChannel(this)
         // Mirror the active game into the home-screen widget and the Live Update notification.
         appScope.launch {

@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import app.americanoo.data.GameLinks
 import app.americanoo.data.LocalGame
+import app.americanoo.data.wire
 import app.americanoo.engine.EngineError
 import app.americanoo.engine.Settings
 import app.americanoo.engine.Side
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 /** App state over the shared repository: the games, navigation events, polling and messages. */
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     val repo = app.padel.repository
+    val account = app.padel.account
     val games: StateFlow<List<LocalGame>> = repo.games.stateIn(viewModelScope, SharingStarted.Eagerly, repo.games.value)
 
     /** The game on screen, synced every few seconds like the web's live view. */
@@ -39,6 +41,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             var tick = 0
             while (isActive) {
                 openCode.value?.let { repo.sync(it) }
+                // Games added to the account elsewhere (website, another phone, an assistant).
+                if (tick % 75 == 0) account.syncAccount()
                 if (tick++ % 8 == 0) repo.syncAll()
                 delay(4_000)
             }
@@ -54,6 +58,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     suspend fun create(name: String, settings: Settings, names: List<String>, sides: List<Side>?): String? = try {
         val g = repo.create(name, settings, names, sides)
+        Analytics.track(Analytics.Event.CreatedGame, mapOf("mode" to settings.mode.wire(), "players" to names.size, "courts" to settings.courts))
         _navigate.emit(g.code)
         null
     } catch (e: EngineError) {
@@ -61,8 +66,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Join by code, pasted link, scanned QR or deep link; returns an error for the form. */
-    suspend fun join(input: String): String? = try {
+    suspend fun join(input: String, source: String = "code"): String? = try {
         val g = repo.join(input)
+        Analytics.track(Analytics.Event.JoinedGame, mapOf("source" to source))
         _navigate.emit(g.code)
         null
     } catch (e: Exception) {
@@ -72,6 +78,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     /** Join from scanned content: QR payloads and/or text recognised in a photo or the camera. */
     suspend fun joinScanned(text: String): String? = try {
         val g = repo.joinScanned(text)
+        Analytics.track(Analytics.Event.JoinedGame, mapOf("source" to "scan"))
         _navigate.emit(g.code)
         null
     } catch (e: Exception) {
@@ -80,7 +87,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun handleLink(uri: String) {
         if (GameLinks.parse(uri) == null) return
-        viewModelScope.launch { join(uri)?.let { message.value = it } }
+        viewModelScope.launch { join(uri, source = "link")?.let { message.value = it } }
     }
 
     /** Runs an edit; engine refusals become a snackbar instead of failing silently. */

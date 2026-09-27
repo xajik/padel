@@ -16,7 +16,7 @@ const TOOLS: [string, string][] = [
   ["preview_schedule", "Generate a schedule without saving anything."],
   ["create_game", "Create an anonymous game. Returns the join code, a spectator link, an organizer link and round 1."],
   ["join_game", "Connect to a game by code. Add the organizer key to get score-editing rights."],
-  ["list_my_games", "Games created or joined in this session."],
+  ["list_my_games", "Signed-in endpoint only: the games in your account, from any device."],
   ["get_game / get_round / get_standings", "Read the current state, a round, or the leaderboard."],
   ["submit_score", "Record a match score. With total points, one side is enough."],
   ["next_round", "Start the next round once every score is in."],
@@ -25,6 +25,12 @@ const TOOLS: [string, string][] = [
 
 export default function McpDocsPage() {
   const endpoint = absoluteUrl("/mcp");
+  const accountEndpoint = absoluteUrl("/mcp/account");
+  const accountSnippets: [string, string][] = [
+    ["Claude (claude.ai / desktop)", `Settings → Connectors → Add custom connector\nURL: ${accountEndpoint}\nClaude opens a sign-in window: continue with Google or Apple, then Allow.`],
+    ["Claude Code", `claude mcp add --transport http americanoo ${accountEndpoint}\nThen run /mcp and choose Authenticate.`],
+    ["ChatGPT", `Settings → Apps & Connectors → Create\nMCP server URL: ${accountEndpoint}\nAuthentication: OAuth`],
+  ];
   const snippets: [string, string][] = [
     ["Meta Muse", `Paste the setup prompt from ${absoluteUrl("/docs/muse")} into a Muse chat.\nMCP server URL: ${endpoint} (streamable HTTP, no authentication)`],
     ["Claude (claude.ai / desktop)", `Settings → Connectors → Add custom connector\nURL: ${endpoint}`],
@@ -47,7 +53,7 @@ export default function McpDocsPage() {
           “Set up an Americano for Anna, Mikko, Laura, Jussi, Sara, Pekka, Emma and Olli on 2 courts, 24 points.”
         </blockquote>
         <p className="text-muted-foreground">
-          No account needed. Your assistant gets a share link for the group chat and an organizer link to keep scoring from your phone.
+          No account needed (or sign in, see below). Your assistant gets a share link for the group chat and an organizer link to keep scoring from your phone.
         </p>
       </header>
 
@@ -58,6 +64,23 @@ export default function McpDocsPage() {
             <div key={title} className="rounded-2xl border">
               <p className="border-b px-4 py-2.5 text-sm font-medium">{title}</p>
               <pre className="overflow-x-auto px-4 py-3 font-mono text-sm">{code}</pre>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Sign in to keep games in your account</h2>
+        <p className="text-muted-foreground">
+          Connect <code className="font-mono">{accountEndpoint}</code> instead to sign in with Google or Apple. Games your
+          assistant creates then appear in the {"app's"} and {"website's"} “My games”, your assistant can edit them without an
+          organizer key, and <code className="font-mono">list_my_games</code> finds games from earlier conversations.
+        </p>
+        <div className="space-y-3">
+          {accountSnippets.map(([title, code]) => (
+            <div key={title} className="rounded-2xl border">
+              <p className="border-b px-4 py-2.5 text-sm font-medium">{title}</p>
+              <pre className="overflow-x-auto px-4 py-3 font-mono text-sm whitespace-pre-wrap">{code}</pre>
             </div>
           ))}
         </div>

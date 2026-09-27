@@ -18,7 +18,10 @@ struct HomeView: View {
             .readableWidth()
         }
         .background(Palette.background)
-        .refreshable { try? await model.repo.syncAll() }
+        .refreshable {
+            await model.account.syncAccount()
+            try? await model.repo.syncAll()
+        }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 HStack(spacing: Tokens.Space.s2) {
@@ -28,6 +31,13 @@ struct HomeView: View {
                 .foregroundStyle(Palette.foreground)
                 .accessibilityAddTraits(.isHeader)
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { model.showAccount = true } label: {
+                    Image(systemName: model.account.signedIn ? "person.crop.circle.fill" : "person.crop.circle")
+                }
+                .accessibilityLabel(model.account.signedIn ? "Account" : "Sign in")
+                .accessibilityIdentifier("account")
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -36,7 +46,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: Tokens.Space.s2) {
             Text("Run your padel session")
                 .font(.geist(Tokens.FontSize.xl3, weight: .bold, relativeTo: .largeTitle))
-            Text("Fair rotations, scores on court and a live leaderboard. No account needed.")
+            Text("Fair rotations, scores on court and a live leaderboard. No account needed; sign in to keep your games on every device.")
                 .font(.geist(Tokens.FontSize.base))
                 .foregroundStyle(Palette.mutedForeground)
         }

@@ -10,15 +10,22 @@ import {
   roundView,
   standingsView,
   ToolError,
+  type Actor,
   type CloudGame,
   type CreateInput,
   type PublicGame,
 } from "./game";
-import { room, type Mutation, type MutationResult } from "./store";
+import { isAccountUid, room, users, type Mutation, type MutationResult } from "./store";
 
 /** Game operations shared by the MCP tools and the REST API. */
 
-export async function createCloudGame(env: Env, siteUrl: string, input: CreateInput) {
+export interface CreateOptions {
+  /** Verified Firebase UID of the creator; the game lands in their history. */
+  uid?: string;
+  source?: CloudGame["source"];
+}
+
+export async function createCloudGame(env: Env, siteUrl: string, input: CreateInput, opts: CreateOptions = {}) {
   const { state } = prepareGame(input);
   const key = newOrganizerKey();
   const keyHash = await hashKey(key);
@@ -29,9 +36,9 @@ export async function createCloudGame(env: Env, siteUrl: string, input: CreateIn
       id: crypto.randomUUID(),
       code: newJoinCode(),
       name: input.name?.replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 60) || defaultGameName(state.settings.mode),
-      ownerUid: `mcp:${keyHash.slice(0, 16)}`,
+      ownerUid: opts.uid ?? `mcp:${keyHash.slice(0, 16)}`,
       status: "live",
-      source: "mcp",
+      source: opts.source ?? "mcp",
       createdAt: now,
       updatedAt: now,
       state,
@@ -40,6 +47,7 @@ export async function createCloudGame(env: Env, siteUrl: string, input: CreateIn
     if (await room(env, candidate.code).create(candidate)) game = candidate;
   }
   if (!game) throw new ToolError("INTERNAL", "Could not allocate a game code. Try again.");
+  if (opts.uid) await users(env, opts.uid).add(game.code, "owner");
   return {
     game,
     organizerKey: key,
@@ -58,13 +66,19 @@ export async function loadGame(env: Env, codeOrUrl: string): Promise<PublicGame>
   return g;
 }
 
-export async function isEditor(env: Env, code: string, key: string): Promise<boolean> {
-  return (await room(env, normalizeCode(code)).authorize(await hashKey(key))) as boolean;
+/** An organizer key and/or a verified UID as an [Actor]. */
+export async function actor(key: string | null | undefined, uid?: string | null): Promise<Actor> {
+  return { keyHash: key ? await hashKey(key) : undefined, uid: uid ?? undefined };
 }
 
-export async function mutateGame(env: Env, codeOrUrl: string, key: string, m: Mutation) {
+/** Checks edit rights; a signed-in caller with a valid key is added to the game's editors. */
+export async function isEditor(env: Env, code: string, who: Actor): Promise<boolean> {
+  return (await room(env, normalizeCode(code)).redeem(who)) as boolean;
+}
+
+export async function mutateGame(env: Env, codeOrUrl: string, who: Actor, m: Mutation) {
   const code = normalizeCode(codeOrUrl);
-  const res = (await room(env, code).mutate(await hashKey(key), m)) as MutationResult;
+  const res = (await room(env, code).mutate(who, m)) as MutationResult;
   if (!res.ok) throw new ToolError(res.code, res.message);
   return res;
 }
@@ -85,4 +99,45 @@ export function completeScore(g: PublicGame, scoreA?: number | null, scoreB?: nu
   const b = scoreB ?? null;
   if (a === null && b !== null && total !== null) a = total - b;
   return [a, b];
+}
+
+/* ---------------- accounts ---------------- */
+
+/** The user's games (owned or editable), newest activity first. */
+export async function myGames(env: Env, uid: string, siteUrl: string) {
+  const list = await users(env, uid).list();
+  return (list as unknown as { role: "owner" | "editor"; game: PublicGame }[]).map(({ role, game }) => ({ role, ...gameSummary(game, siteUrl), updatedAt: game.updatedAt }));
+}
+
+/** A fresh organizer key for an owner or editor, so a new device can edit and pair its watch. */
+export async function issueKey(env: Env, codeOrUrl: string, uid: string): Promise<string> {
+  const code = normalizeCode(codeOrUrl);
+  if (!isValidCode(code)) throw new ToolError("INVALID_CODE", "Game codes have 6 letters and digits, e.g. K7Q2MX.");
+  const key = newOrganizerKey();
+  if (!(await room(env, code).issueKey(uid, await hashKey(key)))) throw new ToolError("NOT_EDITOR", "You can't edit this game.");
+  return key;
+}
+
+/** Moves every game of the anonymous UID [from] to the account [to] (FR-3.4). */
+export async function mergeAccounts(env: Env, from: string, to: string): Promise<number> {
+  if (from === to || !isAccountUid(from) || !isAccountUid(to)) return 0;
+  const source = users(env, from);
+  const target = users(env, to);
+  let moved = 0;
+  for (const e of await source.entries()) {
+    const role = await room(env, e.code).transfer(from, to);
+    if (role) {
+      await target.add(e.code, role);
+      moved++;
+    }
+  }
+  await source.deleteAll();
+  return moved;
+}
+
+/** Account deletion (FR-3.7): forget the index and the user's rights on every game. */
+export async function deleteAccountData(env: Env, uid: string): Promise<void> {
+  const index = users(env, uid);
+  for (const e of await index.entries()) await room(env, e.code).forget(uid);
+  await index.deleteAll();
 }

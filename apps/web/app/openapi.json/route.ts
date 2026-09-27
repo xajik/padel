@@ -130,7 +130,8 @@ export function GET() {
         organizerKey: {
           type: "http",
           scheme: "bearer",
-          description: "The organizerKey returned by createGame. Also accepted as the X-Organizer-Key header.",
+          description:
+            "The organizerKey returned by createGame. Also accepted as the X-Organizer-Key header. The Americanoo apps send a Firebase ID token here instead: games they create belong to the signed-in account, and its owner can edit them without a key.",
         },
       },
       parameters: {

@@ -31,29 +31,32 @@ export default function DeleteAccountPage() {
           Email <Mail subject="Delete my data" /> with the subject “Delete my data”.
         </li>
         <li>
-          Include the email address of your Google account if you signed in on the website, and the 6-character codes of any
-          games you want deleted from our servers (shown in each game’s share menu).
+          Include the email address of your Google or Apple account if you signed in, and the 6-character codes of any games
+          you want deleted from our servers (shown in each game’s share menu).
         </li>
         <li>We confirm by email and delete the data within 30 days.</li>
       </ol>
 
-      <h2 id="account">Delete your website account yourself</h2>
-      <p>If you signed in with Google on the website, you can delete the account instantly:</p>
+      <h2 id="account">Delete your account yourself</h2>
+      <p>
+        If you signed in with Google or Apple, you can delete the account instantly, either in the app (
+        <strong>Account › Delete account</strong>) or on the website:
+      </p>
       <ol className={steps}>
         <li>
           Open <Link href="/me">{SITE.url.replace(/^https?:\/\//, "")}/me</Link> (or this page) and sign in with the same
-          Google account.
+          Google or Apple account.
         </li>
         <li>
-          Tap <strong>Delete account</strong>, then <strong>Delete permanently</strong>. Google may ask you to confirm it’s you.
+          Tap <strong>Delete account</strong>, then <strong>Delete permanently</strong>. Google or Apple may ask you to confirm it’s you.
         </li>
       </ol>
       <DeleteAccountCard showWhenSignedOut />
 
       <h2 id="app">Delete data in the app</h2>
       <p>
-        The {NATIVE_APP.name} app has no accounts: there is no login, and games are kept on your device and, so they can be
-        shared, on our servers.
+        Signing in to the {NATIVE_APP.name} app is optional. Without an account, games are kept on your device and, so they
+        can be shared, on our servers.
       </p>
       <ul>
         <li>
@@ -70,8 +73,9 @@ export default function DeleteAccountPage() {
       <h2 id="deleted">What is deleted</h2>
       <ul>
         <li>
-          <strong>Website account:</strong> your name, email address, profile photo and account ID from Google sign-in, deleted
-          immediately when you delete the account yourself, or within 30 days of an email request.
+          <strong>Account:</strong> your name, email address, profile photo and account ID from Google or Apple sign-in, and
+          the list of games in your account, deleted immediately when you delete the account yourself, or within 30 days of an
+          email request. Games you shared stay viewable for the other players without your name as the owner.
         </li>
         <li>
           <strong>Games on our servers:</strong> game name, player names, format, courts, scores, game code and organizer key,

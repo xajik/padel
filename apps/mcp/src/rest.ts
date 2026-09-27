@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { roundView, standingsView, ToolError } from "./game";
 import { createGameInput, scoreInput } from "./schemas";
-import { completeScore, createCloudGame, gameDetails, loadGame, mutateGame } from "./service";
+import { bearer, identity, isJwt } from "./auth";
+import type { Actor } from "./game";
+import { actor, completeScore, createCloudGame, gameDetails, loadGame, mutateGame } from "./service";
 
 /**
  * REST game API (documented in /openapi.json) for agents that integrate from an
@@ -15,7 +17,12 @@ import { completeScore, createCloudGame, gameDetails, loadGame, mutateGame } fro
  *   POST /api/v1/games/{code}/finish         freeze results                      (organizer)
  *
  * Organizer auth: `Authorization: Bearer <organizerKey>` or `X-Organizer-Key: <organizerKey>`.
+ * The apps send a Firebase ID token as `Authorization: Bearer <idToken>` instead: games they create
+ * land in the user's account, and the owner can edit without a key.
  */
+
+/** REST-only: the apps say where a game was created. */
+const createBody = createGameInput.extend({ source: z.enum(["web", "app"]).optional() });
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -54,12 +61,18 @@ function error(code: string, message: string) {
   return json({ error: { code, message } }, status, status === 429 ? { "Retry-After": "60" } : {});
 }
 
-function organizerKey(req: Request): string {
-  const auth = req.headers.get("Authorization") ?? "";
-  const bearer = auth.match(/^Bearer\s+(\S+)$/i)?.[1];
-  const key = bearer ?? req.headers.get("X-Organizer-Key") ?? "";
+/** The organizer key (Bearer or X-Organizer-Key) and/or the Firebase user behind a write. */
+async function caller(req: Request, env: Env): Promise<Actor> {
+  const token = bearer(req);
+  const headerKey = req.headers.get("X-Organizer-Key");
+  if (token && isJwt(token)) {
+    const user = await identity(req, env);
+    if (!user) throw new ToolError("UNAUTHORIZED", "The ID token is invalid or expired. Sign in again.");
+    return actor(headerKey, user.uid);
+  }
+  const key = token ?? headerKey;
   if (!key) throw new ToolError("UNAUTHORIZED", "Send the organizer key as `Authorization: Bearer <organizerKey>`.");
-  return key;
+  return actor(key);
 }
 
 async function body<T>(req: Request, schema: z.ZodType<T>): Promise<T> {
@@ -80,8 +93,11 @@ export async function handleRest(req: Request, env: Env, parts: string[], allowC
     if (parts.length === 0) {
       if (req.method !== "POST") return error("NOT_FOUND", "Use POST to create a game.");
       if (!(await allowCreate())) throw new ToolError("RATE_LIMITED", "Too many games created. Try again in a minute.");
-      const input = await body(req, createGameInput);
-      const created = await createCloudGame(env, site, input);
+      const { source, ...input } = await body(req, createBody);
+      const token = bearer(req);
+      const user = token && isJwt(token) ? await identity(req, env) : null;
+      if (token && isJwt(token) && !user) throw new ToolError("UNAUTHORIZED", "The ID token is invalid or expired. Sign in again.");
+      const created = await createCloudGame(env, site, input, { uid: user?.uid, source: source ?? "mcp" });
       return json(
         {
           ...created.summary,
@@ -109,11 +125,11 @@ export async function handleRest(req: Request, env: Env, parts: string[], allowC
     }
 
     if (req.method === "POST" && action === "scores") {
-      const key = organizerKey(req);
+      const who = await caller(req, env);
       const input = await body(req, scoreInput);
       if (input.scoreA === undefined && input.scoreB === undefined) throw new ToolError("INVALID_SCORE", "Send scoreA and/or scoreB.");
       const [a, b] = completeScore(await loadGame(env, code), input.scoreA, input.scoreB);
-      const res = await mutateGame(env, code, key, { type: "score", court: input.court, scoreA: a, scoreB: b, round: input.round });
+      const res = await mutateGame(env, code, who, { type: "score", court: input.court, scoreA: a, scoreB: b, round: input.round });
       const g = res.game;
       const round = roundView(g.state, g.state.rounds[input.round ? input.round - 1 : g.state.current]);
       return json({
@@ -124,11 +140,11 @@ export async function handleRest(req: Request, env: Env, parts: string[], allowC
       });
     }
     if (req.method === "POST" && action === "next") {
-      const { game } = await mutateGame(env, code, organizerKey(req), { type: "next" });
+      const { game } = await mutateGame(env, code, await caller(req, env), { type: "next" });
       return json({ round: roundView(game.state, game.state.rounds[game.state.current]), plannedRounds: game.state.plannedRounds });
     }
     if (req.method === "POST" && action === "finish") {
-      const { game } = await mutateGame(env, code, organizerKey(req), { type: "finish" });
+      const { game } = await mutateGame(env, code, await caller(req, env), { type: "finish" });
       const standings = standingsView(game.state);
       return json({ podium: standings.slice(0, 3).map((s) => s.name), standings, spectatorUrl: `${site}/g/${game.code}` });
     }

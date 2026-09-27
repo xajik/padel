@@ -69,14 +69,34 @@ Firebase project `padel-americanoo`. The per-app config files are gitignored (pu
 
 | | File | Init |
 |---|---|---|
-| Android `app.americanoo.android` | `apps/android/app/google-services.json` | Google services Gradle plugin + Firebase BoM (Analytics); auto-initialised |
-| iOS `app.americanoo.ios` (team `83S2462FEL`) | `apps/ios/Padel/GoogleService-Info.plist` | Firebase SPM package (Core, Analytics); `FirebaseApp.configure()` in `PadelApp.swift`'s `AppDelegate` |
+| Android `app.americanoo.android` | `apps/android/app/google-services.json` | Google services Gradle plugin + Firebase BoM (Analytics, Auth); auto-initialised |
+| iOS `app.americanoo.ios` (team `83S2462FEL`) | `apps/ios/Padel/GoogleService-Info.plist` | Firebase SPM package (Core, Analytics, Auth) + GoogleSignIn; `FirebaseApp.configure()` in `PadelApp.init` |
 
 Without the files (CI, forks) both apps build and run with Firebase off. Android release builds are
 signed with the upload key `apps/android/release.jks` (alias `padel`), configured by
 `apps/android/keystore.properties`; both are gitignored and must be backed up. Without them release
 builds are unsigned and `make release` / `make bundle` refuse to run. Fingerprints for Firebase and
 App Links: `make android-sha`.
+
+### Sign-in
+
+Optional, like the website (FR-3). Each phone app starts a silent anonymous Firebase session and links
+it to Google or Apple from **Account** (iOS: `Padel/App/AccountModel.swift`; Android:
+`AccountManager.kt`). The shared `PadelApi` sends the ID token as `Authorization: Bearer` on every call
+(`AuthTokens` in `mobile-shared/.../Account.kt`), so the server (`apps/mcp/src/auth.ts`) records games
+created while signed in under the account (`UserGames` Durable Object) and lets the owner edit them
+without an organizer key. `GameRepository.syncAccount()` brings the account's games to a new device:
+live games get a fresh organizer key for that device, so watch key sync keeps working unchanged. The
+watch apps have no sign-in.
+
+Console setup:
+- Firebase Auth: enable the Anonymous, Google and Apple providers. Apple needs a Services ID and key,
+  with the return URL `https://padel-americanoo.firebaseapp.com/__/auth/handler`.
+- iOS: the Sign in with Apple capability on `app.americanoo.ios` (entitlement in `project.yml`). Google
+  Sign-In's `REVERSED_CLIENT_ID` URL scheme is copied from `GoogleService-Info.plist` into the built
+  Info.plist by a build phase, so no client ID is committed.
+- Android: add the debug, upload and Play App Signing SHA-1/SHA-256 to the Firebase Android app, then
+  download `google-services.json` again (it provides `default_web_client_id` for Credential Manager).
 
 ## How the apps and the web work together
 

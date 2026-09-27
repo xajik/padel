@@ -1,6 +1,8 @@
 import java.util.Properties
 
 val mobileVersion = Properties().apply { rootProject.file("../mobile-version.properties").inputStream().use { load(it) } }
+// amplitude.apiKey in the gitignored local.properties; builds without it (CI, forks) skip analytics.
+val localProps = Properties().apply { rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) } }
 
 plugins {
     alias(libs.plugins.android.application)
@@ -24,6 +26,7 @@ android {
         versionName = mobileVersion.getProperty("version")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Game API. Local end-to-end runs: ./gradlew … -Ppadel.baseUrl=http://10.0.2.2:3100 (make dev on the host).
+        buildConfigField("String", "AMPLITUDE_API_KEY", "\"${localProps.getProperty("amplitude.apiKey", "")}\"")
         buildConfigField("String", "PADEL_BASE_URL", "\"${providers.gradleProperty("padel.baseUrl").getOrElse("https://padel-americanoo.com")}\"")
 
     }
@@ -87,6 +90,12 @@ dependencies {
     implementation(libs.coroutines.play.services)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
+    // Optional sign-in (AccountManager.kt): Firebase Auth, Google via Credential Manager, Apple via Firebase OAuth.
+    implementation(libs.firebase.auth)
+    implementation(libs.credentials)
+    implementation(libs.credentials.play.services)
+    implementation(libs.googleid)
+    implementation(libs.amplitude.android)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.compose.bom))

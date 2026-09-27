@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@/components/app/analytics";
 import { AuthProvider } from "@/components/app/auth-provider";
 import { MarketingOnly } from "@/components/app/marketing-only";
 import { SiteFooter } from "@/components/app/site-footer";
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" suppressHydrationWarning className={`${sans.variable} ${mono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
+        <Analytics />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <SiteHeader />

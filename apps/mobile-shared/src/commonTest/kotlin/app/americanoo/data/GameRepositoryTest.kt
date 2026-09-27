@@ -32,6 +32,9 @@ private class FakeServer {
     var online = true
     val games = mutableMapOf<String, StoredGame>()
     val keys = mutableMapOf<String, String>()
+    /** Account owner per game, from `Authorization: Bearer tok-<uid>` on create. */
+    val owners = mutableMapOf<String, String>()
+    val sources = mutableMapOf<String, String>()
     private var clock = 1_000L
 
     val engine = MockEngine { req -> handle(req) }
@@ -46,6 +49,13 @@ private class FakeServer {
         if (!online) throw IOException("offline")
         val path = req.url.encodedPath.trim('/').split('/')
         val body = (req.body as? OutgoingContent.ByteArrayContent)?.bytes()?.decodeToString() ?: ""
+        val uid = req.headers[HttpHeaders.Authorization]?.removePrefix("Bearer tok-")
+        if (path == listOf("api", "me", "games")) {
+            if (uid == null) return error("UNAUTHORIZED", HttpStatusCode.Unauthorized)
+            val mine = owners.filterValues { it == uid }.keys.map { games.getValue(it) }
+            val list = mine.joinToString(",") { """{"code":"${it.code}","name":"${it.name}","role":"owner","status":"${if (it.status == GameStatus.Live) "live" else "done"}","updatedAt":${it.updatedAt}}""" }
+            return json("""{"games":[$list]}""")
+        }
         if (path == listOf("api", "v1", "games") && req.method == HttpMethod.Post) {
             val input = PadelJson.decodeFromString(CreateGameRequest.serializer(), body)
             val mode = ModeId.entries.first { it.wire() == input.mode }
@@ -53,14 +63,20 @@ private class FakeServer {
             val state = createGame(defaultSettings(mode, input.names.size).copy(courts = input.courts), buildPlayers(mode, input.names), "server")
             games[code] = StoredGame("id-$code", code, input.name, "mcp:x", GameStatus.Live, "mcp", clock, clock++, state)
             keys[code] = "key-$code"
+            if (uid != null) owners[code] = uid
+            sources[code] = input.source
             return json("""{"code":"$code","organizerKey":"key-$code"}""", HttpStatusCode.Created)
         }
         val code = path.getOrNull(2) ?: return error("NOT_FOUND", HttpStatusCode.NotFound)
         val g = games[code] ?: return error("NOT_FOUND", HttpStatusCode.NotFound)
-        val keyOk = req.headers["X-Organizer-Key"] == keys[code]
+        val keyOk = req.headers["X-Organizer-Key"].let { it == keys[code] || it == "key2-$code" }
         return when (path.getOrNull(3)) {
             null -> json(PadelJson.encodeToString(GameEnvelope.serializer(), GameEnvelope(g)))
             "redeem" -> json("""{"editor":$keyOk}""")
+            "keys" -> {
+                if (uid == null || owners[code] != uid) return error("NOT_EDITOR", HttpStatusCode.Forbidden)
+                json("""{"organizerKey":"key2-$code"}""")
+            }
             "mutate" -> {
                 if (!keyOk) return error("NOT_EDITOR", HttpStatusCode.Forbidden)
                 val m = PadelJson.decodeFromString(CloudMutation.serializer(), body)
@@ -97,8 +113,42 @@ class GameRepositoryTest {
     private val names = listOf("Anna", "Mikko", "Laura", "Jussi", "Sara", "Pekka", "Emma", "Olli")
     private val server = FakeServer()
     private var time = 10_000L
-    private fun repo(store: KeyValueStore = MemoryStore()) =
-        GameRepository(PadelApi("https://padel.test", server.engine), store, now = { time++ })
+    private fun repo(store: KeyValueStore = MemoryStore(), uid: String? = null) =
+        GameRepository(PadelApi("https://padel.test", server.engine), store, now = { time++ }).apply {
+            if (uid != null) {
+                auth = AuthTokens { it("tok-$uid") }
+                accountUid = uid
+            }
+        }
+
+    @Test
+    fun signedInGamesBelongToTheAccount() = runTest {
+        val g = repo(uid = "u1").create("Tuesday", defaultSettings(ModeId.Americano, 8), names)
+        assertEquals("u1", server.owners[g.code])
+        assertEquals("app", server.sources[g.code])
+        val guest = repo().create("Guest", defaultSettings(ModeId.Americano, 8), names)
+        assertNull(server.owners[guest.code])
+    }
+
+    @Test
+    fun accountGamesFollowTheUserToANewDevice() = runTest {
+        val phone = repo(uid = "u1")
+        val live = phone.create("Live", defaultSettings(ModeId.Americano, 8), names)
+        val done = phone.create("Done", defaultSettings(ModeId.Americano, 8), names)
+        phone.finish(done.code)
+        phone.sync(done.code)
+
+        val tablet = repo(uid = "u1")
+        assertEquals(2, tablet.syncAccount())
+        assertTrue(tablet.game(live.code)!!.canEdit)
+        assertFalse(tablet.game(done.code)!!.canEdit)
+        tablet.score(live.code, 0, 0, 15, null)
+        tablet.sync(live.code)
+        assertEquals(15, server.games.getValue(live.code).state.rounds[0].matches[0].scoreA)
+        assertEquals(0, tablet.syncAccount())
+
+        assertFailsWith<ApiException> { repo().syncAccount() }
+    }
 
     private suspend fun GameRepository.scoreRound(code: String) {
         val g = game(code)!!.game.state

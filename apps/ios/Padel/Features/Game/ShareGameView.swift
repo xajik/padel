@@ -73,6 +73,7 @@ struct ShareGameView: View {
             .navigationTitle("Share game")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .onAppear { Analytics.track(.openedShare, ["code_length": game.code.count]) }
         }
     }
 }

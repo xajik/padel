@@ -17,6 +17,7 @@ interface AuthState {
   user: AppUser | null;
   ready: boolean;
   signInWithGoogle: () => Promise<boolean>;
+  signInWithApple: () => Promise<boolean>;
   signOut: () => Promise<void>;
   /** Deletes the Google account's sign-in and, optionally, its games on this device. */
   deleteAccount: (options: { removeDeviceGames: boolean }) => Promise<boolean>;
@@ -108,23 +109,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const signInWithGoogle = useCallback(async () => {
+  const signIn = useCallback(async (method: "google" | "apple") => {
+    const label = method === "google" ? "Google" : "Apple";
     if (!isFirebaseConfigured) {
-      toast("Google sign-in is not available", {
+      toast(`${label} sign-in is not available`, {
         description: "You can keep playing as a guest. Your games are saved on this device.",
       });
       return false;
     }
     try {
-      const result = await (await loadFirebaseAuth()).signInWithGoogle();
+      const result = await (await loadFirebaseAuth()).signIn(method);
       if (result !== "signed-in") return false;
-      track("sign_in", { method: "google" });
+      track("Signed In", { method });
       return true;
     } catch {
-      toast.error("Couldn't sign in with Google", { description: "Please try again." });
+      toast.error(`Couldn't sign in with ${label}`, { description: "Please try again." });
       return false;
     }
   }, []);
+  const signInWithGoogle = useCallback(() => signIn("google"), [signIn]);
+  const signInWithApple = useCallback(() => signIn("apple"), [signIn]);
 
   const signOut = useCallback(async () => {
     if (!isFirebaseConfigured) return;
@@ -167,8 +171,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ user, ready, signInWithGoogle, signOut, deleteAccount }),
-    [user, ready, signInWithGoogle, signOut, deleteAccount],
+    () => ({ user, ready, signInWithGoogle, signInWithApple, signOut, deleteAccount }),
+    [user, ready, signInWithGoogle, signInWithApple, signOut, deleteAccount],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

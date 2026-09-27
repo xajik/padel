@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.americanoo.android.Analytics
 import app.americanoo.android.ui.components.Choice
 import app.americanoo.android.ui.components.PadelCard
 import app.americanoo.android.ui.components.PrimaryButton
@@ -163,6 +165,7 @@ fun ShareSheet(game: LocalGame, baseUrl: String, onDismiss: () -> Unit) {
     val clipboard = LocalClipboardManager.current
     val url = GameLinks.spectatorUrl(baseUrl, game.code)
     val qr = remember(url) { qrBitmap(url, 720) }
+    LaunchedEffect(Unit) { Analytics.track(Analytics.Event.OpenedShare, mapOf("code_length" to game.code.length)) }
 
     fun share(text: String) = context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text).putExtra(Intent.EXTRA_SUBJECT, game.game.name), "Share game"))
 

@@ -17,7 +17,7 @@ const AI_AND_SEARCH_BOTS = [
   "Applebot",
   "Applebot-Extended",
 ];
-const PRIVATE = ["/me", "/new", "/g/", "/join", "/api/private"];
+const PRIVATE = ["/me", "/new", "/g/", "/join", "/connect", "/oauth/", "/api/private"];
 
 export default function robots(): MetadataRoute.Robots {
   return {

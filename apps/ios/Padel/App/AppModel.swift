@@ -17,9 +17,11 @@ final class AppModel {
     static let baseURL = UserDefaults.standard.string(forKey: "baseURL") ?? "https://padel-americanoo.com"
 
     let repo: GameRepository
+    let account: AccountModel
     private(set) var games: [LocalGame] = []
     var path: [Route] = []
     var showJoin = false
+    var showAccount = false
     var joinPrefill: String?
     var banner: String?
 
@@ -37,6 +39,7 @@ final class AppModel {
             SharedStore.writeSnapshot(nil)
         }
         repo = GameRepository(baseUrl: baseURL, store: store)
+        account = AccountModel(repo: repo)
         games = repo.games.value as? [LocalGame] ?? []
         // Kotlin calls this on a coroutine thread: not main-actor isolated, so hop explicitly.
         watcher = repo.watch { @Sendable [weak self] list in
@@ -80,6 +83,8 @@ final class AppModel {
                 if let code = self.openCode { try? await self.repo.sync(code: code) }
                 // Everything else (queued offline edits, followed games) less often.
                 if tick % 8 == 0 { try? await self.repo.syncAll() }
+                // Games added to the account elsewhere (website, another phone, an assistant).
+                if tick % 75 == 0 { await self.account.syncAccount() }
                 tick += 1
                 try? await Task.sleep(for: .seconds(4))
             }
@@ -95,14 +100,16 @@ final class AppModel {
 
     func create(name: String, settings: PadelShared.Settings, names: [String], sides: [Side]?) async throws -> LocalGame {
         let g = try await repo.create(name: name, settings: settings, names: names, sides: sides)
+        Analytics.track(.createdGame, ["mode": settings.mode.wire(), "players": names.count, "courts": Int(settings.courts)])
         path = [.game(g.code)]
         return g
     }
 
     /// Join by code, pasted link or scanned QR. Returns an error message for the form.
-    func join(_ input: String) async -> String? {
+    func join(_ input: String, source: String = "code") async -> String? {
         do {
             let g = try await repo.join(input: input)
+            Analytics.track(.joinedGame, ["source": source])
             showJoin = false
             path = [.game(g.code)]
             return nil
@@ -115,6 +122,7 @@ final class AppModel {
     func joinScanned(_ text: String) async -> String? {
         do {
             let g = try await repo.joinScanned(text: text)
+            Analytics.track(.joinedGame, ["source": "scan"])
             showJoin = false
             path = [.game(g.code)]
             return nil
@@ -127,7 +135,7 @@ final class AppModel {
     func handle(url: URL) {
         guard GameLinks.shared.parse(input: url.absoluteString) != nil else { return }
         Task {
-            if let message = await join(url.absoluteString) { banner = message }
+            if let message = await join(url.absoluteString, source: "link") { banner = message }
         }
     }
 

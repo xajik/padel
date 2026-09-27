@@ -1,22 +1,73 @@
 {
-  "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "padel-mcp",
-  "main": "src/index.ts",
-  "compatibility_date": "2026-09-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "observability": { "enabled": true },
-  "durable_objects": {
-    "bindings": [{ "name": "GAMES", "class_name": "GameRoom" }]
-  },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom"] }],
-  "ratelimits": [
-    // create_game: per client IP (FR-8.4.1)
-    { "name": "CREATE_LIMITER", "namespace_id": "4101", "simple": { "limit": 10, "period": 60 } },
-    // every MCP / API request: per client IP
-    { "name": "REQUEST_LIMITER", "namespace_id": "4102", "simple": { "limit": 120, "period": 60 } }
-  ],
-  "vars": {
-    "SITE_URL": "https://padel-americanoo.com",
-    "ALLOWED_HOSTS": "padel-americanoo.com,www.padel-americanoo.com,padel-web.xajik0.workers.dev,padel-mcp.xajik0.workers.dev,localhost,127.0.0.1"
-  }
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "padel-mcp",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-09-01",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"observability": {
+		"enabled": true
+	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "GAMES",
+				"class_name": "GameRoom"
+			},
+			// Per-user game index ("My games") for signed-in accounts.
+			{
+				"name": "USERS",
+				"class_name": "UserGames"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"GameRoom"
+			]
+		},
+		{
+			"tag": "v2",
+			"new_sqlite_classes": [
+				"UserGames"
+			]
+		}
+	],
+	// OAuth grants, clients and tokens for the signed-in MCP endpoint /mcp/account (workers-oauth-provider).
+	// No id: Wrangler provisions the namespace on the first deploy.
+	"kv_namespaces": [
+		{
+			"binding": "OAUTH_KV",
+			"id": "6bd21a6101034aa495f3975b5ebea8ce"
+		}
+	],
+	"ratelimits": [
+		// create_game: per client IP (FR-8.4.1)
+		{
+			"name": "CREATE_LIMITER",
+			"namespace_id": "4101",
+			"simple": {
+				"limit": 10,
+				"period": 60
+			}
+		},
+		// every MCP / API request: per client IP
+		{
+			"name": "REQUEST_LIMITER",
+			"namespace_id": "4102",
+			"simple": {
+				"limit": 120,
+				"period": 60
+			}
+		}
+	],
+	"vars": {
+		"SITE_URL": "https://padel-americanoo.com",
+		// Firebase Auth ID tokens are checked against this project (src/auth.ts).
+		"FIREBASE_PROJECT_ID": "padel-americanoo",
+		"ALLOWED_HOSTS": "padel-americanoo.com,www.padel-americanoo.com,padel-web.xajik0.workers.dev,padel-mcp.xajik0.workers.dev,localhost,127.0.0.1"
+	}
 }

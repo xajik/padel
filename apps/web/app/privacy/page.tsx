@@ -45,10 +45,13 @@ export default function PrivacyPage() {
         only people with the organizer link can change them.
       </p>
 
-      <h3>Sign-in (website only, optional)</h3>
+      <h3>Sign-in (optional)</h3>
       <p>
-        If you sign in with Google on the website, we receive your name, email address and profile photo through Firebase
-        Authentication (Google) and use them only to show your profile and keep your games together. The apps have no accounts.
+        If you sign in with Google or Apple on the website, in the apps or from an AI assistant, we receive your name, email
+        address and profile photo (Apple may give us a private relay address instead) through Firebase Authentication (Google)
+        and use them only to show your profile and keep your games together across devices. We store an account ID and the
+        codes of the games in your account. Without signing in, the website and apps use an anonymous ID that holds no personal
+        data.
       </p>
 
       <h3>Usage analytics</h3>

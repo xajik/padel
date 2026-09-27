@@ -109,7 +109,7 @@ export function llmsTxt(): string {
     "",
     `- [Schedule API](${absoluteUrl("/api/v1/schedule?mode=americano&players=10&courts=2")}): JSON schedule for any valid setup. No auth. OpenAPI: ${absoluteUrl("/openapi.json")}`,
     `- [Modes API](${absoluteUrl("/api/v1/modes")})`,
-    `- [MCP server](${absoluteUrl("/docs/mcp")}): connect an AI assistant to create anonymous games, join them by code, enter scores and read standings. Endpoint: ${absoluteUrl("/mcp")} (streamable HTTP, no auth)`,
+    `- [MCP server](${absoluteUrl("/docs/mcp")}): connect an AI assistant to create anonymous games, join them by code, enter scores and read standings. Endpoint: ${absoluteUrl("/mcp")} (streamable HTTP, no auth). Signed in (OAuth with Google or Apple, games saved to the user's account): ${absoluteUrl("/mcp/account")}`,
     `- [Games REST API](${absoluteUrl("/openapi.json")}): POST /api/v1/games creates a live game and returns an organizerKey; send it as \`Authorization: Bearer <organizerKey>\` to /scores, /next and /finish.`,
     `- [Meta Muse setup](${absoluteUrl("/docs/muse")}): one prompt adds Padel Americano to Muse as a custom integration.`,
     "",

@@ -23,5 +23,6 @@ next-env.d.ts
 *.mobileprovision
 *.cer
 GoogleService-Info.plist
+Amplitude.plist
 google-services.json
 keystore.properties

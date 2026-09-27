@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
       { source: "/g/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }] },
       { source: "/new/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }] },
       { source: "/me/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }] },
+      { source: "/connect", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
     ];
   },
   async redirects() {
@@ -32,7 +33,7 @@ const nextConfig: NextConfig = {
       // The old workers.dev address: pages move to the domain; MCP, API and app-link files keep answering there
       // so connected assistants and API clients don't break.
       {
-        source: "/:path((?!mcp|api|\\.well-known).*)",
+        source: "/:path((?!mcp|api|oauth|\\.well-known).*)",
         has: [{ type: "host", value: "padel-web.xajik0.workers.dev" }],
         destination: "https://padel-americanoo.com/:path",
         permanent: true,

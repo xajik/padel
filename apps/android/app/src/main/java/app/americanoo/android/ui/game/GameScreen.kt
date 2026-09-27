@@ -56,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.americanoo.android.Analytics
 import app.americanoo.android.AppViewModel
 import app.americanoo.android.live.GameNotifications
 import app.americanoo.android.ui.components.PadelCard
@@ -78,6 +79,7 @@ import app.americanoo.android.ui.theme.TabularNums
 import app.americanoo.android.ui.theme.Tokens
 import app.americanoo.data.GameStatus
 import app.americanoo.data.LocalGame
+import app.americanoo.data.wire
 import app.americanoo.engine.AdvanceStatus
 import app.americanoo.engine.GameState
 import app.americanoo.engine.LeaderboardMode
@@ -146,7 +148,13 @@ fun GameScreen(model: AppViewModel, code: String, snackbar: SnackbarHostState, o
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
-        bottomBar = { if (game != null && game.canEdit && tab == GameTab.Round) ActionBar(game, onNext = { viewed = null; model.perform { model.repo.next(game.code) } }, onFinish = { confirmFinish = true }) },
+        bottomBar = { if (game != null && game.canEdit && tab == GameTab.Round) ActionBar(game, onNext = {
+            viewed = null
+            model.perform {
+                model.repo.next(game.code)
+                Analytics.track(Analytics.Event.StartedRound, mapOf("round" to game.game.state.current + 2))
+            }
+        }, onFinish = { confirmFinish = true }) },
     ) { padding ->
         if (game == null) {
             Box(Modifier.padding(padding).fillMaxWidth().padding(Space.s6), contentAlignment = Alignment.Center) {
@@ -204,7 +212,10 @@ fun GameScreen(model: AppViewModel, code: String, snackbar: SnackbarHostState, o
         scoring?.let { (round, match) ->
             ScorePadSheet(game, round, match, onDismiss = { scoring = null }) { a, b ->
                 scoring = null
-                model.perform { model.repo.score(game.code, round, match, a, b) }
+                model.perform {
+                    model.repo.score(game.code, round, match, a, b)
+                    if (a != null) Analytics.track(Analytics.Event.EnteredScore, mapOf("round" to round + 1))
+                }
             }
         }
         if (sharing) ShareSheet(game, model.repo.baseUrl) { sharing = false }
@@ -212,7 +223,7 @@ fun GameScreen(model: AppViewModel, code: String, snackbar: SnackbarHostState, o
             onDismissRequest = { confirmFinish = false },
             title = { Text("Finish the game?") },
             text = { Text("Results freeze for everyone following. You can reopen it later.") },
-            confirmButton = { TextButton(onClick = { confirmFinish = false; model.perform { model.repo.finish(game.code) } }) { Text("Finish", color = PadelTheme.colors.foreground) } },
+            confirmButton = { TextButton(onClick = { confirmFinish = false; model.perform { model.repo.finish(game.code); Analytics.track(Analytics.Event.FinishedGame, mapOf("rounds" to state.current + 1, "mode" to state.settings.mode.wire())) } }) { Text("Finish", color = PadelTheme.colors.foreground) } },
             dismissButton = { TextButton(onClick = { confirmFinish = false }) { Text("Cancel", color = PadelTheme.colors.mutedForeground) } },
         )
     }

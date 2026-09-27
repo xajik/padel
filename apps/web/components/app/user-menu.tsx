@@ -12,10 +12,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "./auth-provider";
+import { AppleMark } from "./apple-mark";
 import { GoogleMark } from "./google-mark";
 
 export function UserMenu() {
-  const { user, signInWithGoogle, signOut } = useAuth();
+  const { user, signInWithGoogle, signInWithApple, signOut } = useAuth();
   const signedIn = user?.isAnonymous === false;
   return (
     <DropdownMenu>
@@ -27,14 +28,20 @@ export function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel className="font-normal text-muted-foreground">
-          {signedIn ? `Signed in as ${user.displayName ?? "Google user"}.` : "Playing as a guest. Games are saved on this device."}
+          {signedIn ? `Signed in as ${user.displayName ?? "your account"}.` : "Playing as a guest. Games are saved on this device."}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {!signedIn && (
-          <DropdownMenuItem onSelect={() => void signInWithGoogle()} className="gap-2">
-            <GoogleMark className="size-4" />
-            Continue with Google
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuItem onSelect={() => void signInWithGoogle()} className="gap-2">
+              <GoogleMark className="size-4" />
+              Continue with Google
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => void signInWithApple()} className="gap-2">
+              <AppleMark className="size-4" />
+              Continue with Apple
+            </DropdownMenuItem>
+          </>
         )}
         <DropdownMenuItem asChild className="gap-2">
           <Link href="/me">

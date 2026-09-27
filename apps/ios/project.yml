@@ -22,6 +22,12 @@ packages:
   Firebase:
     url: https://github.com/firebase/firebase-ios-sdk
     from: "12.19.0"
+  Amplitude:
+    url: https://github.com/amplitude/Amplitude-Swift
+    from: "1.19.0"
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: "9.0.0"
 targets:
   Padel:
     type: application
@@ -37,6 +43,8 @@ targets:
       properties:
         # Universal Links: https://padel-americanoo.com/g/… opens the app (AASA served by apps/web).
         com.apple.developer.associated-domains: [applinks:padel-americanoo.com]
+        # Sign in with Apple (App Store guideline 4.8: offered next to Google sign-in).
+        com.apple.developer.applesignin: [Default]
     dependencies:
       - target: PadelWidgets
       # Apple Watch app, embedded under Watch/ and installed on the paired watch.
@@ -45,6 +53,12 @@ targets:
         product: FirebaseCore
       - package: Firebase
         product: FirebaseAnalytics
+      - package: Amplitude
+        product: AmplitudeSwift
+      - package: Firebase
+        product: FirebaseAuth
+      - package: GoogleSignIn
+        product: GoogleSignIn
     info:
       path: Padel/Info.plist
       properties:
@@ -88,6 +102,21 @@ targets:
           if [ "${OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED}" = "YES" ]; then exit 0; fi
           cd "$SRCROOT/../mobile-shared"
           ./gradlew :embedAndSignAppleFrameworkForXcode --console=plain
+    postBuildScripts:
+      # Google Sign-In returns to the app through its REVERSED_CLIENT_ID URL scheme. It comes from the
+      # gitignored GoogleService-Info.plist, so it is added to the built Info.plist (before signing).
+      - name: Google Sign-In URL scheme
+        basedOnDependencyAnalysis: false
+        script: |
+          SRC="$SRCROOT/Padel/GoogleService-Info.plist"
+          PLIST="$TARGET_BUILD_DIR/$INFOPLIST_PATH"
+          [ -f "$SRC" ] || exit 0
+          SCHEME=$(/usr/libexec/PlistBuddy -c "Print :REVERSED_CLIENT_ID" "$SRC" 2>/dev/null) || exit 0
+          /usr/libexec/PlistBuddy -c "Print :CFBundleURLTypes:1" "$PLIST" >/dev/null 2>&1 && exit 0
+          /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:1 dict" \
+            -c "Add :CFBundleURLTypes:1:CFBundleURLName string app.americanoo.google-sign-in" \
+            -c "Add :CFBundleURLTypes:1:CFBundleURLSchemes array" \
+            -c "Add :CFBundleURLTypes:1:CFBundleURLSchemes:0 string $SCHEME" "$PLIST"
   PadelWidgets:
     type: app-extension
     platform: iOS

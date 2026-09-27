@@ -12,6 +12,7 @@ import {
   GoogleAuthProvider,
   linkWithPopup,
   linkWithRedirect,
+  OAuthProvider,
   onAuthStateChanged,
   reauthenticateWithPopup,
   signInAnonymously,
@@ -20,6 +21,8 @@ import {
   signInWithRedirect,
   signOut as firebaseSignOut,
   type Auth,
+  type AuthCredential,
+  type AuthProvider,
   type User,
 } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
@@ -35,13 +38,46 @@ function errorCode(err: unknown): string | null {
   return err instanceof FirebaseError ? err.code : null;
 }
 
-/** The Google account is already linked to another Firebase user: switch to that user. */
+export type SignInMethod = "google" | "apple";
+
+function provider(method: SignInMethod): AuthProvider {
+  if (method === "google") return new GoogleAuthProvider();
+  const apple = new OAuthProvider("apple.com");
+  apple.addScope("email");
+  apple.addScope("name");
+  return apple;
+}
+
+function credentialFromError(err: FirebaseError): AuthCredential | null {
+  return GoogleAuthProvider.credentialFromError(err) ?? OAuthProvider.credentialFromError(err);
+}
+
+/**
+ * The Google/Apple account is already linked to another Firebase user: switch to that user and
+ * move the anonymous session's cloud games into it (FR-3.4).
+ */
 async function signInToExistingAccount(err: unknown): Promise<User | null> {
   if (errorCode(err) !== "auth/credential-already-in-use") return null;
-  const credential = GoogleAuthProvider.credentialFromError(err as FirebaseError);
+  const credential = credentialFromError(err as FirebaseError);
   if (!credential) return null;
-  // TODO(firebase): call the mergeAnonymousUser function once Firestore holds games (FR-3.4).
-  return (await signInWithCredential(auth(), credential)).user;
+  const anonymous = auth().currentUser?.isAnonymous ? auth().currentUser : null;
+  const fromIdToken = anonymous ? await anonymous.getIdToken().catch(() => null) : null;
+  const user = (await signInWithCredential(auth(), credential)).user;
+  if (fromIdToken) {
+    await fetch("/api/me/merge", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${await user.getIdToken()}` },
+      body: JSON.stringify({ fromIdToken }),
+    }).catch(() => null);
+  }
+  return user;
+}
+
+/** ID token of the current user (anonymous sessions too), for the game API. Waits for the session to restore. */
+export async function idToken(): Promise<string | null> {
+  const a = auth();
+  await a.authStateReady();
+  return a.currentUser ? a.currentUser.getIdToken() : null;
 }
 
 export function watchUser(onChange: (user: User | null) => void): () => void {
@@ -61,29 +97,29 @@ export async function startAnonymousSession(): Promise<boolean> {
   }
 }
 
-export type GoogleSignInResult = "signed-in" | "redirecting" | "cancelled";
+export type SignInResult = "signed-in" | "redirecting" | "cancelled";
 
-/** Google sign-in. An anonymous user is linked so the UID and its data are kept (FR-3.3). */
-export async function signInWithGoogle(): Promise<GoogleSignInResult> {
+/** Google or Apple sign-in. An anonymous user is linked so the UID and its data are kept (FR-3.3). */
+export async function signIn(method: SignInMethod): Promise<SignInResult> {
   const a = auth();
-  const provider = new GoogleAuthProvider();
+  const p = provider(method);
   const current = a.currentUser;
   try {
     if (current?.isAnonymous) {
       try {
-        await linkWithPopup(current, provider);
+        await linkWithPopup(current, p);
       } catch (err) {
         if (!(await signInToExistingAccount(err))) throw err;
       }
     } else {
-      await signInWithPopup(a, provider);
+      await signInWithPopup(a, p);
     }
     return "signed-in";
   } catch (err) {
     const code = errorCode(err);
     if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return "cancelled";
     if (code === "auth/popup-blocked") {
-      await (current?.isAnonymous ? linkWithRedirect(current, provider) : signInWithRedirect(a, provider));
+      await (current?.isAnonymous ? linkWithRedirect(current, p) : signInWithRedirect(a, p));
       return "redirecting";
     }
     throw err;
@@ -97,18 +133,22 @@ export async function signOut(): Promise<void> {
 export type DeleteAccountResult = "deleted" | "cancelled";
 
 /**
- * Deletes the signed-in Firebase user. Firebase asks for a recent sign-in first, so the user
- * confirms with Google again when their session is older than a few minutes.
+ * Deletes the signed-in Firebase user and its cloud data: the "My games" index and its rights on
+ * shared games (FR-3.7). Firebase asks for a recent sign-in first, so the user confirms with
+ * Google or Apple again when their session is older than a few minutes.
  */
 export async function deleteAccount(): Promise<DeleteAccountResult> {
   const user = auth().currentUser;
   if (!user || user.isAnonymous) return "cancelled";
+  const res = await fetch("/api/me", { method: "DELETE", headers: { Authorization: `Bearer ${await user.getIdToken()}` } });
+  if (!res.ok) throw new Error(`Account data deletion failed (${res.status}).`);
   try {
     await deleteUser(user);
   } catch (err) {
     if (errorCode(err) !== "auth/requires-recent-login") throw err;
     try {
-      await reauthenticateWithPopup(user, new GoogleAuthProvider());
+      const method: SignInMethod = user.providerData.some((p) => p.providerId === "apple.com") ? "apple" : "google";
+      await reauthenticateWithPopup(user, provider(method));
     } catch (reauthErr) {
       const code = errorCode(reauthErr);
       if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return "cancelled";

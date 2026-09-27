@@ -86,7 +86,7 @@ function LoadedGame({ game, source, cloudEditor, ops }: { game: StoredGame; sour
     setPad(null);
     try {
       const regenerated = await ops.score(round.index, matchIndex, a, b);
-      if (a !== null) track("score_entered", { round: round.index + 1 });
+      if (a !== null) track("Entered Score", { round: round.index + 1 });
       if (regenerated.length) {
         toast("Later rounds reshuffled", {
           description: `Round ${regenerated.map((i) => i + 1).join(", ")} now uses the updated standings.`,
@@ -102,7 +102,7 @@ function LoadedGame({ game, source, cloudEditor, ops }: { game: StoredGame; sour
       const next = await ops.next();
       setViewRound(next.state.current);
       setTab("round");
-      track("round_started", { round: next.state.current + 1 });
+      track("Started Round", { round: next.state.current + 1 });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       toast.error(errorMessage(e, "Could not start the next round."));
@@ -113,7 +113,7 @@ function LoadedGame({ game, source, cloudEditor, ops }: { game: StoredGame; sour
     try {
       await ops.finish();
       setTab("leaderboard");
-      track("game_finished", { rounds: state.current + 1, mode: state.settings.mode });
+      track("Finished Game", { rounds: state.current + 1, mode: state.settings.mode });
     } catch (e) {
       toast.error(errorMessage(e, "Could not finish the game."));
     }
@@ -124,7 +124,7 @@ function LoadedGame({ game, source, cloudEditor, ops }: { game: StoredGame; sour
     try {
       const code = await publishGame(game);
       await gameRepository().remove(game.code);
-      track("share_opened", { code_length: code.length });
+      track("Opened Share", { code_length: code.length });
       setShareOpen(false);
       router.replace(`/g/${code}`);
       toast("Game is live", { description: `Share code ${code} or its QR code. You can still enter scores here.` });

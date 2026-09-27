@@ -85,7 +85,7 @@ The web Worker binds to `padel-mcp` (service binding `MCP`) and serves it at `/m
 
 The app runs fully without credentials:
 - **Games** are stored on the device. Games created by AI assistants are stored in Durable Objects.
-- **Sign-in** is a guest identity. With the Firebase variables set, guests get a silent anonymous Firebase account and can link Google sign-in to it (same UID).
+- **Sign-in** is a guest identity. With the Firebase variables set, guests get a silent anonymous Firebase account and can link Google or Apple sign-in to it (same UID). The website, the iOS and Android apps and the signed-in MCP endpoint `/mcp/account` (OAuth) share one account: the game server checks Firebase ID tokens and keeps each account's games list.
 - **Analytics** log to the console.
 
 Supplying these switches on the real integrations (see `lib/config.ts` and docs/REQUIREMENTS.md §12):

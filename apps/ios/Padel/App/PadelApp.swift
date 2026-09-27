@@ -1,22 +1,21 @@
 import FirebaseCore
+import GoogleSignIn
 import SwiftUI
-
-final class AppDelegate: NSObject, UIApplicationDelegate {
-    func application(_ application: UIApplication,
-                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        // GoogleService-Info.plist is gitignored (public repo): builds without it (CI, forks) skip Firebase.
-        if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
-            FirebaseApp.configure()
-        }
-        return true
-    }
-}
 
 @main
 struct PadelApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) private var delegate
-    @State private var model = AppModel()
+    @State private var model: AppModel
     @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        // Before AppModel: its account model needs Firebase Auth.
+        // GoogleService-Info.plist is gitignored (public repo): builds without it (CI, forks) skip Firebase.
+        if FirebaseApp.app() == nil, Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
+            FirebaseApp.configure()
+        }
+        Analytics.start()
+        _model = State(initialValue: AppModel())
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -24,7 +23,10 @@ struct PadelApp: App {
                 .environment(model)
                 .tint(Palette.primary)
                 // americanoo://g/CODE?key=… (QR codes, widgets, Live Activity) and universal links.
-                .onOpenURL { model.handle(url: $0) }
+                .onOpenURL { url in
+                    if GIDSignIn.sharedInstance.handle(url) { return }
+                    model.handle(url: url)
+                }
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
                     if let url = activity.webpageURL { model.handle(url: url) }
                 }
@@ -51,6 +53,9 @@ struct RootView: View {
         }
         .sheet(isPresented: $model.showJoin) {
             JoinView(prefill: model.joinPrefill)
+        }
+        .sheet(isPresented: $model.showAccount) {
+            AccountView()
         }
         .overlay(alignment: .top) {
             if let banner = model.banner {

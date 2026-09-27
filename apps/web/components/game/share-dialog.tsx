@@ -33,7 +33,7 @@ export function ShareDialog({
 
   useEffect(() => {
     if (!open) return;
-    track("share_opened", { code_length: code.length });
+    track("Opened Share", { code_length: code.length });
     const u = `${window.location.origin}/g/${code}`;
     setUrl(u);
     void QRCode.toString(u, { type: "svg", margin: 1, color: { dark: "#0a0a0a", light: "#ffffff" } }).then(setQr);

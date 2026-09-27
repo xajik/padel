@@ -235,7 +235,10 @@ validate(config, players): ValidationError[]
 | FR-8.1.4 | **Human docs** live at `/docs/mcp`: what it does, the tool list, and copy-paste setup for:<br>• **Claude** (Settings → Connectors → *Add custom connector* → URL)<br>• **Claude Code** (`claude mcp add --transport http padel https://{domain}/mcp`)<br>• **ChatGPT** (custom connector / developer mode)<br>• **Cursor / VS Code** (`mcp.json` snippet)<br>The MCP server is also listed in `llms.txt` and the OpenAPI spec description. | P1 |
 | FR-8.1.5 | The server reports `serverInfo` with name `padel-americano`, a version, and **instructions** (a short system-level description: what the server does, that games are anonymous and shareable, and that the agent should always show the user the share link). | P1 |
 | FR-8.1.5a | **Meta Muse custom integration**: Muse builds integrations from a public MCP URL or OpenAPI document, running in Meta's cloud with bearer-token/API-key auth only (no OAuth). `/docs/muse` gives a one-message setup prompt. A REST game API (`/api/v1/games`, organizer key as `Authorization: Bearer`) is documented in `/openapi.json` as the non-MCP path. | P1 ✅ |
-| FR-8.1.6 | Optional **OAuth sign-in with Google** (Cloudflare `workers-oauth-provider` + Firebase). Games created by a signed-in agent land in the user's history, and `claim_player` becomes available. | P2 |
+| FR-8.1.6 | Optional **OAuth sign-in with Google** (Cloudflare `workers-oauth-provider` + Firebase). Games created by a signed-in agent land in the user's history, and `claim_player` becomes available. | P2 ✅ (`/mcp/account`; `claim_player` not yet) |
+
+> **Implementation note: accounts across web, apps and MCP.** The `padel-mcp` Worker verifies Firebase ID tokens itself (`src/auth.ts`, Google's securetoken JWKS, no Admin SDK). `Authorization: Bearer <idToken>` on the game API (`/api/games/*`, `/api/v1/games`) identifies the user: games they create are owned by their UID, the owner and `editorUids` (added when a signed-in user redeems an organizer key) can edit without a key, and a `UserGames` Durable Object per UID lists the account's games (`GET /api/me/games`). `POST /api/me/merge` folds an anonymous session's games into an existing account (FR-3.4); `DELETE /api/me` drops the list and the user's rights (FR-3.7). `POST /api/games/{code}/keys` issues a device its own organizer key for an account game.
+> - **MCP.** `/mcp` stays anonymous. `/mcp/account` requires OAuth (`workers-oauth-provider`, grants in `OAUTH_KV`): `/oauth/authorize` sends the browser to the website's `/connect`, where the user signs in with Google or Apple (not as a guest) and allows the client; `/oauth/callback` checks the ID token and completes the grant. Signed in, `create_game` saves to the account, write tools don't need `organizerKey`, and `list_my_games` returns the account's games.
 
 ### FR-8.2 Anonymous identity model
 
@@ -548,7 +551,7 @@ erDiagram
 ## 10. Mobile phase (M6) requirements: native SwiftUI + Compose
 
 - Feature parity with the web P0/P1 features, using the same Firestore schema and rules (no backend changes).
-- Native Google Sign-In (GoogleSignIn on iOS, Credential Manager on Android, both with Firebase Auth) with anonymous linking, the same as FR-3.3/3.4.
+- Native Google Sign-In (GoogleSignIn on iOS, Credential Manager on Android, both with Firebase Auth) with anonymous linking, the same as FR-3.3/3.4. ✅ Plus Sign in with Apple (App Store guideline 4.8) and in-app account deletion (guideline 5.1.1(v)); see docs/MOBILE.md "Sign-in".
 - A Kotlin Multiplatform engine port in `apps/mobile-shared/`, passing **100 %** of `packages/engine/fixtures` on JVM and iOS targets.
 - UI built natively per platform (SwiftUI, Compose) from generated design tokens (`packages/design/tokens.json` → Swift/Kotlin); same screens, layout and copy as the web, with native navigation, sheets and haptics.
 - Live Activity (iOS) / live-update notification (Android) for the current round; home-screen widgets.

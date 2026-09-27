@@ -34,13 +34,26 @@ export interface CloudGame {
   state: GameState;
   /** SHA-256 hex of organizer keys allowed to edit. The keys themselves are never stored. */
   keyHashes: string[];
+  /** Signed-in users (Firebase UIDs) who may edit besides the owner, e.g. after redeeming a key. */
+  editorUids?: string[];
 }
 
-export type PublicGame = Omit<CloudGame, "keyHashes">;
+export type PublicGame = Omit<CloudGame, "keyHashes" | "editorUids">;
 
 export function publicGame(g: CloudGame): PublicGame {
-  const { keyHashes: _omit, ...rest } = g;
+  const { keyHashes: _keys, editorUids: _editors, ...rest } = g;
   return rest;
+}
+
+/** Who is asking to edit: an organizer key (hashed), a verified Firebase UID, or both. */
+export interface Actor {
+  keyHash?: string;
+  uid?: string;
+}
+
+export function canEdit(g: CloudGame, a: Actor): boolean {
+  if (a.keyHash && g.keyHashes.includes(a.keyHash)) return true;
+  return !!a.uid && (g.ownerUid === a.uid || (g.editorUids ?? []).includes(a.uid));
 }
 
 export class ToolError extends Error {

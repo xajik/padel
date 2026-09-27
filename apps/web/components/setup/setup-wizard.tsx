@@ -98,7 +98,7 @@ export function SetupWizard() {
         state,
       };
       await gameRepository().create(game);
-      track("game_created", { mode: draft.mode, players: players.length, courts: draft.courts, scoring: draft.scoringType });
+      track("Created Game", { mode: draft.mode, players: players.length, courts: draft.courts, scoring: draft.scoringType });
       sessionStorage.removeItem(DRAFT_KEY);
       router.push(`/g/${game.code}`);
     } catch (e) {

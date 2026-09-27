@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { track } from "@/lib/analytics";
 import { isValidCode, normalizeCode } from "@/lib/games/code";
 
 export function JoinForm({ autoFocus = false }: { autoFocus?: boolean }) {
@@ -22,6 +23,7 @@ export function JoinForm({ autoFocus = false }: { autoFocus?: boolean }) {
           setError("Game codes have 6 letters and numbers, like K7Q2MX.");
           return;
         }
+        track("Joined Game", { source: "code" });
         router.push(`/g/${code}`);
       }}
     >

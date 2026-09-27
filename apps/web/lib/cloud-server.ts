@@ -16,7 +16,8 @@ export function mcpService(): Fetcher | null {
 export async function forwardToMcp(req: Request): Promise<Response> {
   const svc = mcpService();
   if (!svc) return Response.json({ error: { code: "UNAVAILABLE", message: "Cloud service not configured." } }, { status: 503 });
-  const res = await svc.fetch(new Request(req.url, req));
+  // Manual: redirects (OAuth /oauth/authorize → /connect) go back to the browser, not followed here.
+  const res = await svc.fetch(new Request(new Request(req.url, req), { redirect: "manual" }));
   // Re-wrap: in local dev the binding returns Miniflare's Response class, which Next.js rejects.
   return new Response(res.body as BodyInit | null, {
     status: res.status,

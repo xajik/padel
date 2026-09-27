@@ -54,7 +54,7 @@ export function useGame(code: string, initial: StoredGame | null = null, keyFrom
       const key = getOrganizerKey(code);
       const [game, editor] = await Promise.all([
         initial ? Promise.resolve(initial) : fetchCloudGame(code).catch(() => null),
-        key ? redeemKey(code, key).catch(() => false) : Promise.resolve(false),
+        redeemKey(code, key).catch(() => false),
       ]);
       if (!alive) return;
       if (key && !editor) setOrganizerKey(code, null);
@@ -100,9 +100,11 @@ export function useGame(code: string, initial: StoredGame | null = null, keyFrom
 
   const cloud = useCallback(
     async (m: CloudMutation) => {
-      const key = getOrganizerKey(code);
-      if (!key) throw new CloudError("NOT_EDITOR", "Open the organizer link to edit this game.");
-      const res = await mutateCloud(code, key, m);
+      // No key: the signed-in user may still own or edit the game (the server decides).
+      const res = await mutateCloud(code, getOrganizerKey(code), m).catch((e: unknown) => {
+        if (e instanceof CloudError && e.code === "NOT_EDITOR") throw new CloudError("NOT_EDITOR", "Open the organizer link to edit this game.");
+        throw e;
+      });
       setLoad({ status: "ready", game: res.game, source: "cloud", cloudEditor: true });
       return res;
     },

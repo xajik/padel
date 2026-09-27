@@ -89,7 +89,10 @@ struct GameView: View {
         }
         .sheet(item: $scoring) { target in
             ScorePadView(game: game, round: target.round, match: target.match) { a, b in
-                model.perform { _ = try await model.repo.score(code: code, roundIndex: Int32(target.round), matchIndex: Int32(target.match), scoreA: a.map { KotlinInt(int: Int32($0)) }, scoreB: b.map { KotlinInt(int: Int32($0)) }) }
+                model.perform {
+                    _ = try await model.repo.score(code: code, roundIndex: Int32(target.round), matchIndex: Int32(target.match), scoreA: a.map { KotlinInt(int: Int32($0)) }, scoreB: b.map { KotlinInt(int: Int32($0)) })
+                    if a != nil { Analytics.track(.enteredScore, ["round": target.round + 1]) }
+                }
             }
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
@@ -99,7 +102,12 @@ struct GameView: View {
                 .presentationDetents([.large])
         }
         .confirmationDialog("Finish the game?", isPresented: $confirmFinish, titleVisibility: .visible) {
-            Button("Finish and show the podium") { model.perform { try await model.repo.finish(code: code) } }
+            Button("Finish and show the podium") {
+                model.perform {
+                    try await model.repo.finish(code: code)
+                    Analytics.track(.finishedGame, ["rounds": Int(game.game.state.current) + 1, "mode": game.game.state.settings.mode.wire()])
+                }
+            }
         } message: {
             Text("Results freeze for everyone following. You can reopen it later.")
         }
@@ -187,7 +195,10 @@ struct GameView: View {
                 case .ready:
                     Button("Start round \(Int(game.game.state.current) + 2)") {
                         viewedRound = nil
-                        model.perform { try await model.repo.next(code: code) }
+                        model.perform {
+                            try await model.repo.next(code: code)
+                            Analytics.track(.startedRound, ["round": Int(game.game.state.current) + 2])
+                        }
                     }
                     .buttonStyle(PrimaryButtonStyle())
                     .accessibilityIdentifier("next-round")

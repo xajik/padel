@@ -53,7 +53,7 @@ Real apps with demo games (`make ios-screenshots`, `make watch-screenshots`, `ma
 | Deploy | `make deploy` | check → deploy MCP → deploy web → production smoke + MCP e2e |
 | | `make deploy-mcp` / `make deploy-web` / `make deploy-fast` | Partial or unchecked deploys |
 | Release | `make release TAG=v0.11.0` | Clean tree required; bump the mobile app versions, deploy, then tag and push |
-| | `make tag TAG=v0.11.0` · `make version` | Same without deploying · show the current mobile version and build |
+| | `make tag TAG=v1.2.0` · `make version` | Same without deploying · show the current mobile version and build |
 | Operate | `make logs-web` · `make logs-mcp` · `make versions` | Live logs and deployment history |
 | | `make rollback-web` · `make rollback-mcp` | Roll back to the previous version |
 | | `make secret-web NAME=…` · `make secret-mcp NAME=…` | Set Worker secrets |

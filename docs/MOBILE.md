@@ -51,7 +51,9 @@ iOS simulator builds are arm64 only: the Kotlin framework has no x86_64 simulato
 ## Versions
 
 Every tag bumps all four apps (iPhone with widgets, Apple Watch, Android, Wear OS). The version is the
-tag without "v"; the build number goes up by one on every tag. Always tag with `make tag TAG=vX.Y.Z` (or
+tag without "v" and without a `.0` patch, App Store style (`v1.1.0` → 1.1, `v1.1.2` → 1.1.2); the build
+number goes up by one on every tag, or is set with `BUILD=N` (e.g. to line up with App Store Connect).
+Versions start at 1.1 (build 5), above the App Store's earlier 1.0. Always tag with `make tag TAG=vX.Y.Z` (or
 `make release TAG=vX.Y.Z` to deploy as well), never `git tag` directly: it runs
 `scripts/bump-version.sh`, commits `chore(release): vX.Y.Z` and then tags that commit.
 

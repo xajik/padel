@@ -8,10 +8,14 @@ cd "$(dirname "$0")/.."
 tag="${1:?usage: scripts/bump-version.sh vX.Y.Z}"
 [[ "$tag" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]] || { echo "Tag must look like v1.2.3, got $tag" >&2; exit 1; }
 version="${tag#v}"
+# App Store style: v1.1.0 → "1.1", v1.1.2 → "1.1.2".
+version="${version%.0}"
 
 props=apps/mobile-version.properties
 current=$(sed -n 's/^version=//p' "$props")
-build=$(( $(sed -n 's/^build=//p' "$props") + 1 ))
+# BUILD=N sets the build number (e.g. to line up with App Store Connect); by default it goes up by one.
+build="${BUILD:-$(( $(sed -n 's/^build=//p' "$props") + 1 ))}"
+[[ "$build" =~ ^[0-9]+$ ]] || { echo "BUILD must be a number, got $build" >&2; exit 1; }
 
 highest=$(printf '%s\n%s\n' "$current" "$version" | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
 if [ "$version" = "$current" ] || [ "$highest" != "$version" ]; then

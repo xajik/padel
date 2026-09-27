@@ -244,7 +244,7 @@ smoke-prod: ## Smoke + MCP and REST e2e against production
 	node scripts/rest-e2e.mjs $(PROD_URL)
 
 .PHONY: release
-release: ## Bump mobile versions, check, deploy, then tag + push: make release TAG=v0.11.0
+release: ## Bump mobile versions, check, deploy, then tag + push: make release TAG=v1.2.0 [BUILD=N]
 	@test -n "$(TAG)" || (echo "Usage: make release TAG=vX.Y.Z" && exit 1)
 	@test -z "$$(git status --porcelain)" || (echo "Working tree not clean" && exit 1)
 	$(MAKE) version-bump TAG=$(TAG)
@@ -254,7 +254,7 @@ release: ## Bump mobile versions, check, deploy, then tag + push: make release T
 	git push origin $(TAG)
 
 .PHONY: tag
-tag: ## Bump mobile versions, commit, tag + push without deploying: make tag TAG=v0.11.0
+tag: ## Bump mobile versions, commit, tag + push without deploying: make tag TAG=v1.2.0 [BUILD=N]
 	@test -n "$(TAG)" || (echo "Usage: make tag TAG=vX.Y.Z" && exit 1)
 	@test -z "$$(git status --porcelain)" || (echo "Working tree not clean" && exit 1)
 	$(MAKE) version-bump TAG=$(TAG)
@@ -264,7 +264,7 @@ tag: ## Bump mobile versions, commit, tag + push without deploying: make tag TAG
 
 .PHONY: version-bump
 version-bump: ## Set mobile app version from TAG and build + 1, then commit (used by tag/release)
-	scripts/bump-version.sh $(TAG)
+	BUILD=$(BUILD) scripts/bump-version.sh $(TAG)
 	git commit -q -m "chore(release): $(TAG)" -- apps/mobile-version.properties apps/ios/project.yml
 
 .PHONY: version

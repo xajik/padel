@@ -2,6 +2,7 @@ import XCTest
 
 /// The watch flow against the deployed API (PADEL_BASE_URL overrides): open a live game, score a
 /// court (the other pair gets the rest of the points), start the next round and start a group again.
+@MainActor
 final class WatchFlowUITests: XCTestCase {
     static let base = ProcessInfo.processInfo.environment["PADEL_BASE_URL"] ?? "https://padel-americanoo.com"
 

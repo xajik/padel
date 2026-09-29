@@ -195,7 +195,7 @@ cleartext to the host machine only).
 |---|---|
 | `make ios-screenshots` | `store/ios/{iphone-6.9, iphone-6.5, ipad-13}/NN-*.png` (1320×2868, 1284×2778, 2064×2752) |
 | `make android-screenshots` | `store/android/{phone, tablet-7, tablet-10}/NN-*.png` (1080×1920, 1200×1920, 1600×2560) |
-| `make watch-screenshots` | `store/ios/{watch-series-11, watch-ultra-3}/NN-*.png` (416×496, 422×514; App Store Connect takes any one watch size): `01-round`, `02-score`, `03-next-round`, `04-start-again`, `05-group`. The clock shows the real time (watchOS simulators have no status bar override) |
+| `make watch-screenshots` | `store/ios/{watch-series-12, watch-ultra-4}/NN-*.png` (416×496, 422×514; App Store Connect takes any one watch size): `01-round`, `02-score`, `03-next-round`, `04-start-again`, `05-group`. The clock shows the real time (watchOS simulators have no status bar override) |
 | `make wear-screenshots` | `store/android/wear/NN-*.png` (454×454 round, Wear OS 5 emulator `Padel_Wear`): `01-round`, `02-score`, `03-next-round`, `04-start-again`, `05-group` |
 | `npm run app-icons -w @padel/design` | iOS App Icon 1024, `store/android/play-icon-512.png`, `store/android/feature-graphic.png` |
 

@@ -3,8 +3,8 @@ import XCTest
 /// The real user path on iOS: a screenshot showing only a game code is the newest photo; Join →
 /// From photo → pick it in the system picker → the game opens. scripts/e2e-local.sh adds the photo
 /// (simctl addmedia) and passes E2E_PHOTO_NAME, the game's name.
+@MainActor
 final class JoinFromPhotoUITests: XCTestCase {
-    @MainActor
     func testJoinsGameFromPhotoWithCode() throws {
         guard let name = ProcessInfo.processInfo.environment["E2E_PHOTO_NAME"] else { throw XCTSkip("Run through scripts/e2e-local.sh") }
         let app = XCUIApplication()

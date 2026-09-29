@@ -2,20 +2,23 @@ import XCTest
 
 /// App Store screenshots from real screens and real (demo) games.
 /// Runs only when asked: `make ios-screenshots` (TEST_RUNNER_STORE_SCREENSHOTS=1).
+@MainActor
 final class StoreScreenshots: XCTestCase {
     var app: XCUIApplication!
 
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         guard ProcessInfo.processInfo.environment["STORE_SCREENSHOTS"] == "1" else { throw XCTSkip("Store screenshots run via make ios-screenshots") }
-        continueAfterFailure = true
-        app = XCUIApplication()
-        app.launchArguments = ["-reset", "-demo", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"] + TestServer.appArguments
-        app.launch()
+        continueAfterFailure = false
+        await MainActor.run {
+            app = XCUIApplication()
+            app.launchArguments = ["-reset", "-demo", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"] + TestServer.appArguments
+            app.launch()
+        }
     }
 
     func testStoreScreenshots() throws {
         // Demo games register with the server first.
-        let live = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Tuesday Club Night'")).firstMatch
+        let live = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Tuesday Club Night' AND label CONTAINS 'Round 3'")).firstMatch
         XCTAssertTrue(live.waitForExistence(timeout: 60))
         sleep(2)
         snap("05-home")

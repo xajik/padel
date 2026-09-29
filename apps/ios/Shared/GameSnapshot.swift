@@ -2,8 +2,8 @@ import Foundation
 
 /// What widgets and the Live Activity show about a game. Written by the app into the App Group
 /// (the extension has no Kotlin runtime), so keep it small and plain.
-struct GameSnapshot: Codable, Hashable {
-    struct Court: Codable, Hashable {
+struct GameSnapshot: Codable, Hashable, Sendable {
+    struct Court: Codable, Hashable, Sendable {
         var court: Int
         var teamA: String
         var teamB: String
@@ -12,7 +12,7 @@ struct GameSnapshot: Codable, Hashable {
         var scored: Bool { scoreA != nil && scoreB != nil }
     }
 
-    struct Leader: Codable, Hashable {
+    struct Leader: Codable, Hashable, Sendable {
         var rank: Int
         var name: String
         var score: String

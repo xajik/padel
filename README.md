@@ -11,6 +11,8 @@ Fair padel Americano, Mexicano and 6 more social formats in 30 seconds: rotation
 
 Real apps with demo games (`make ios-screenshots`, `make watch-screenshots`, `make android-screenshots`,
 `make wear-screenshots`); all sizes for the stores are in [`store/`](store).
+Apple captures use iOS/watchOS 27. Run `make ios-recording` (requires ffmpeg) to recreate the
+[continuous iPhone app walkthrough](store/ios/app-flow.mp4).
 
 **iPhone**
 
@@ -22,7 +24,7 @@ Real apps with demo games (`make ios-screenshots`, `make watch-screenshots`, `ma
 
 **Apple Watch** and **Wear OS**: score the current round with the crown, start the next round, start a recent group again.
 
-<img src="store/ios/watch-series-11/01-round.png" width="120" alt="round"> <img src="store/ios/watch-series-11/02-score.png" width="120" alt="score"> <img src="store/ios/watch-series-11/03-next-round.png" width="120" alt="next round"> <img src="store/ios/watch-series-11/04-start-again.png" width="120" alt="start again">
+<img src="store/ios/watch-series-12/01-round.png" width="120" alt="round"> <img src="store/ios/watch-series-12/02-score.png" width="120" alt="score"> <img src="store/ios/watch-series-12/03-next-round.png" width="120" alt="next round"> <img src="store/ios/watch-series-12/04-start-again.png" width="120" alt="start again">
 
 <img src="store/android/wear/01-round.png" width="130" alt="round"> <img src="store/android/wear/02-score.png" width="130" alt="score"> <img src="store/android/wear/03-next-round.png" width="130" alt="next round"> <img src="store/android/wear/04-start-again.png" width="130" alt="start again">
 

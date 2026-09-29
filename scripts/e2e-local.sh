@@ -11,7 +11,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 LOCAL=http://localhost:3100
 ANDROID_LOCAL=http://10.0.2.2:3100
-IOS_SIM=${IOS_SIM:-iPhone 17 Pro}
+IOS_SIM=${IOS_SIM:-iPhone 18 Pro}
 ADB=${ANDROID_HOME:-$HOME/Library/Android/sdk}/platform-tools/adb
 
 curl -sf -o /dev/null "$LOCAL/" || { echo "Start the local stack first: make dev"; exit 1; }
@@ -28,7 +28,7 @@ step "1/5 Shared KMP repository ↔ local API"
 
 step "2/5 iOS unit, widget render and UI tests"
 (cd apps/ios && xcodegen generate --quiet)
-XC_ARGS=(-skip-testing:PadelUITests/StoreScreenshots -skip-testing:PadelUITests/CrossDeviceUITests -skip-testing:PadelUITests/JoinFromPhotoUITests); ios_test env
+XC_ARGS=(-skip-testing:PadelUITests/StoreScreenshots -skip-testing:PadelUITests/StoreFlowRecording -skip-testing:PadelUITests/CrossDeviceUITests -skip-testing:PadelUITests/JoinFromPhotoUITests); ios_test env
 
 step "3/5 Android flow and widget render tests"
 (cd apps/android && ./gradlew :app:connectedDebugAndroidTest --console=plain -q -Ppadel.baseUrl=$ANDROID_LOCAL \

@@ -21,11 +21,11 @@ GIT_SHA    := $(shell git rev-parse --short HEAD 2>/dev/null)
 # Target URL for smoke / e2e checks: `make smoke URL=https://...` (defaults to local dev).
 URL        ?= http://localhost:$(WEB_PORT)
 
-# Native apps (M6). IOS_SIM: any available simulator name, e.g. "iPhone 17 Pro".
+# Native apps (M6). IOS_SIM: any available simulator name, e.g. "iPhone 18 Pro".
 SHARED     := apps/mobile-shared
 ANDROID    := apps/android
 IOS        := apps/ios
-IOS_SIM    ?= iPhone 17 Pro
+IOS_SIM    ?= iPhone 18 Pro
 
 .DEFAULT_GOAL := help
 
@@ -174,6 +174,10 @@ ios-test: ## Build the iOS app and run its tests on IOS_SIM
 ios-screenshots: ## App Store screenshots (6.9", 6.5", iPad 13") into store/ios
 	scripts/ios-screenshots.sh
 
+.PHONY: ios-recording
+ios-recording: ## Record the iOS 27 app flow into store/ios/app-flow.mp4 (requires ffmpeg)
+	python3 scripts/ios-recording.py
+
 .PHONY: ios-ui-test
 ios-ui-test: ## iOS UI tests against the deployed API (create, score, join by link, web sync)
 	cd $(IOS) && xcodegen generate --quiet && xcodebuild test -project Padel.xcodeproj -scheme Padel \
@@ -184,7 +188,7 @@ android-screenshots: ## Play Store screenshots (phone, 7" and 10" tablet) into s
 	scripts/android-screenshots.sh
 
 .PHONY: watch-screenshots
-watch-screenshots: ## App Store Apple Watch screenshots (Series 11 46mm, Ultra 3) into store/ios
+watch-screenshots: ## App Store Apple Watch screenshots (Series 12 46mm, Ultra 4) into store/ios
 	scripts/watch-screenshots.sh
 
 .PHONY: wear-screenshots

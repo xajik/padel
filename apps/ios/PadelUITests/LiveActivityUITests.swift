@@ -1,6 +1,7 @@
 import XCTest
 
 /// Starts the Live Activity from the game menu and checks it on the Home Screen / Dynamic Island.
+@MainActor
 final class LiveActivityUITests: XCTestCase {
     func testFollowOnLockScreenShowsLiveActivity() throws {
         let app = XCUIApplication()
@@ -37,5 +38,17 @@ final class LiveActivityUITests: XCTestCase {
         expanded.name = "live-activity-expanded"
         expanded.lifetime = .keepAlways
         add(expanded)
+
+        // Exercise update and end as well as start: these cross ActivityKit's async boundary.
+        app.activate()
+        app.descendants(matching: .any)["court-2"].firstMatch.tap()
+        app.buttons["score-12"].tap()
+        app.buttons["game-menu"].tap()
+        let stop = app.buttons["Stop Live Activity"]
+        XCTAssertTrue(stop.waitForExistence(timeout: 5))
+        stop.tap()
+        sleep(2)
+        app.buttons["game-menu"].tap()
+        XCTAssertTrue(app.buttons["Follow on Lock Screen"].waitForExistence(timeout: 5))
     }
 }

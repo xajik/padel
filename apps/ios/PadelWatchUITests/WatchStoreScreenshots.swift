@@ -2,10 +2,11 @@ import XCTest
 
 /// App Store Apple Watch screenshots from the real app with the demo games.
 /// Runs only when asked: `make watch-screenshots` (TEST_RUNNER_STORE_SCREENSHOTS=1).
+@MainActor
 final class WatchStoreScreenshots: XCTestCase {
     func testStoreScreenshots() throws {
         guard ProcessInfo.processInfo.environment["STORE_SCREENSHOTS"] == "1" else { throw XCTSkip("Store screenshots run via make watch-screenshots") }
-        continueAfterFailure = true
+        continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["-reset", "-demo", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()

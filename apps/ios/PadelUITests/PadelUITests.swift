@@ -1,15 +1,18 @@
 import XCTest
 
 /// End-to-end on the simulator against the deployed web API (same backend as the web app).
+@MainActor
 final class PadelUITests: XCTestCase {
     static let base = TestServer.base
     var app: XCUIApplication!
 
-    override func setUp() {
+    override func setUp() async throws {
         continueAfterFailure = false
-        app = XCUIApplication()
-        app.launchArguments = ["-reset"] + TestServer.appArguments
-        app.launch()
+        await MainActor.run {
+            app = XCUIApplication()
+            app.launchArguments = ["-reset"] + TestServer.appArguments
+            app.launch()
+        }
     }
 
     /// Organizer flow: create on the phone, score a full round, start round 2, then check the web

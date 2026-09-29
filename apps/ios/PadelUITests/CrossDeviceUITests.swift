@@ -3,8 +3,8 @@ import XCTest
 /// iPhone's part of the cross-device scenario driven by scripts/e2e-local.sh:
 /// the script creates a game (web organizer), the iPhone scores court 1, Android scores court 2,
 /// then the iPhone must show Android's score. Skipped unless E2E_CODE / E2E_KEY / E2E_STEP are set.
+@MainActor
 final class CrossDeviceUITests: XCTestCase {
-    @MainActor
     func testCrossDeviceStep() throws {
         let env = ProcessInfo.processInfo.environment
         guard let code = env["E2E_CODE"], let key = env["E2E_KEY"], let step = env["E2E_STEP"] else {

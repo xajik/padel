@@ -3,8 +3,8 @@
 
 SHELL := /bin/bash
 
-SIM      ?= iPhone 17 Pro
-WATCH_SIM ?= Apple Watch Series 11 (46mm)
+SIM      ?= iPhone 18 Pro
+WATCH_SIM ?= Apple Watch Series 12 (46mm)
 TEAM     ?= 83S2462FEL
 BUNDLE   := app.americanoo.ios
 DD       := build/dd
@@ -63,7 +63,7 @@ test: project ## Unit + widget render tests (PadelTests)
 .PHONY: ui-test
 ui-test: project ## UI tests (PadelUITests; TEST=PadelUITests/PadelUITests for one class)
 	$(TEST_ENV) $(XCB) $(SIM_DEST) -only-testing:$(or $(TEST),PadelUITests) \
-		-skip-testing:PadelUITests/StoreScreenshots -skip-testing:PadelUITests/CrossDeviceUITests -quiet test
+		-skip-testing:PadelUITests/StoreScreenshots -skip-testing:PadelUITests/StoreFlowRecording -skip-testing:PadelUITests/CrossDeviceUITests -quiet test
 
 .PHONY: test-all
 test-all: test ui-test ## Unit and UI tests

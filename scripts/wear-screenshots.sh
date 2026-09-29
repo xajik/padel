@@ -52,7 +52,7 @@ shot 03-next-round
 "$ADB" shell input keyevent KEYCODE_BACK && sleep 2
 "$ADB" shell input swipe 227 380 227 120 300 && sleep 1.5
 shot 04-start-again
-"$ADB" shell input tap 227 350 && sleep 2      # Sunday Mexicano
+"$ADB" shell input tap 227 295 && sleep 2      # Sunday Mexicano
 shot 05-group
 
 "$ADB" shell settings put global auto_time 1

@@ -13,7 +13,7 @@ struct WatchHomeView: View {
                 ForEach(model.live, id: \.code) { g in
                     NavigationLink(value: WatchRoute.game(g.code)) {
                         VStack(alignment: .leading) {
-                            Text(g.game.name).lineLimit(1)
+                            Text(g.game.name).lineLimit(2)
                             Text("Round \(Int(g.game.state.current) + 1) · \(g.canEdit ? "Live" : "Watching")")
                                 .font(.footnote).foregroundStyle(.secondary)
                         }
@@ -24,7 +24,7 @@ struct WatchHomeView: View {
                         ForEach(Array(model.groups.enumerated()), id: \.offset) { i, group in
                             NavigationLink(value: WatchRoute.again(i)) {
                                 VStack(alignment: .leading) {
-                                    Text(group.name).lineLimit(1)
+                                    Text(group.name).lineLimit(2)
                                     Text("\(group.names.count) players · \(group.modeName)").font(.footnote).foregroundStyle(.secondary)
                                 }
                             }
@@ -244,14 +244,14 @@ private struct PointsPicker: View {
 
     var body: some View {
         VStack(spacing: 2) {
-            Text(label).font(.footnote).lineLimit(1)
+            Text(label).font(.footnote).lineLimit(2).minimumScaleFactor(0.8).multilineTextAlignment(.center)
             Picker(label, selection: $value) {
                 ForEach(range, id: \.self) { Text("\($0)").font(.title2.monospacedDigit()).tag($0) }
             }
             .pickerStyle(.wheel)
             .labelsHidden()
             .accessibilityIdentifier("score-picker")
-            Text(other(value)).font(.footnote).foregroundStyle(.secondary).lineLimit(1)
+            Text(other(value)).font(.footnote).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.7)
             Button("Save") { onSave(value) }.primaryButton().accessibilityIdentifier("save-score")
         }
         .id(label)

@@ -19,6 +19,7 @@ struct NewGameView: View {
     @State private var creating = false
     @State private var error: String?
     @FocusState private var focused: Int?
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     enum RoundsChoice: String, CaseIterable { case auto = "Auto", fixed = "Fixed", open = "Open" }
 
@@ -68,7 +69,8 @@ struct NewGameView: View {
     private var formatSection: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.s3) {
             SectionTitle("Format")
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: Tokens.Space.s2), GridItem(.flexible())], spacing: Tokens.Space.s2) {
+            // One column at accessibility text sizes, so every format name reads in full.
+            LazyVGrid(columns: typeSize.isAccessibilitySize ? [GridItem(.flexible())] : [GridItem(.flexible(), spacing: Tokens.Space.s2), GridItem(.flexible())], spacing: Tokens.Space.s2) {
                 ForEach(Engine.modes, id: \.name) { m in
                     let selected = m.id == mode
                     Button {
@@ -77,7 +79,7 @@ struct NewGameView: View {
                     } label: {
                         HStack(spacing: Tokens.Space.s2) {
                             m.icon.view(20)
-                            Text(m.name).font(.geist(Tokens.FontSize.sm, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
+                            Text(m.name).font(.geist(Tokens.FontSize.sm, weight: .semibold)).lineLimit(2).minimumScaleFactor(0.8)
                             Spacer(minLength: 0)
                         }
                         .padding(.horizontal, Tokens.Space.s3)
@@ -238,7 +240,7 @@ struct NewGameView: View {
                 Label(problem.message, systemImage: "exclamationmark.circle")
                     .font(.geist(Tokens.FontSize.sm))
                     .foregroundStyle(Palette.error)
-            } else if let e = GameSetup.shared.estimateFor(settings: settings, playerCount: Int32(names.count)) {
+            } else if !typeSize.isAccessibilitySize, let e = GameSetup.shared.estimateFor(settings: settings, playerCount: Int32(names.count)) {
                 Text(e.openEnded
                      ? "Open-ended · \(e.matches / max(e.rounds, 1)) matches per round · ~\(Engine.formatDuration(minutes: e.minutes / max(e.rounds, 1))) per round"
                      : "\(e.rounds) rounds · \(e.matches) matches · ~\(Engine.formatDuration(minutes: e.minutes))")

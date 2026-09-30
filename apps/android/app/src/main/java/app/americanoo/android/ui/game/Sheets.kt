@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -170,7 +172,8 @@ fun ShareSheet(game: LocalGame, baseUrl: String, onDismiss: () -> Unit) {
     fun share(text: String) = context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text).putExtra(Intent.EXTRA_SUBJECT, game.game.name), "Share game"))
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = PadelTheme.colors.background) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = Space.s4).navigationBarsPadding().padding(bottom = Space.s4), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Space.s4)) {
+        // Scrolls so every button stays reachable at large font sizes.
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Space.s4).navigationBarsPadding().padding(bottom = Space.s4), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Space.s4)) {
             Text("Share game", style = MaterialTheme.typography.titleLarge)
             if (game.needsCreate) {
                 Text("This game is on this phone only. It gets a shareable code as soon as you're online.", style = MaterialTheme.typography.bodyMedium, color = PadelTheme.colors.mutedForeground, textAlign = TextAlign.Center)

@@ -10,6 +10,7 @@ struct GameView: View {
     @State private var scoring: ScoreTarget?
     @State private var sharing = false
     @State private var confirmFinish = false
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     enum Tab: String, CaseIterable { case round = "Round", leaderboard = "Leaderboard", rounds = "Rounds" }
 
@@ -115,7 +116,11 @@ struct GameView: View {
 
     private func header(_ game: LocalGame) -> some View {
         let state = game.game.state
-        return HStack(alignment: .top, spacing: Tokens.Space.s3) {
+        // Accessibility text sizes: the share button goes under the title so the name keeps the full width.
+        let layout = typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: Tokens.Space.s3))
+            : AnyLayout(HStackLayout(alignment: .top, spacing: Tokens.Space.s3))
+        return layout {
             VStack(alignment: .leading, spacing: Tokens.Space.s1) {
                 Text(game.game.name)
                     .font(.geist(Tokens.FontSize.xl2, weight: .bold, relativeTo: .title))
@@ -162,6 +167,8 @@ struct GameView: View {
                             .background(i == shown ? Palette.primary : Palette.background, in: RoundedRectangle(cornerRadius: Tokens.Radius.md))
                             .overlay(RoundedRectangle(cornerRadius: Tokens.Radius.md).stroke(Palette.border))
                             .buttonStyle(.plain)
+                            .accessibilityLabel("Round \(i + 1)")
+                            .accessibilityAddTraits(i == shown ? .isSelected : [])
                     }
                 }
             }
@@ -208,7 +215,7 @@ struct GameView: View {
                         .accessibilityIdentifier("finish-game")
                 default:
                     let left = game.game.state.rounds[Int(game.game.state.current)].matches.filter { !StandingsKt.isScored(m: $0) }.count
-                    Text("Enter \(left) more score\(left == 1 ? "" : "s") to start the next round")
+                    Text(typeSize.isAccessibilitySize ? "\(left) more score\(left == 1 ? "" : "s") to go" : "Enter \(left) more score\(left == 1 ? "" : "s") to start the next round")
                         .font(.geist(Tokens.FontSize.sm))
                         .foregroundStyle(Palette.mutedForeground)
                         .frame(maxWidth: .infinity, minHeight: Tokens.touchTarget)
@@ -280,18 +287,21 @@ struct CourtCard: View {
 struct LeaderboardView: View {
     let state: GameState
     let limit: Int?
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         let all = StandingsKt.computeStandings(state: state, uptoRound: Int32.max)
         let rows = limit.map { Array(all.prefix($0)) } ?? all
         let label = state.settings.leaderboard == .wins || state.settings.scoring.type == .off ? "Wins" : state.settings.leaderboard == .average ? "Avg" : "Pts"
+        // Accessibility text sizes: names need the room, so played and +/− are left out.
+        let details = limit == nil && !typeSize.isAccessibilitySize
         VStack(spacing: 0) {
             HStack {
-                Text("#").frame(width: 28, alignment: .leading)
-                Text("Player")
+                Text("#").column(28, .leading)
+                Text("Player").lineLimit(1)
                 Spacer()
-                if limit == nil { Text("P").frame(width: 28); Text("+/−").frame(width: 44) }
-                Text(label).frame(width: 52, alignment: .trailing)
+                if details { Text("P").column(28); Text("+/−").column(44) }
+                Text(label).column(52, .trailing)
             }
             .font(.geist(Tokens.FontSize.sm))
             .foregroundStyle(Palette.mutedForeground)
@@ -300,15 +310,15 @@ struct LeaderboardView: View {
             ForEach(rows, id: \.id) { s in
                 Divider().overlay(Palette.border)
                 HStack {
-                    Text("\(s.rank)").frame(width: 28, alignment: .leading).monospacedDigit()
-                    Text(s.name).font(.geist(Tokens.FontSize.base, weight: .semibold)).lineLimit(1)
+                    Text("\(s.rank)").monospacedDigit().column(28, .leading)
+                    Text(s.name).font(.geist(Tokens.FontSize.base, weight: .semibold)).lineLimit(typeSize.isAccessibilitySize ? 2 : 1)
                     movement(Int(s.movement))
                     Spacer()
-                    if limit == nil {
-                        Text("\(s.played)").frame(width: 28).foregroundStyle(Palette.mutedForeground)
-                        Text(s.diff > 0 ? "+\(s.diff)" : "\(s.diff)").frame(width: 44).foregroundStyle(Palette.mutedForeground)
+                    if details {
+                        Text("\(s.played)").column(28).foregroundStyle(Palette.mutedForeground)
+                        Text(s.diff > 0 ? "+\(s.diff)" : "\(s.diff)").column(44).foregroundStyle(Palette.mutedForeground)
                     }
-                    Text(formatScore(s.score)).font(.score(Tokens.FontSize.lg)).frame(width: 52, alignment: .trailing)
+                    Text(formatScore(s.score)).font(.score(Tokens.FontSize.lg)).column(52, .trailing)
                 }
                 .font(.geist(Tokens.FontSize.base).monospacedDigit())
                 .foregroundStyle(Palette.foreground)
@@ -325,13 +335,28 @@ struct LeaderboardView: View {
     @ViewBuilder
     private func movement(_ m: Int) -> some View {
         if m != 0 {
+            // Accessibility text sizes: the arrow alone, so the name keeps the room.
             Label("\(abs(m))", systemImage: m > 0 ? "arrow.up" : "arrow.down")
-                .labelStyle(.titleAndIcon)
+                .labelStyle(typeSize.isAccessibilitySize ? AnyLabelStyle(.iconOnly) : AnyLabelStyle(.titleAndIcon))
                 .font(.geist(Tokens.FontSize.xs, weight: .semibold))
                 .foregroundStyle(m > 0 ? Palette.up : Palette.down)
                 .accessibilityLabel(m > 0 ? "up \(m)" : "down \(-m)")
         }
     }
+}
+
+private extension View {
+    /// A leaderboard column: at least `width`, wider when large text needs it, never wrapped.
+    func column(_ width: CGFloat, _ alignment: Alignment = .center) -> some View {
+        fixedSize().frame(minWidth: width, alignment: alignment)
+    }
+}
+
+/// Type-erased label style, to switch styles by text size.
+private struct AnyLabelStyle: LabelStyle {
+    private let make: (Configuration) -> AnyView
+    init<S: LabelStyle>(_ style: S) { make = { AnyView(style.makeBody(configuration: $0)) } }
+    func makeBody(configuration: Configuration) -> some View { make(configuration) }
 }
 
 struct PodiumView: View {

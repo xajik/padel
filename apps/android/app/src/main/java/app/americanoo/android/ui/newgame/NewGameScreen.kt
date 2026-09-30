@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import app.americanoo.android.AppViewModel
 import app.americanoo.android.ui.components.Choice
 import app.americanoo.android.ui.components.PadelCard
+import app.americanoo.android.ui.components.isLargeFont
 import app.americanoo.android.ui.components.PrimaryButton
 import app.americanoo.android.ui.components.SecondaryButton
 import app.americanoo.android.ui.components.SectionTitle
@@ -68,6 +69,7 @@ private enum class RoundsChoice(val label: String) { Auto("Auto"), Fixed("Fixed"
 fun NewGameScreen(model: AppViewModel, onBack: () -> Unit) {
     var mode by remember { mutableStateOf(ModeId.Americano) }
     var name by remember { mutableStateOf("") }
+    val largeFont = isLargeFont()
     val names = remember { mutableStateListOf(*Array(8) { "" }) }
     val sides = remember { mutableStateListOf(*Array(8) { if (it % 2 == 0) Side.A else Side.B }) }
     var courts by remember { mutableIntStateOf(2) }
@@ -133,9 +135,11 @@ fun NewGameScreen(model: AppViewModel, onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(Space.s3),
         ) {
             item { SectionTitle("Format") }
-            items(MODES.chunked(2).size) { row ->
+            // One format per row at large font sizes, so names never break mid-word.
+            val formatRows = MODES.chunked(if (largeFont) 1 else 2)
+            items(formatRows.size) { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(Space.s2)) {
-                    MODES.chunked(2)[row].forEach { m ->
+                    formatRows[row].forEach { m ->
                         Choice(m.name, m.id == mode) {
                             mode = m.id
                             // Beat the Box / Up & Down need exactly 4 per court.
@@ -193,11 +197,14 @@ fun NewGameScreen(model: AppViewModel, onBack: () -> Unit) {
 
             item { SectionTitle("Scoring") }
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.s2)) {
-                    Choice("Total", scoring == ScoringType.Total) { scoring = ScoringType.Total }
-                    Choice("First to", scoring == ScoringType.FirstTo) { scoring = ScoringType.FirstTo }
-                    Choice("Timed", scoring == ScoringType.Timed) { scoring = ScoringType.Timed }
-                    Choice("Win/loss", scoring == ScoringType.Off) { scoring = ScoringType.Off }
+                // Two per row at large font sizes.
+                val options = listOf("Total" to ScoringType.Total, "First to" to ScoringType.FirstTo, "Timed" to ScoringType.Timed, "Win/loss" to ScoringType.Off)
+                Column(verticalArrangement = Arrangement.spacedBy(Space.s2)) {
+                    options.chunked(if (largeFont) 2 else 4).forEach { row ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(Space.s2)) {
+                            row.forEach { (label, type) -> Choice(label, scoring == type) { scoring = type } }
+                        }
+                    }
                 }
             }
             if (scoring == ScoringType.Total || scoring == ScoringType.FirstTo) {

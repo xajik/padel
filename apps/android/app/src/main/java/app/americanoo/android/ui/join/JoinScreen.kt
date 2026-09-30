@@ -4,6 +4,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -99,7 +101,7 @@ fun JoinScreen(model: AppViewModel, onBack: () -> Unit) {
             )
         },
     ) { padding ->
-        Column(Modifier.padding(padding).padding(Space.s4), verticalArrangement = Arrangement.spacedBy(Space.s4)) {
+        Column(Modifier.padding(padding).verticalScroll(rememberScrollState()).padding(Space.s4), verticalArrangement = Arrangement.spacedBy(Space.s4)) {
             Text("Enter the 6-character code from the organizer, or scan their QR code or game code.", style = MaterialTheme.typography.bodyLarge, color = PadelTheme.colors.mutedForeground)
             OutlinedTextField(
                 input, { input = it; error = null },

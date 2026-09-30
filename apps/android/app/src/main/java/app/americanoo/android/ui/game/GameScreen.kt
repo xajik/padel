@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -52,6 +53,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -65,6 +68,7 @@ import app.americanoo.android.ui.components.PrimaryButton
 import app.americanoo.android.ui.components.SectionTitle
 import app.americanoo.android.ui.components.StatusLine
 import app.americanoo.android.ui.components.formatScore
+import app.americanoo.android.ui.components.isLargeFont
 import app.americanoo.android.ui.components.modeName
 import app.americanoo.android.ui.components.name
 import app.americanoo.android.ui.components.team
@@ -124,7 +128,7 @@ fun GameScreen(model: AppViewModel, code: String, snackbar: SnackbarHostState, o
                 navigationIcon = { TextButton(onClick = onBack) { Text("Back", color = PadelTheme.colors.foreground) } },
                 actions = {
                     if (game != null) {
-                        TextButton(onClick = { menu = true }, modifier = Modifier.testTag("game-menu")) { Text("•••", color = PadelTheme.colors.foreground) }
+                        TextButton(onClick = { menu = true }, modifier = Modifier.testTag("game-menu")) { Text("•••", Modifier.clearAndSetSemantics { contentDescription = "More options" }, color = PadelTheme.colors.foreground) }
                         DropdownMenu(menu, { menu = false }) {
                             DropdownMenuItem(text = { Text("Share game") }, onClick = { menu = false; sharing = true })
                             if (game.game.status == GameStatus.Live) {
@@ -172,7 +176,7 @@ fun GameScreen(model: AppViewModel, code: String, snackbar: SnackbarHostState, o
             if (game.game.status == GameStatus.Done) item { Podium(state) }
             item {
                 SecondaryTabRow(selectedTabIndex = tab.ordinal, containerColor = PadelTheme.colors.background) {
-                    GameTab.entries.forEach { t -> Tab(t == tab, { tab = t }, Modifier.testTag("tab-${t.label}"), text = { Text(t.label) }) }
+                    GameTab.entries.forEach { t -> Tab(t == tab, { tab = t }, Modifier.testTag("tab-${t.label}"), text = { Text(t.label, maxLines = 1, overflow = TextOverflow.Ellipsis) }) }
                 }
             }
             when (tab) {
@@ -232,12 +236,14 @@ fun GameScreen(model: AppViewModel, code: String, snackbar: SnackbarHostState, o
 @Composable
 private fun Header(game: LocalGame, onShare: () -> Unit) {
     val state = game.game.state
-    Row(horizontalArrangement = Arrangement.spacedBy(Space.s3)) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.s1)) {
+    val title = @Composable { modifier: Modifier ->
+        Column(modifier, verticalArrangement = Arrangement.spacedBy(Space.s1)) {
             Text(game.game.name, style = MaterialTheme.typography.headlineMedium)
             Text("${state.modeName} · ${state.players.size} players · ${state.settings.courts} court${if (state.settings.courts == 1) "" else "s"}", style = MaterialTheme.typography.bodyLarge, color = PadelTheme.colors.mutedForeground)
             StatusLine(game)
         }
+    }
+    val share = @Composable {
         Surface(
             onClick = onShare,
             shape = RoundedCornerShape(Radius.md),
@@ -251,15 +257,36 @@ private fun Header(game: LocalGame, onShare: () -> Unit) {
             }
         }
     }
+    // Large font: the share button goes under the title so the name keeps the full width.
+    if (isLargeFont()) {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.s3)) { title(Modifier); share() }
+    } else {
+        Row(horizontalArrangement = Arrangement.spacedBy(Space.s3)) { title(Modifier.weight(1f)); share() }
+    }
 }
 
 @Composable
 private fun RoundPicker(state: GameState, shown: Int, onPick: (Int) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text("Round ${shown + 1}", style = MaterialTheme.typography.titleMedium)
-        state.plannedRounds?.let { Text(" of $it", style = MaterialTheme.typography.bodyLarge, color = PadelTheme.colors.mutedForeground) }
+    val label = @Composable {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Round ${shown + 1}", style = MaterialTheme.typography.titleMedium)
+            state.plannedRounds?.let { Text(" of $it", style = MaterialTheme.typography.bodyLarge, color = PadelTheme.colors.mutedForeground) }
+        }
+    }
+    // Large font: the round buttons go on their own line under the label.
+    val large = isLargeFont()
+    if (large) Column(verticalArrangement = Arrangement.spacedBy(Space.s2)) { label(); RoundButtons(state, shown, Modifier.fillMaxWidth(), onPick) }
+    else Row(verticalAlignment = Alignment.CenterVertically) {
+        label()
         Box(Modifier.weight(1f))
-        Row(Modifier.horizontalScroll(rememberScrollState(Int.MAX_VALUE)).width(220.dp), horizontalArrangement = Arrangement.spacedBy(Space.s2, Alignment.End)) {
+        RoundButtons(state, shown, Modifier.width(220.dp), onPick)
+    }
+}
+
+@Composable
+private fun RoundButtons(state: GameState, shown: Int, modifier: Modifier, onPick: (Int) -> Unit) {
+    run {
+        Row(modifier.horizontalScroll(rememberScrollState(Int.MAX_VALUE)), horizontalArrangement = Arrangement.spacedBy(Space.s2, Alignment.End)) {
             (0..state.current).forEach { i ->
                 val selected = i == shown
                 Surface(
@@ -334,13 +361,15 @@ fun Leaderboard(state: GameState, limit: Int?) {
         state.settings.leaderboard == LeaderboardMode.Average -> "Avg"
         else -> "Pts"
     }
+    // Large font: played and +/− are left out so names keep the room and numbers don't wrap.
+    val details = limit == null && !isLargeFont()
     Surface(shape = RoundedCornerShape(Radius.lg), color = PadelTheme.colors.surface, border = BorderStroke(1.dp, PadelTheme.colors.border), modifier = Modifier.fillMaxWidth()) {
         Column {
             Row(Modifier.padding(horizontal = Space.s4, vertical = Space.s3)) {
                 val muted = PadelTheme.colors.mutedForeground
-                Text("#", Modifier.width(28.dp), color = muted, style = MaterialTheme.typography.bodyMedium)
+                Text("#", Modifier.widthIn(min = 28.dp), color = muted, style = MaterialTheme.typography.bodyMedium)
                 Text("Player", Modifier.weight(1f), color = muted, style = MaterialTheme.typography.bodyMedium)
-                if (limit == null) {
+                if (details) {
                     Text("P", Modifier.width(28.dp), color = muted, style = MaterialTheme.typography.bodyMedium)
                     Text("+/−", Modifier.width(44.dp), color = muted, style = MaterialTheme.typography.bodyMedium)
                 }
@@ -349,7 +378,7 @@ fun Leaderboard(state: GameState, limit: Int?) {
             rows.forEach { s ->
                 HorizontalDivider(color = PadelTheme.colors.border)
                 Row(Modifier.heightIn(min = Tokens.touchTarget).padding(horizontal = Space.s4), verticalAlignment = Alignment.CenterVertically) {
-                    Text("${s.rank}", Modifier.width(28.dp), style = MaterialTheme.typography.bodyLarge.merge(TabularNums))
+                    Text("${s.rank}", Modifier.widthIn(min = 28.dp), style = MaterialTheme.typography.bodyLarge.merge(TabularNums))
                     Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.s2)) {
                         Text(s.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         // Colour only for rank movement, always with an arrow (PRD §3a).
@@ -359,7 +388,7 @@ fun Leaderboard(state: GameState, limit: Int?) {
                             color = if (s.movement > 0) StateColors.up else StateColors.down,
                         )
                     }
-                    if (limit == null) {
+                    if (details) {
                         Text("${s.played}", Modifier.width(28.dp), color = PadelTheme.colors.mutedForeground, style = MaterialTheme.typography.bodyLarge.merge(TabularNums))
                         Text(if (s.diff > 0) "+${s.diff}" else "${s.diff}", Modifier.width(44.dp), color = PadelTheme.colors.mutedForeground, style = MaterialTheme.typography.bodyLarge.merge(TabularNums))
                     }

@@ -1,5 +1,6 @@
 package app.americanoo.wear.ui
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
@@ -120,7 +121,7 @@ fun HomeScreen(live: List<LocalGame>, groups: List<RecentGroup>, onGame: (String
 /** A recent group's players and format, and the button that starts a new game with them. */
 @Composable
 fun StartAgainScreen(group: RecentGroup?, onStart: () -> Unit) {
-    if (group == null) return
+    if (group == null) return Missing("This group is no longer on your watch.")
     val list = rememberScalingLazyListState(initialCenterItemIndex = 0)
     ScreenScaffold(scrollState = list, edgeButton = { EdgeButton(onClick = onStart) { Text("Start", maxLines = 1, overflow = TextOverflow.Ellipsis) } }) { padding ->
         RoundList(list, padding) {
@@ -153,9 +154,9 @@ fun StartAgainScreen(group: RecentGroup?, onStart: () -> Unit) {
 /** The current round: one card per court; the bottom button starts the next round or finishes the game. */
 @Composable
 fun GameScreen(game: LocalGame?, onMatch: (round: Int, match: Int) -> Unit, onNext: () -> Unit, onFinish: () -> Unit) {
-    if (game == null) return
+    if (game == null) return Missing("This game is no longer on your watch.")
     val state = game.game.state
-    val round = state.rounds.getOrNull(state.current) ?: return
+    val round = state.rounds.getOrNull(state.current) ?: return Missing("This round isn't available.")
     val list = rememberScalingLazyListState(initialCenterItemIndex = 0)
     val status = advanceStatus(state)
     val live = game.game.status == GameStatus.Live && game.canEdit
@@ -240,7 +241,7 @@ fun GameScreen(game: LocalGame?, onMatch: (round: Int, match: Int) -> Unit, onNe
  */
 @Composable
 fun ScoreScreen(state: GameState?, round: Int, match: Int, onSave: (Int?, Int?) -> Unit) {
-    val m = state?.rounds?.getOrNull(round)?.matches?.getOrNull(match) ?: return
+    val m = state?.rounds?.getOrNull(round)?.matches?.getOrNull(match) ?: return Missing("This match isn't available any more.")
     val scoring = state.settings.scoring
     val total = scoring.points ?: 24
     val teamA = state.team(m.teamA)
@@ -307,7 +308,7 @@ private fun PointsPicker(label: String, max: Int, initial: Int, other: (Int) -> 
             Column(
                 Modifier
                     .fillMaxSize()
-                    .padding(top = maxHeight * 0.22f, bottom = maxHeight * 0.27f, start = maxWidth * 0.16f, end = maxWidth * 0.16f),
+                    .padding(top = maxHeight * 0.22f, bottom = maxHeight * 0.32f, start = maxWidth * 0.16f, end = maxWidth * 0.16f),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
@@ -327,8 +328,18 @@ private fun PointsPicker(label: String, max: Int, initial: Int, other: (Int) -> 
             EdgeButton(
                 onClick = { onDone(picker.selectedOptionIndex) },
                 modifier = Modifier.align(Alignment.BottomCenter),
-                buttonSize = EdgeButtonSize.ExtraSmall,
+                buttonSize = EdgeButtonSize.Small,
             ) { Text("Save", maxLines = 1, overflow = TextOverflow.Ellipsis) }
+        }
+    }
+}
+
+/** Shown instead of a blank screen when a game, round or group is gone (an old link, removed on the phone). */
+@Composable
+private fun Missing(message: String) {
+    ScreenScaffold { padding ->
+        Box(Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp), contentAlignment = Alignment.Center) {
+            Text(message, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

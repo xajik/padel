@@ -7,8 +7,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
-import android.widget.Toast
+import androidx.compose.runtime.remember
+import androidx.compose.ui.text.style.TextAlign
+import androidx.wear.compose.material3.AlertDialog
+import androidx.wear.compose.material3.AlertDialogDefaults
+import androidx.wear.compose.material3.Text
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.graphics.Color
 import androidx.wear.compose.material3.AppScaffold
@@ -32,16 +35,16 @@ import kotlinx.coroutines.launch
 fun WearApp(repo: GameRepository, onOpen: (String?) -> Unit) {
     val nav = rememberSwipeDismissableNavController()
     val games by repo.games.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var autoOpened by rememberSaveable { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
 
-    /** Runs an edit; engine errors (not an organizer, round incomplete) show as a toast. */
+    /** Runs an edit; engine errors (not an organizer, round incomplete) show in a dialog. */
     fun act(block: suspend CoroutineScope.() -> Unit) = scope.launch {
         try {
             block()
         } catch (e: EngineError) {
-            Toast.makeText(context, e.message, Toast.LENGTH_LONG).show()
+            error = e.message ?: "Something went wrong"
         }
     }
 
@@ -97,6 +100,12 @@ fun WearApp(repo: GameRepository, onOpen: (String?) -> Unit) {
                     }
                 }
             }
+            AlertDialog(
+                visible = error != null,
+                onDismissRequest = { error = null },
+                edgeButton = { AlertDialogDefaults.EdgeButton(onClick = { error = null }) },
+                title = { Text(error.orEmpty(), textAlign = TextAlign.Center) },
+            )
         }
     }
 }

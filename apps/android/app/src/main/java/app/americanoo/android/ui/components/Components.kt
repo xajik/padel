@@ -23,7 +23,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.americanoo.android.ui.theme.PadelIcon
@@ -137,9 +139,13 @@ fun RowScope.Choice(text: String, selected: Boolean, onClick: () -> Unit) {
         border = BorderStroke(1.dp, if (selected) PadelTheme.colors.primary else PadelTheme.colors.border),
         modifier = Modifier.weight(1f).heightIn(min = Tokens.touchTarget),
     ) {
-        Box(contentAlignment = Alignment.Center) { Text(text, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(horizontal = Space.s2)) }
+        Box(contentAlignment = Alignment.Center) { Text(text, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = Space.s2)) }
     }
 }
+
+/** The largest font sizes (150% and up), where side-by-side choices would break words mid-word. */
+@Composable
+fun isLargeFont() = LocalDensity.current.fontScale >= 1.5f
 
 @Composable
 fun Modifier.outlined() = this.border(1.dp, PadelTheme.colors.border, RoundedCornerShape(Radius.md))

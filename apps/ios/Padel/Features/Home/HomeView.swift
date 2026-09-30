@@ -97,28 +97,38 @@ struct HomeView: View {
 
 private struct GameRow: View {
     let game: LocalGame
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         let state = game.game.state
+        // Accessibility text sizes: the code moves under the text so words don't break mid-word.
+        let big = typeSize.isAccessibilitySize
         HStack(spacing: Tokens.Space.s3) {
-            state.mode.icon.view()
+            if !big { state.mode.icon.view() }
             VStack(alignment: .leading, spacing: Tokens.Space.s1) {
                 Text(game.game.name).font(.geist(Tokens.FontSize.base, weight: .semibold))
                 Text("\(state.mode.name) · \(state.players.count) players · \(game.game.status == .done ? "Finished" : state.roundLabel)")
                     .font(.geist(Tokens.FontSize.sm, relativeTo: .subheadline).monospacedDigit())
                     .foregroundStyle(Palette.mutedForeground)
                 StatusLine(game: game)
+                if big { code }
             }
             Spacer(minLength: 0)
-            Text(game.code)
-                .font(.custom(PadelFont.mono, size: Tokens.FontSize.sm, relativeTo: .caption))
-                .tracking(2)
-                .foregroundStyle(Palette.mutedForeground)
-            Image(systemName: "chevron.right").font(.footnote).foregroundStyle(Palette.mutedForeground)
+            if !big {
+                code
+                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(Palette.mutedForeground)
+            }
         }
         .foregroundStyle(Palette.foreground)
         .card()
         .contentShape(Rectangle())
+    }
+
+    private var code: some View {
+        Text(game.code)
+            .font(.custom(PadelFont.mono, size: Tokens.FontSize.sm, relativeTo: .caption))
+            .tracking(2)
+            .foregroundStyle(Palette.mutedForeground)
     }
 }
 

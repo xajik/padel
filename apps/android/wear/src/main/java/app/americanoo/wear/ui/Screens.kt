@@ -1,6 +1,7 @@
 package app.americanoo.wear.ui
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,32 +13,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
-import androidx.wear.compose.foundation.lazy.TransformingLazyColumnItemScope
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumnDefaults
+import androidx.wear.compose.foundation.lazy.ScalingLazyListScope
+import androidx.wear.compose.foundation.lazy.ScalingLazyListState
 import androidx.wear.compose.foundation.lazy.itemsIndexed
-import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
+import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material3.AlertDialog
 import androidx.wear.compose.material3.AlertDialogDefaults
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.ButtonDefaults
-import androidx.wear.compose.material3.CardDefaults
 import androidx.wear.compose.material3.EdgeButton
 import androidx.wear.compose.material3.EdgeButtonSize
 import androidx.wear.compose.material3.ListHeader
-import androidx.wear.compose.material3.ListHeaderDefaults
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
-import androidx.wear.compose.material3.SurfaceTransformation
 import androidx.wear.compose.material3.Text
-import androidx.wear.compose.material3.TextDefaults
 import androidx.wear.compose.material3.TitleCard
-import androidx.wear.compose.material3.lazy.TransformationSpec
-import androidx.wear.compose.material3.lazy.rememberTransformationSpec
-import androidx.wear.compose.material3.lazy.transformedHeight
 import app.americanoo.data.GameStatus
 import app.americanoo.data.LocalGame
 import app.americanoo.data.RecentGroup
@@ -52,20 +47,36 @@ private fun GameState.team(ids: List<String>) = teamName(players, ids)
 private fun Match.scoreText() = if (isScored(this)) "$scoreA–$scoreB" else "–"
 
 /**
- * List items shrink and fade as they near the top and bottom of a round screen, and keep the
- * minimum padding there, so nothing is cut off by the screen edge at any font size.
+ * Lists scale whole items (container and text together) down to half size as they near the top
+ * and bottom of a round screen, and keep 9% side margins, so text stays inside the circle at
+ * any font size instead of being cut off by the screen edge.
  */
-private fun TransformingLazyColumnItemScope.listItem(spec: TransformationSpec, minPadding: androidx.compose.ui.unit.Dp) =
-    Modifier.fillMaxWidth().transformedHeight(this, spec).minimumVerticalContentPadding(minPadding)
+@Composable
+private fun RoundList(state: ScalingLazyListState, padding: PaddingValues, content: ScalingLazyListScope.() -> Unit) =
+    BoxWithConstraints {
+        val side = maxWidth * 0.09f
+        ScalingLazyColumn(
+            Modifier.fillMaxSize(),
+            state = state,
+            contentPadding = PaddingValues(
+                start = side, end = side,
+                top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding(),
+            ),
+            scalingParams = ScalingLazyColumnDefaults.scalingParams(edgeScale = 0.5f, minTransitionArea = 0.45f, maxTransitionArea = 0.7f),
+            autoCentering = null,
+            content = content,
+        )
+    }
+
+private val fullWidth = Modifier.fillMaxWidth()
 
 @Composable
 fun HomeScreen(live: List<LocalGame>, groups: List<RecentGroup>, onGame: (String) -> Unit, onGroup: (Int) -> Unit) {
-    val list = rememberTransformingLazyColumnState()
-    val spec = rememberTransformationSpec()
+    val list = rememberScalingLazyListState(initialCenterItemIndex = 0)
     ScreenScaffold(scrollState = list) { padding ->
-        TransformingLazyColumn(state = list, contentPadding = padding) {
+        RoundList(list, padding) {
             item {
-                ListHeader(listItem(spec, ListHeaderDefaults.minimumTopListContentPadding), transformation = SurfaceTransformation(spec)) {
+                ListHeader(fullWidth) {
                     Text("Americanoo")
                 }
             }
@@ -73,24 +84,22 @@ fun HomeScreen(live: List<LocalGame>, groups: List<RecentGroup>, onGame: (String
                 val state = g.game.state
                 Button(
                     onClick = { onGame(g.code) },
-                    modifier = listItem(spec, ButtonDefaults.minimumVerticalListContentPadding),
-                    transformation = SurfaceTransformation(spec),
+                    modifier = fullWidth,
                     label = { Text(g.game.name, maxLines = 2, overflow = TextOverflow.Ellipsis) },
                     secondaryLabel = { Text("Round ${state.current + 1} · ${if (g.canEdit) "Live" else "Watching"}") },
                 )
             }
             if (groups.isNotEmpty()) {
                 item {
-                    ListHeader(listItem(spec, ListHeaderDefaults.minimumTopListContentPadding), transformation = SurfaceTransformation(spec)) {
+                    ListHeader(fullWidth) {
                         Text("Start again")
                     }
                 }
                 itemsIndexed(groups) { i, group ->
                     Button(
                         onClick = { onGroup(i) },
-                        modifier = listItem(spec, ButtonDefaults.minimumVerticalListContentPadding),
-                        transformation = SurfaceTransformation(spec),
-                        colors = ButtonDefaults.filledTonalButtonColors(),
+                        modifier = fullWidth,
+                            colors = ButtonDefaults.filledTonalButtonColors(),
                         label = { Text(group.name, maxLines = 2, overflow = TextOverflow.Ellipsis) },
                         secondaryLabel = { Text("${group.names.size} players · ${group.modeName}") },
                     )
@@ -99,7 +108,7 @@ fun HomeScreen(live: List<LocalGame>, groups: List<RecentGroup>, onGame: (String
             if (live.isEmpty() && groups.isEmpty()) item {
                 Text(
                     "Create a game on your phone or at padel-americanoo.com to score it here.",
-                    listItem(spec, TextDefaults.minimumBottomListContentPadding).padding(horizontal = 8.dp),
+                    fullWidth.padding(horizontal = 8.dp),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -112,12 +121,11 @@ fun HomeScreen(live: List<LocalGame>, groups: List<RecentGroup>, onGame: (String
 @Composable
 fun StartAgainScreen(group: RecentGroup?, onStart: () -> Unit) {
     if (group == null) return
-    val list = rememberTransformingLazyColumnState()
-    val spec = rememberTransformationSpec()
+    val list = rememberScalingLazyListState(initialCenterItemIndex = 0)
     ScreenScaffold(scrollState = list, edgeButton = { EdgeButton(onClick = onStart) { Text("Start", maxLines = 1, overflow = TextOverflow.Ellipsis) } }) { padding ->
-        TransformingLazyColumn(state = list, contentPadding = padding) {
+        RoundList(list, padding) {
             item {
-                ListHeader(listItem(spec, ListHeaderDefaults.minimumTopListContentPadding), transformation = SurfaceTransformation(spec)) {
+                ListHeader(fullWidth) {
                     Text(group.name, textAlign = TextAlign.Center)
                 }
             }
@@ -127,7 +135,7 @@ fun StartAgainScreen(group: RecentGroup?, onStart: () -> Unit) {
                     "${group.modeName} · $courts court${if (courts == 1) "" else "s"}",
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    modifier = listItem(spec, TextDefaults.minimumTopListContentPadding),
+                    modifier = fullWidth,
                 )
             }
             item {
@@ -135,7 +143,7 @@ fun StartAgainScreen(group: RecentGroup?, onStart: () -> Unit) {
                     group.names.joinToString(", "),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    modifier = listItem(spec, TextDefaults.minimumBottomListContentPadding).padding(top = 8.dp, start = 8.dp, end = 8.dp),
+                    modifier = fullWidth.padding(top = 8.dp, start = 8.dp, end = 8.dp),
                 )
             }
         }
@@ -148,12 +156,11 @@ fun GameScreen(game: LocalGame?, onMatch: (round: Int, match: Int) -> Unit, onNe
     if (game == null) return
     val state = game.game.state
     val round = state.rounds.getOrNull(state.current) ?: return
-    val list = rememberTransformingLazyColumnState()
+    val list = rememberScalingLazyListState(initialCenterItemIndex = 0)
     val status = advanceStatus(state)
     val live = game.game.status == GameStatus.Live && game.canEdit
     var confirmFinish by remember { mutableStateOf(false) }
     val left = round.matches.count { !isScored(it) }
-    val spec = rememberTransformationSpec()
 
     ScreenScaffold(
         scrollState = list,
@@ -174,9 +181,9 @@ fun GameScreen(game: LocalGame?, onMatch: (round: Int, match: Int) -> Unit, onNe
             }
         },
     ) { padding ->
-        TransformingLazyColumn(state = list, contentPadding = padding) {
+        RoundList(list, padding) {
             item {
-                ListHeader(listItem(spec, ListHeaderDefaults.minimumTopListContentPadding), transformation = SurfaceTransformation(spec)) {
+                ListHeader(fullWidth) {
                     Text("Round ${state.current + 1}" + (state.plannedRounds?.let { " of $it" } ?: ""), textAlign = TextAlign.Center)
                 }
             }
@@ -186,8 +193,7 @@ fun GameScreen(game: LocalGame?, onMatch: (round: Int, match: Int) -> Unit, onNe
                     enabled = live,
                     title = { Text("Court ${m.court}") },
                     time = { Text(m.scoreText()) },
-                    modifier = listItem(spec, CardDefaults.minimumVerticalListContentPadding),
-                    transformation = SurfaceTransformation(spec),
+                    modifier = fullWidth,
                 ) {
                     Text(state.team(m.teamA), maxLines = 2, overflow = TextOverflow.Ellipsis)
                     Text(state.team(m.teamB), maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -198,7 +204,7 @@ fun GameScreen(game: LocalGame?, onMatch: (round: Int, match: Int) -> Unit, onNe
                     "Sitting out: " + round.byes.joinToString(", ") { id -> state.players.firstOrNull { it.id == id }?.name ?: "?" },
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    modifier = listItem(spec, TextDefaults.minimumBottomListContentPadding).padding(horizontal = 8.dp),
+                    modifier = fullWidth.padding(horizontal = 8.dp),
                 )
             }
             if (!game.canEdit) item {
@@ -206,14 +212,14 @@ fun GameScreen(game: LocalGame?, onMatch: (round: Int, match: Int) -> Unit, onNe
                     "Watching: open the organizer link on your phone to score.",
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    modifier = listItem(spec, TextDefaults.minimumBottomListContentPadding).padding(horizontal = 8.dp),
+                    modifier = fullWidth.padding(horizontal = 8.dp),
                 )
             } else if (game.game.status == GameStatus.Done) item {
                 Text(
                     "Game finished",
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    modifier = listItem(spec, TextDefaults.minimumBottomListContentPadding),
+                    modifier = fullWidth,
                 )
             }
         }
@@ -265,20 +271,18 @@ fun ScoreScreen(state: GameState?, round: Int, match: Int, onSave: (Int?, Int?) 
 
 @Composable
 private fun Choices(title: String, options: List<Pair<String, () -> Unit>>) {
-    val list = rememberTransformingLazyColumnState()
-    val spec = rememberTransformationSpec()
+    val list = rememberScalingLazyListState(initialCenterItemIndex = 0)
     ScreenScaffold(scrollState = list) { padding ->
-        TransformingLazyColumn(state = list, contentPadding = padding) {
+        RoundList(list, padding) {
             item {
-                ListHeader(listItem(spec, ListHeaderDefaults.minimumTopListContentPadding), transformation = SurfaceTransformation(spec)) {
+                ListHeader(fullWidth) {
                     Text(title, textAlign = TextAlign.Center)
                 }
             }
             itemsIndexed(options) { _, (label, onClick) ->
                 Button(
                     onClick = onClick,
-                    modifier = listItem(spec, ButtonDefaults.minimumVerticalListContentPadding),
-                    transformation = SurfaceTransformation(spec),
+                    modifier = fullWidth,
                     label = { Text(label, maxLines = 3, overflow = TextOverflow.Ellipsis) },
                 )
             }
@@ -287,8 +291,9 @@ private fun Choices(title: String, options: List<Pair<String, () -> Unit>>) {
 }
 
 /**
- * A crown-driven number picker. Labels stay inside the round screen's safe area (well below the
- * time and above the curved Save button), so larger system fonts ellipsize instead of clipping.
+ * A crown-driven number picker. Labels sit where the round screen is still wide: the top label
+ * starts 22% down, where the circle spans 83% of the width, and 16% side insets keep both labels
+ * inside it with a margin, so larger system fonts ellipsize instead of clipping.
  */
 @Composable
 private fun PointsPicker(label: String, max: Int, initial: Int, other: (Int) -> String, onDone: (Int) -> Unit) {
@@ -297,15 +302,12 @@ private fun PointsPicker(label: String, max: Int, initial: Int, other: (Int) -> 
         initiallySelectedIndex = initial.coerceIn(0, max),
         shouldRepeatOptions = false,
     )
-    val screen = LocalConfiguration.current
-    val width = screen.screenWidthDp.dp
-    val height = screen.screenHeightDp.dp
     ScreenScaffold { _ ->
-        Box(Modifier.fillMaxSize()) {
+        BoxWithConstraints(Modifier.fillMaxSize()) {
             Column(
                 Modifier
                     .fillMaxSize()
-                    .padding(top = height * 0.16f, bottom = height * 0.25f, start = width * 0.14f, end = width * 0.14f),
+                    .padding(top = maxHeight * 0.22f, bottom = maxHeight * 0.27f, start = maxWidth * 0.16f, end = maxWidth * 0.16f),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)

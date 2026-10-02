@@ -14,6 +14,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -49,25 +55,47 @@ private fun Match.scoreText() = if (isScored(this)) "$scoreA–$scoreB" else "�
 
 /**
  * Lists scale whole items (container and text together) down to half size as they near the top
- * and bottom of a round screen, and keep 9% side margins, so text stays inside the circle at
- * any font size instead of being cut off by the screen edge.
+ * and bottom of a round screen, and keep 9% side margins. Tall items (long names at large font
+ * sizes) are only scaled once their centre-side edge nears the screen edge, so the list also fades
+ * to transparent over the top and bottom [EdgeFade] of the screen: whatever reaches the curved edge
+ * fades out instead of being cut off. Content padding keeps the first and last items clear of the
+ * fade when scrolled to either end.
  */
 @Composable
 private fun RoundList(state: ScalingLazyListState, padding: PaddingValues, content: ScalingLazyListScope.() -> Unit) =
     BoxWithConstraints {
         val side = maxWidth * 0.09f
+        val fade = maxHeight * EdgeFade
         ScalingLazyColumn(
-            Modifier.fillMaxSize(),
+            Modifier
+                .fillMaxSize()
+                .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+                .drawWithContent {
+                    drawContent()
+                    drawRect(
+                        Brush.verticalGradient(
+                            0f to Color.Transparent, EdgeClear to Color.Transparent, EdgeFade to Color.Black,
+                            1 - EdgeFade to Color.Black, 1 - EdgeClear to Color.Transparent, 1f to Color.Transparent,
+                        ),
+                        blendMode = BlendMode.DstIn,
+                    )
+                },
             state = state,
             contentPadding = PaddingValues(
                 start = side, end = side,
-                top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding(),
+                top = maxOf(padding.calculateTopPadding(), fade), bottom = maxOf(padding.calculateBottomPadding(), fade),
             ),
             scalingParams = ScalingLazyColumnDefaults.scalingParams(edgeScale = 0.5f, minTransitionArea = 0.45f, maxTransitionArea = 0.7f),
             autoCentering = null,
             content = content,
         )
     }
+
+/** Share of the screen height, at the top and at the bottom, over which lists fade out... */
+private const val EdgeFade = 0.15f
+
+/** ...and the outermost part of it, where the circle is narrowest, which is fully transparent. */
+private const val EdgeClear = 0.05f
 
 private val fullWidth = Modifier.fillMaxWidth()
 
@@ -87,7 +115,7 @@ fun HomeScreen(live: List<LocalGame>, groups: List<RecentGroup>, onGame: (String
                     onClick = { onGame(g.code) },
                     modifier = fullWidth,
                     label = { Text(g.game.name, maxLines = 2, overflow = TextOverflow.Ellipsis) },
-                    secondaryLabel = { Text("Round ${state.current + 1} · ${if (g.canEdit) "Live" else "Watching"}") },
+                    secondaryLabel = { Text("Round ${state.current + 1} · ${if (g.canEdit) "Live" else "Watching"}", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 )
             }
             if (groups.isNotEmpty()) {
@@ -100,9 +128,9 @@ fun HomeScreen(live: List<LocalGame>, groups: List<RecentGroup>, onGame: (String
                     Button(
                         onClick = { onGroup(i) },
                         modifier = fullWidth,
-                            colors = ButtonDefaults.filledTonalButtonColors(),
+                        colors = ButtonDefaults.filledTonalButtonColors(),
                         label = { Text(group.name, maxLines = 2, overflow = TextOverflow.Ellipsis) },
-                        secondaryLabel = { Text("${group.names.size} players · ${group.modeName}") },
+                        secondaryLabel = { Text("${group.names.size} players · ${group.modeName}", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     )
                 }
             }

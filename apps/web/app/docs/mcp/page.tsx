@@ -6,7 +6,7 @@ import { absoluteUrl } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Connect your AI assistant (MCP)",
   description:
-    "Let Claude, ChatGPT, Meta Muse, Cursor or any MCP client create padel Americano games, share the link, enter scores and read the leaderboard.",
+    "Let your agent create padel Americano games, share the link, enter scores and read the leaderboard.",
   alternates: { canonical: "/docs/mcp" },
 };
 

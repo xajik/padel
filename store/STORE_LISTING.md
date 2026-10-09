@@ -49,7 +49,7 @@ Run a fair padel Americano or Mexicano in 30 seconds. Free, no ads and no accoun
 padel,americano,mexicano,score,tournament,leaderboard,rotation,social,court,mixicano,round robin
 ```
 
-**Description**: use the shared description below.
+**Description**: use the App Store description below.
 
 **What's New** (first release)
 
@@ -65,11 +65,59 @@ First release: 8 game formats, live scores, sharing by QR code or link, offline 
 Free padel Americano & Mexicano scores: fair rotations, live leaderboard, no ads.
 ```
 
-**Full description**: use the shared description below.
+**Full description**: use the Google Play description below.
 
 **Graphics**: `store/android/play-icon-512.png`, `store/android/feature-graphic.png`.
 
-## Shared description (under 4000 chars)
+## App Store description (under 4000 chars)
+
+App Review rejected 1.0 (8) under 2.3.10 (Android references) and 5 (AI chatbot names in metadata,
+China storefront). Keep this text free of third-party platforms and brands (Android, Google, Google Play, Wear OS,
+any AI app, model or client); say "MCP" and "your agent". Screenshots, promotional text and What's New follow the same rule.
+
+```
+Americanoo keeps score for social padel. Enter the players, pick the courts and points, and get a fair schedule, live scores and a leaderboard in about 30 seconds.
+
+FREE AND ANONYMOUS
+• Free, with no ads, no in-app purchases and no subscriptions.
+• No account and no sign-up. Just open the app and start a game.
+• We never sell your data and don't track you across other apps.
+
+8 FORMATS
+• Americano: partners rotate every round and everyone collects the points their team scores.
+• Mexicano: after round one, players are grouped by standings so every match stays close.
+• Mixicano: Mexicano for mixed groups, one player from each side on every team.
+• Team Americano: fixed pairs play a round-robin against every other pair.
+• Team Mexicano: fixed pairs are matched against pairs with similar standings.
+• Beat the Box: groups of four play all three partner combinations, then the box winner moves up.
+• Up & Down: winners move up a court, losers move down, and partners split every round.
+• Team Up & Down: fixed pairs climb the courts.
+
+FAIR SCHEDULES
+The schedule is generated so everyone plays with and against as many different people as possible, with sit-outs shared out fairly. Score by total points, first to a target, by time, or not at all, and rank by points, wins or average.
+
+PLAY WITH FRIENDS
+• Share a game with a QR code, a 6-character code or a link.
+• Friends follow the schedule and leaderboard live in the app, or on the website without installing anything.
+• Only the organizer, and anyone they send the organizer link to, can enter scores.
+• Join a game by scanning its QR code, typing the code, or picking a photo or screenshot that shows it.
+
+ON COURT
+• Big score pad for quick entry between points.
+• Keeps working offline; changes sync when you're back online.
+• Follow the game on the Lock Screen and in the Dynamic Island with a Live Activity, and add a home screen widget.
+• Final podium when the game ends.
+
+RUN IT WITH YOUR AGENT
+Americanoo has a free MCP server. Connect it to your agent and ask it to set up a game; it builds the schedule, returns a share link and an organizer link, enters scores and reads the leaderboard. Open the link in the app to keep playing. Setup: padel-americanoo.com/docs/mcp
+
+OPTIONAL SIGN-IN
+Want your games on every device? Sign in from the account button to keep them in one place. It's optional: the app works without any account.
+
+Questions or ideas: support@padel-americanoo.com
+```
+
+## Google Play description (under 4000 chars)
 
 ```
 Americanoo keeps score for social padel. Enter the players, pick the courts and points, and get a fair schedule, live scores and a leaderboard in about 30 seconds.
@@ -106,7 +154,7 @@ ON COURT
 • Final podium when the game ends.
 
 RUN IT WITH YOUR AI ASSISTANT
-Americanoo has a free MCP server. Connect Claude, ChatGPT, Cursor or any MCP client and ask it to set up a game; it builds the schedule, returns a share link and an organizer link, enters scores and reads the leaderboard. Open the link in the app to keep playing. Setup: padel-americanoo.com/docs/mcp
+Americanoo has a free MCP server. Connect Claude, Cursor or any MCP client and ask it to set up a game; it builds the schedule, returns a share link and an organizer link, enters scores and reads the leaderboard. Open the link in the app to keep playing. Setup: padel-americanoo.com/docs/mcp
 
 OPTIONAL SIGN-IN ON THE WEB
 Want your games in one place? Sign in with Google on padel-americanoo.com to keep them under My games. It's optional: the apps work without any account.
@@ -207,6 +255,8 @@ Camera frames and picked photos are processed on the device only and are never u
 
 ```
 No account is needed. Tap New game, add 4+ player names and start. Optional sign-in with Apple or Google is under the account button (top right); it keeps games across devices and can be deleted there (Delete account). To test sharing, open the share menu for a QR code, code and link; the same game opens at https://padel-americanoo.com/g/<CODE>. Scanning a QR code needs the camera; a photo or screenshot of a code also works.
+
+The app has no generative AI functionality, and the metadata no longer references them. The separate MCP server is a web API on our website for any AI client; it is not part of this app.
 ```
 
 ## Not in this release

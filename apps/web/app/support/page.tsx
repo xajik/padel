@@ -62,10 +62,10 @@ const FAQ: { id: string; q: string; a: React.ReactNode; text: string }[] = [
   {
     id: "ai",
     q: "Can my AI assistant run the game?",
-    text: "Yes. Connect Claude, ChatGPT, Meta Muse or any MCP client and ask it to set up a game; it returns a share link and an organizer link.",
+    text: "Yes. Connect your agent to our MCP server and ask it to set up a game; it returns a share link and an organizer link.",
     a: (
       <>
-        Yes. Connect Claude, ChatGPT, Meta Muse or any MCP client and ask it to set up a game; it returns a share link and an
+        Yes. Connect your agent to our MCP server and ask it to set up a game; it returns a share link and an
         organizer link. See <Link href="/docs/mcp">Connect your AI assistant</Link>.
       </>
     ),

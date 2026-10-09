@@ -18,7 +18,7 @@ const FEATURES: { icon: IconName; title: string; body: string }[] = [
   { icon: "leaderboard", title: "Live leaderboard", body: "Standings update the moment a score is in, on every phone and on the web." },
   { icon: "share", title: "Join in seconds", body: "Scan the QR code, tap the link or type the 6-character code. No app needed to watch." },
   { icon: "timer", title: "Lock Screen and widgets", body: "Live Activity and Dynamic Island on iPhone, live notification on Android, home screen widgets on both." },
-  { icon: "agent", title: "Works with AI assistants", body: "Ask Claude, ChatGPT or Meta Muse to set up the game and share the link." },
+  { icon: "agent", title: "Works with AI assistants", body: "Connect your agent over MCP and ask it to set up the game and share the link." },
 ];
 
 const SHOTS = [

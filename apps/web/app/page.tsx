@@ -25,7 +25,7 @@ const FAQ = [
   },
   {
     q: "Can my AI assistant set up the game?",
-    a: "Yes. Connect Claude, ChatGPT or another MCP client to our server and say “set up an Americano for these 8 players on 2 courts”.",
+    a: "Yes. Connect your agent to our MCP server and say “set up an Americano for these 8 players on 2 courts”.",
   },
 ];
 
@@ -129,7 +129,7 @@ export default function HomePage() {
           <div>
             <h2 id="agents" className="text-xl font-semibold">Let your AI assistant run it</h2>
             <p className="mt-1 text-primary-foreground/70">
-              Connect Claude, ChatGPT, Meta Muse or Cursor to our MCP server. Your assistant creates the game, shares the link and enters scores.
+              Connect your agent to our MCP server. It creates the game, shares the link and enters scores.
             </p>
           </div>
           <Button asChild variant="secondary">

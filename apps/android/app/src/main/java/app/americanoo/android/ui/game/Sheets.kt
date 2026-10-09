@@ -23,6 +23,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -61,6 +63,7 @@ import app.americanoo.android.ui.theme.Space
 import app.americanoo.android.ui.theme.StateColors
 import app.americanoo.android.ui.theme.TabularNums
 import app.americanoo.data.GameLinks
+import app.americanoo.data.GameStatus
 import app.americanoo.data.LocalGame
 import app.americanoo.engine.ScoringType
 import com.google.zxing.BarcodeFormat
@@ -165,7 +168,11 @@ private fun Stepper(label: String, value: Int, onChange: (Int) -> Unit) {
 fun ShareSheet(game: LocalGame, baseUrl: String, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
-    val url = GameLinks.spectatorUrl(baseUrl, game.code)
+    // "Everyone can edit" shares the organizer link, so everyone who opens it can score and start the next rounds.
+    var everyoneCanEdit by remember { mutableStateOf(false) }
+    val organizerUrl = game.organizerKey?.takeIf { game.game.status == GameStatus.Live }?.let { GameLinks.organizerUrl(baseUrl, game.code, it) }
+    val sharesEditing = everyoneCanEdit && organizerUrl != null
+    val url = if (sharesEditing) organizerUrl!! else GameLinks.spectatorUrl(baseUrl, game.code)
     val qr = remember(url) { qrBitmap(url, 720) }
     LaunchedEffect(Unit) { Analytics.track(Analytics.Event.OpenedShare, mapOf("code_length" to game.code.length)) }
 
@@ -179,7 +186,22 @@ fun ShareSheet(game: LocalGame, baseUrl: String, onDismiss: () -> Unit) {
                 Text("This game is on this phone only. It gets a shareable code as soon as you're online.", style = MaterialTheme.typography.bodyMedium, color = PadelTheme.colors.mutedForeground, textAlign = TextAlign.Center)
                 return@Column
             }
-            Text("Anyone with the link can follow the scores live, in the app or on the web.", style = MaterialTheme.typography.bodyMedium, color = PadelTheme.colors.mutedForeground, textAlign = TextAlign.Center)
+            if (organizerUrl != null) {
+                PadelCard(padding = Space.s3) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Everyone can edit", style = MaterialTheme.typography.bodyLarge)
+                            Text("People with the link or QR code can enter scores and start the next rounds.", style = MaterialTheme.typography.bodyMedium, color = PadelTheme.colors.mutedForeground)
+                        }
+                        Switch(everyoneCanEdit, { everyoneCanEdit = it }, Modifier.testTag("share-everyone-can-edit"), colors = SwitchDefaults.colors(checkedTrackColor = PadelTheme.colors.primary))
+                    }
+                }
+            }
+            Text(
+                if (sharesEditing) "Anyone with the link can score this game, in the app or on the web. Share it only with your group."
+                else "Anyone with the link can follow the scores live, in the app or on the web.",
+                style = MaterialTheme.typography.bodyMedium, color = PadelTheme.colors.mutedForeground, textAlign = TextAlign.Center,
+            )
             Image(
                 qr.asImageBitmap(), contentDescription = "QR code for $url", filterQuality = FilterQuality.None,
                 modifier = Modifier.size(220.dp).background(Color.White, RoundedCornerShape(Radius.lg)).padding(Space.s3),
@@ -187,18 +209,10 @@ fun ShareSheet(game: LocalGame, baseUrl: String, onDismiss: () -> Unit) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Game code", style = MaterialTheme.typography.bodySmall, color = PadelTheme.colors.mutedForeground)
                 Text(game.code, fontFamily = GeistMono, fontWeight = FontWeight.SemiBold, fontSize = 30.sp, letterSpacing = 6.sp, modifier = Modifier.testTag("share-code"))
+                if (sharesEditing) Text("The code alone opens the game view only.", style = MaterialTheme.typography.bodySmall, color = PadelTheme.colors.mutedForeground)
             }
             PrimaryButton("Share link", { share(url) })
             SecondaryButton("Copy link", { clipboard.setText(AnnotatedString(url)) })
-            game.organizerKey?.let { key ->
-                PadelCard {
-                    Column(verticalArrangement = Arrangement.spacedBy(Space.s2)) {
-                        Text("Co-organizer link", style = MaterialTheme.typography.titleMedium)
-                        Text("Lets another phone or the web enter scores. Share it only with people you trust.", style = MaterialTheme.typography.bodyMedium, color = PadelTheme.colors.mutedForeground)
-                        SecondaryButton("Share organizer link", { share(GameLinks.organizerUrl(baseUrl, game.code, key)) }, icon = PadelIcon.Group)
-                    }
-                }
-            }
         }
     }
 }

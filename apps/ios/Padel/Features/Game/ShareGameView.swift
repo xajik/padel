@@ -8,11 +8,16 @@ struct ShareGameView: View {
     let game: LocalGame
     let baseURL: String
     @Environment(\.dismiss) private var dismiss
+    /// Shares the organizer link instead, so everyone who opens it can score and start the next rounds.
+    @State private var everyoneCanEdit = false
 
     private var spectatorURL: String { GameLinks.shared.spectatorUrl(baseUrl: baseURL, code: game.code) }
     private var organizerURL: String? {
         game.organizerKey.map { GameLinks.shared.organizerUrl(baseUrl: baseURL, code: game.code, key: $0) }
     }
+    private var canShareEditing: Bool { organizerURL != nil && game.game.status == .live }
+    private var sharesEditing: Bool { everyoneCanEdit && canShareEditing }
+    private var sharedURL: String { sharesEditing ? organizerURL! : spectatorURL }
 
     var body: some View {
         NavigationStack {
@@ -24,13 +29,28 @@ struct ShareGameView: View {
                             .foregroundStyle(Palette.mutedForeground)
                             .card()
                     } else {
-                        Text("Anyone with the link can follow the scores live, in the app or on the web.")
+                        if canShareEditing {
+                            Toggle(isOn: $everyoneCanEdit) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Everyone can edit").font(.geist(Tokens.FontSize.base))
+                                    Text("People with the link or QR code can enter scores and start the next rounds.")
+                                        .font(.geist(Tokens.FontSize.sm))
+                                        .foregroundStyle(Palette.mutedForeground)
+                                }
+                            }
+                            .tint(Palette.primary)
+                            .accessibilityIdentifier("share-everyone-can-edit")
+                            .card(padding: Tokens.Space.s3)
+                        }
+                        Text(sharesEditing
+                             ? "Anyone with the link can score this game, in the app or on the web. Share it only with your group."
+                             : "Anyone with the link can follow the scores live, in the app or on the web.")
                             .font(.geist(Tokens.FontSize.sm))
                             .foregroundStyle(Palette.mutedForeground)
                             .multilineTextAlignment(.center)
-                        QRCodeView(text: spectatorURL)
+                        QRCodeView(text: sharedURL)
                             .frame(width: 220, height: 220)
-                            .accessibilityLabel("QR code for \(spectatorURL)")
+                            .accessibilityLabel("QR code for \(sharedURL)")
                         VStack(spacing: Tokens.Space.s1) {
                             Text("Game code").font(.geist(Tokens.FontSize.xs)).foregroundStyle(Palette.mutedForeground)
                             Text(game.code)
@@ -38,31 +58,26 @@ struct ShareGameView: View {
                                 .tracking(6)
                                 .textSelection(.enabled)
                                 .accessibilityIdentifier("share-code")
+                            if sharesEditing {
+                                Text("The code alone opens the game view only.")
+                                    .font(.geist(Tokens.FontSize.xs))
+                                    .foregroundStyle(Palette.mutedForeground)
+                            }
                         }
-                        ShareLink(item: URL(string: spectatorURL)!, subject: Text(game.game.name), message: Text("Follow \(game.game.name) live")) {
+                        ShareLink(
+                            item: URL(string: sharedURL)!,
+                            subject: Text(game.game.name),
+                            message: Text(sharesEditing ? "Score \(game.game.name) with us" : "Follow \(game.game.name) live")
+                        ) {
                             Label("Share link", systemImage: "square.and.arrow.up")
                         }
                         .buttonStyle(PrimaryButtonStyle())
                         Button {
-                            UIPasteboard.general.string = spectatorURL
+                            UIPasteboard.general.string = sharedURL
                         } label: {
                             Label("Copy link", systemImage: "doc.on.doc")
                         }
                         .buttonStyle(SecondaryButtonStyle())
-
-                        if let organizerURL {
-                            VStack(alignment: .leading, spacing: Tokens.Space.s2) {
-                                Text("Co-organizer link").font(.geist(Tokens.FontSize.base, weight: .semibold))
-                                Text("Lets another phone or the web enter scores. Share it only with people you trust.")
-                                    .font(.geist(Tokens.FontSize.sm))
-                                    .foregroundStyle(Palette.mutedForeground)
-                                ShareLink(item: URL(string: organizerURL)!) {
-                                    Label("Share organizer link", systemImage: "key")
-                                }
-                                .buttonStyle(SecondaryButtonStyle())
-                            }
-                            .card()
-                        }
                     }
                 }
                 .foregroundStyle(Palette.foreground)

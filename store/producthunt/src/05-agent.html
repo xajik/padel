@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><style>
+.l { position: absolute; left: 72px; top: 64px; width: 440px; }
+h2 { margin: 22px 0 16px; }
+.tools { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 8px; }
+.tools span { font-family: "Geist Mono"; font-size: 13px; border: 1px solid var(--line); border-radius: 8px; padding: 5px 9px; color: #d4d4d4; }
+.ep { margin-top: 26px; font-family: "Geist Mono"; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 10px; }
+.ep i { width: 20px; height: 20px; }
+.chat { position: absolute; left: 580px; top: 50%; transform: translateY(-50%); width: 620px; border-radius: 22px; background: #141414; border: 1px solid #262626; padding: 28px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 40px 80px -20px rgba(0,0,0,.8); }
+.u { align-self: flex-end; max-width: 82%; background: #FAFAFA; color: var(--ink); border-radius: 18px 18px 4px 18px; padding: 13px 17px; font-size: 16.5px; line-height: 1.42; }
+.a { max-width: 92%; font-size: 16.5px; line-height: 1.5; color: #E5E5E5; }
+.a b { color: #fff; font-weight: 600; }
+.call { display: inline-flex; align-items: center; gap: 8px; font-family: "Geist Mono"; font-size: 13px; color: #A3A3A3; border: 1px solid #2e2e2e; border-radius: 8px; padding: 5px 10px; margin-bottom: 8px; }
+.call::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--up); }
+.link { font-family: "Geist Mono"; font-size: 14.5px; color: #fff; text-decoration: underline; text-decoration-color: #555; text-underline-offset: 3px; }
+.rows { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; font-size: 15px; color: #d4d4d4; margin-top: 6px; }
+</style></head><body class="dark">
+<div class="l">
+  <span class="kicker"><i data-i="agent" style="width:16px;height:16px"></i> MCP server</span>
+  <h2>Too busy playing? Ask your agent.</h2>
+  <p class="lede">A free remote MCP server. Your agent builds the schedule, shares the link, enters scores and reads the leaderboard.</p>
+  <div class="tools"><span>create_game</span><span>submit_score</span><span>get_standings</span><span>next_round</span><span>preview_schedule</span><span>explain_mode</span><span>+6</span></div>
+  <div class="ep"><i data-i="agent"></i>padel-americanoo.com/mcp</div>
+</div>
+<div class="chat">
+  <div class="u">Set up an Americano for Emma, Pekka, Olli, Sara, Anna, Laura, Mikko and Jussi. 2 courts, 24 points.</div>
+  <div class="a"><div class="call">create_game</div><br>Done: <b>Tuesday Club Night</b>, 7 rounds, everyone partners everyone once.
+    <div class="rows"><span>Players</span><span class="link">padel-americanoo.com/g/JRSFS2</span><span>Organizer</span><span>private link, kept for scoring</span></div></div>
+  <div class="u">Court 1: Emma &amp; Pekka 15, Olli &amp; Sara 9.</div>
+  <div class="a"><div class="call">submit_score</div><br>Saved. <b>Emma leads with 41</b>, Pekka and Sara share second on 37. Court 2 is still playing.</div>
+  <div class="u">Court 2 done: Anna &amp; Laura 13, Mikko &amp; Jussi 11. Next round?</div>
+  <div class="a"><div class="call">next_round</div><br><b>Round 4.</b> Court 1: Emma &amp; Sara vs Pekka &amp; Laura. Court 2: Olli &amp; Jussi vs Anna &amp; Mikko.</div>
+</div>
+<script src="icons.js"></script></body></html>

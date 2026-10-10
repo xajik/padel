@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><style>
+.l { position: absolute; left: 72px; top: 64px; width: 760px; }
+h2 { margin: 22px 0 14px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 30px; }
+.f { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 26px 1fr; gap: 4px 12px; background: var(--surface); }
+.f i { grid-row: span 2; width: 24px; height: 24px; }
+.f b { font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+.f span { font-size: 14px; color: var(--sub); line-height: 1.35; }
+.f.on { background: var(--ink); color: #fff; border-color: var(--ink); } .f.on span { color: #bdbdbd; }
+</style></head><body>
+<div class="l">
+  <span class="kicker"><i data-i="ball" style="width:16px;height:16px"></i> 8 social formats</span>
+  <h2>Pick a format. Tap Start.</h2>
+  <p class="lede">Smart defaults mean most groups never change a setting.</p>
+  <div class="grid">
+    <div class="f on"><i data-i="rotate"></i><b>Americano</b><span>Partners rotate every round</span></div>
+    <div class="f"><i data-i="ladder"></i><b>Mexicano</b><span>Matched by standings, every game close</span></div>
+    <div class="f"><i data-i="mixed"></i><b>Mixicano</b><span>Mexicano for mixed groups</span></div>
+    <div class="f"><i data-i="pair"></i><b>Team Americano</b><span>Fixed pairs, full round-robin</span></div>
+    <div class="f"><i data-i="pair"></i><b>Team Mexicano</b><span>Fixed pairs, matched by standings</span></div>
+    <div class="f"><i data-i="box"></i><b>Beat the Box</b><span>Boxes of four, winner moves up</span></div>
+    <div class="f"><i data-i="updown"></i><b>Up &amp; Down</b><span>Winners climb a court</span></div>
+    <div class="f"><i data-i="updown"></i><b>Team Up &amp; Down</b><span>Fixed pairs climb the courts</span></div>
+  </div>
+</div>
+<div class="phone" style="--ph:680px; left:900px; top:40px;"><img src="../../ios/iphone-6.9/07-new-game.png"></div>
+<script src="icons.js"></script></body></html>

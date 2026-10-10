@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><style>
+.l { position: absolute; left: 72px; top: 64px; width: 470px; }
+h2 { margin: 22px 0 16px; }
+.l .list { margin-top: 30px; }
+.browser { position: absolute; left: 800px; top: 318px; width: 420px; border-radius: 16px; background: #fff; color: var(--ink); overflow: hidden; box-shadow: 0 0 0 1px #2a2a2a, 0 40px 80px -20px rgba(0,0,0,.8); }
+.bar { height: 40px; background: #F5F5F5; display: flex; align-items: center; gap: 7px; padding: 0 14px; border-bottom: 1px solid #E5E5E5; }
+.bar i { width: 11px; height: 11px; border-radius: 50%; background: #D4D4D4; }
+.url { margin-left: 14px; flex: 1; background: #fff; border: 1px solid #E5E5E5; border-radius: 8px; height: 26px; font-size: 13px; display: flex; align-items: center; padding: 0 10px; color: #525252; }
+.pg { padding: 20px 22px 14px; }
+.pg h4 { font-size: 21px; letter-spacing: -.02em; }
+.pg p { font-size: 13px; color: #737373; margin: 4px 0 12px; display: flex; align-items: center; gap: 6px; }
+.pg table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.pg td { padding: 7.5px 4px; border-top: 1px solid #F0F0F0; }
+.pg td:first-child { color: #737373; width: 26px; } .pg td:last-child { text-align: right; font-weight: 600; }
+.u { color: var(--up); font-size: 12px; } .d { color: var(--down); font-size: 12px; }
+</style></head><body class="dark">
+<div class="l">
+  <span class="kicker"><span class="dot"></span> Live</span>
+  <h2>Score once. Everyone sees it.</h2>
+  <ul class="list">
+    <li><i data-i="leaderboard"></i><div><b>Every phone and browser, in seconds</b><span>iPhone, Android and the web share one live game.</span></div></li>
+    <li><i data-i="scoreboard"></i><div><b>Lock Screen and notifications</b><span>Live Activity and Dynamic Island on iPhone, a live notification on Android.</span></div></li>
+    <li><i data-i="court"></i><div><b>Bad signal at the club?</b><span>Scores queue offline and sync when you're back.</span></div></li>
+  </ul>
+</div>
+<div class="phone" style="--ph:620px; left:560px; top:70px; transform: rotate(-4deg)"><img src="../../ios/iphone-6.9/02-score-pad.png"></div>
+<div class="browser">
+  <div class="bar"><i></i><i></i><i></i><div class="url">padel-americanoo.com/g/JRSFS2</div></div>
+  <div class="pg">
+    <h4>Tuesday Club Night</h4>
+    <p><span class="dot"></span> Live · Round 3 of 7</p>
+    <table>
+      <tr><td>1</td><td>Emma</td><td>41</td></tr>
+      <tr><td>2</td><td>Pekka <span class="u">↑5</span></td><td>37</td></tr>
+      <tr><td>3</td><td>Sara <span class="u">↑2</span></td><td>37</td></tr>
+      <tr><td>4</td><td>Olli <span class="d">↓3</span></td><td>31</td></tr>
+      <tr><td>5</td><td>Mikko <span class="d">↓2</span></td><td>26</td></tr>
+      <tr><td>6</td><td>Jussi <span class="u">↑1</span></td><td>26</td></tr>
+    </table>
+  </div>
+</div>
+<script src="icons.js"></script></body></html>

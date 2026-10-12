@@ -80,7 +80,7 @@ Padel night, minus the whiteboard 🎾 Flash a QR code and the whole group plays
 |---|---|
 | Website | https://padel-americanoo.com |
 | App Store | add when live |
-| Google Play | add when live |
+| Google Play | https://play.google.com/store/apps/details?id=app.americanoo.android |
 | MCP docs (put in the maker comment) | https://padel-americanoo.com/docs/mcp |
 
 ### Gallery order and alt text

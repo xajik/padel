@@ -20,7 +20,7 @@ export const NATIVE_APP = {
   name: "Americanoo",
   storeName: "Americanoo: Padel Score",
   appStoreUrl: null as string | null,
-  playStoreUrl: null as string | null,
+  playStoreUrl: "https://play.google.com/store/apps/details?id=app.americanoo.android" as string | null,
 } as const;
 
 export const absoluteUrl = (path = "/") => `${SITE.url}${path.startsWith("/") ? path : `/${path}`}`;

@@ -72,7 +72,11 @@ export default function AppPage() {
               <Link href="/new">Try it on the web</Link>
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground">iPhone and iPad (iOS 17+) · Android 8+</p>
+          <p className="text-sm text-muted-foreground">
+            iPhone and iPad (iOS 17+) · Android 8+
+            {stores.length > 0 && !NATIVE_APP.appStoreUrl && " · iPhone app coming soon"}
+            {stores.length > 0 && !NATIVE_APP.playStoreUrl && " · Android app coming soon"}
+          </p>
         </div>
       </header>
 

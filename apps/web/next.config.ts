@@ -43,6 +43,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
+        // Firebase Auth's sign-in handler on our own domain (authDomain = padel-americanoo.com), so redirect
+        // sign-in keeps working where browsers block third-party storage (Safari, in-app OAuth windows).
+        { source: "/__/auth/:path*", destination: "https://padel-americanoo.firebaseapp.com/__/auth/:path*" },
+        { source: "/__/firebase/:path*", destination: "https://padel-americanoo.firebaseapp.com/__/firebase/:path*" },
         // Markdown mirrors via content negotiation (FR-7.4.2).
         {
           source: "/modes/:mode",

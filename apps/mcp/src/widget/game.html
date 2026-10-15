@@ -123,6 +123,8 @@
     else if (result.isError) { ui.error = errText(result); render(); }
   }
   function setView(v) {
+    if (v.kind === "games") { ui.games = v; ui.view = v; return render(); }
+    if (v.kind === "preview") { ui.view = v; ui.round = Math.min(Math.max(1, ui.round || 1), v.rounds.length); return render(); }
     const sameRoundShown = !ui.view || ui.round === null || ui.view.code !== v.code || ui.round === ui.view.currentRound;
     if (v.organizerKey) ui.key = v.organizerKey;
     if (!ui.view && v.focusTab) ui.tab = v.focusTab;
@@ -187,6 +189,14 @@
   function render() {
     const v = ui.view;
     if (!v) return;
+    if (v.kind === "games") return renderGames(v);
+    if (v.kind === "preview") {
+      app.innerHTML =
+        '<div class="head"><div><h1>' + esc(v.name) + '</h1><div class="sub">' + v.rounds.length + " rounds \u00b7 ~" + esc(v.duration) + '</div></div><span class="pill">Preview</span></div>' +
+        '<div style="height:12px"></div>' + roundHtml(v) +
+        '<div class="foot"><span class="muted">Not saved yet</span><a href="#" data-act="play">Start it in the app \u2197</a></div>';
+      return;
+    }
     const done = v.status === "done";
     const progress = done ? "Final" : "Round " + v.currentRound + (v.plannedRounds ? " of " + v.plannedRounds : "");
     app.innerHTML =
@@ -196,7 +206,19 @@
       tabBtn("round", "Rounds") + tabBtn("table", "Leaderboard") + "</div>" +
       (ui.tab === "round" ? roundHtml(v) : tableHtml(v)) +
       (ui.error ? '<div class="err">' + esc(ui.error) + "</div>" : "") +
+      (ui.games ? '<div class="foot" style="margin-top:10px"><a href="#" data-act="games">\u2039 My games</a><span></span></div>' : "") +
       '<div class="foot"><span class="muted">' + (v.canEdit ? "You can enter scores" : "Read-only") + '</span><a href="#" data-act="open">Open live board \u2197</a></div>';
+  }
+  function renderGames(v) {
+    app.innerHTML = '<div class="head"><div><h1>My games</h1><div class="sub">' + v.games.length + " game" + (v.games.length === 1 ? "" : "s") + "</div></div></div>" +
+      '<div style="height:12px"></div>' +
+      (v.games.length
+        ? '<div class="courts">' + v.games.map((g) =>
+            '<button class="court" data-act="pick" data-code="' + esc(g.code) + '" style="text-align:left;width:100%;font:inherit;color:inherit;cursor:pointer"' + (ui.busy ? " disabled" : "") + ">" +
+            '<div class="court-h"><span class="code">' + esc(g.code) + "</span><span>" + (g.status === "done" ? "Finished" : "Live") + "</span></div>" +
+            '<div class="names" style="font-weight:600">' + esc(g.name) + '</div><div class="sub">' + esc(g.modeName) + " \u00b7 round " + g.currentRound + (g.plannedRounds ? " of " + g.plannedRounds : "") + " \u00b7 " + (g.role === "owner" ? "yours" : "shared with you") + "</div></button>").join("") + "</div>"
+        : '<div class="empty-state">No games yet. Ask me to set one up.</div>') +
+      (ui.error ? '<div class="err">' + esc(ui.error) + "</div>" : "");
   }
   const tabBtn = (id, label) => '<button role="tab" data-tab="' + id + '" aria-selected="' + (ui.tab === id) + '">' + label + "</button>";
 
@@ -263,6 +285,15 @@
     if (act === "advance") run("next_round", {});
     if (act === "refresh") { ui.busy = true; render(); refresh().catch((x) => (ui.error = x.message)).finally(() => { ui.busy = false; render(); }); }
     if (act === "finish") say("Finish the padel game " + ui.view.code + " and show the final standings.");
+    if (act === "play") { e.preventDefault(); openLink(ui.view.playUrl); }
+    if (act === "games") { e.preventDefault(); ui.view = ui.games; ui.round = null; ui.tab = "round"; render(); }
+    if (act === "pick") {
+      ui.busy = true; ui.error = ""; render();
+      callTool("get_round", { code: t.dataset.code })
+        .then((res) => { const v = viewOf(res); if (v) { ui.round = null; delete v.focusRound; setView(v); } else if (res && res.isError) ui.error = errText(res); })
+        .catch((x) => (ui.error = x.message))
+        .finally(() => { ui.busy = false; render(); });
+    }
     if (act === "open") { e.preventDefault(); openLink(ui.view.spectatorUrl); }
   });
   app.addEventListener("input", (e) => {

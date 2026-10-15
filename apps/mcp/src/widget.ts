@@ -16,9 +16,6 @@ export function widgetToolMeta(invoking: string, invoked: string) {
   };
 }
 
-/** Tools the widget calls itself (score, next round, refresh). Visible to both the model and the widget. */
-export const widgetCallableMeta = { "openai/widgetAccessible": true, ui: { visibility: ["model", "app"] } };
-
 /**
  * The widget's data, sent in the tool result's `_meta` so the model never sees it.
  * `organizerKey` is included only when the caller already proved it, so the widget can score with it.
@@ -30,6 +27,7 @@ export function widgetView(g: PublicGame, siteUrl: string, access: { canEdit: bo
   const last = Math.min(state.rounds.length - 1, state.current + (fixed && g.status === "live" ? 1 : 0));
   return {
     v: 1,
+    kind: "game" as const,
     code: g.code,
     name: g.name,
     status: g.status,
@@ -47,3 +45,17 @@ export function widgetView(g: PublicGame, siteUrl: string, access: { canEdit: bo
 }
 
 export type WidgetView = ReturnType<typeof widgetView>;
+
+/** preview_schedule: the rounds of a schedule nobody has saved yet, with a link to start it in the app. */
+export function previewView(p: { modeName: string; rounds: unknown[]; duration: string; playUrl: string; scoring: { type: string; points?: number } }) {
+  return {
+    v: 1,
+    kind: "preview" as const,
+    name: `${p.modeName} schedule`,
+    modeName: p.modeName,
+    duration: p.duration,
+    playUrl: p.playUrl,
+    scoring: { type: p.scoring.type, points: p.scoring.points ?? null },
+    rounds: p.rounds,
+  };
+}

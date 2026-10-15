@@ -230,6 +230,12 @@ dry-run: ## Bundle both workers without deploying (size + config check)
 .PHONY: deploy
 deploy: check deploy-mcp deploy-web smoke-prod ## Check, deploy MCP then web, smoke-test production
 
+.PHONY: plugin-zip
+plugin-zip: ## Package the ChatGPT/Codex plugin for the OpenAI Plugins dashboard (dist/americanoo-plugin.zip)
+	@mkdir -p dist && rm -f dist/americanoo-plugin.zip
+	cd plugins/americanoo && zip -qr ../../dist/americanoo-plugin.zip . -x '.DS_Store' '*/.DS_Store'
+	@unzip -l dist/americanoo-plugin.zip
+
 .PHONY: deploy-mcp
 deploy-mcp: ## Deploy the MCP worker (must exist before web: service binding)
 	cd $(MCP) && $(WRANGLER) deploy --message "$(GIT_SHA)"

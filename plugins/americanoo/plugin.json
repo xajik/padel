@@ -3,31 +3,101 @@
   "name": "americanoo",
   "version": "1.0.0",
   "description": "Run social padel games (Americano, Mexicano and 6 more formats): create the game, enter scores, start rounds and follow the live leaderboard.",
-  "author": { "name": "Americanoo", "url": "https://padel-americanoo.com" },
+  "author": {
+    "name": "Americanoo",
+    "url": "https://padel-americanoo.com"
+  },
   "homepage": "https://padel-americanoo.com/docs/mcp",
   "license": "UNLICENSED",
-  "keywords": ["padel", "americano", "mexicano", "sports", "leaderboard"],
+  "keywords": [
+    "padel",
+    "americano",
+    "mexicano",
+    "sports",
+    "leaderboard"
+  ],
   "extensions": {
     "com.openai": {
       "interface": {
         "displayName": "Americanoo",
-        "shortDescription": "Padel Americano: rounds, scores and a live leaderboard",
+        "shortDescription": "Padel rounds, scores & table",
         "longDescription": "Set up a padel Americano, Mexicano or one of 6 other social formats in one message. Americanoo builds fair rotations, gives you a link the whole group can follow on any phone, browser or watch, and shows each round court by court with a live leaderboard. Enter scores and start the next round right from the chat. Free, no ads, no sign-up.",
         "developerName": "Americanoo",
         "category": "Lifestyle",
-        "capabilities": ["Read", "Write"],
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
         "websiteURL": "https://padel-americanoo.com",
         "privacyPolicyURL": "https://padel-americanoo.com/privacy",
         "termsOfServiceURL": "https://padel-americanoo.com/terms",
         "defaultPrompt": [
-          "Set up a padel Americano for Anna, Mikko, Laura, Jussi, Sara, Pekka, Emma and Olli on 2 courts, 24 points.",
-          "Show the leaderboard for game JRSFS2.",
+          "Set up an Americano for 8 players on 2 courts, 24 points",
+          "Show the leaderboard for my padel game",
           "How does Mexicano work?"
         ],
         "brandColor": "#0A0A0A",
         "composerIcon": "./assets/icon.png",
         "logo": "./assets/logo.png",
-        "screenshots": ["./assets/screenshot-rounds.png", "./assets/screenshot-leaderboard.png"]
+        "screenshots": [
+          "./assets/screenshot-rounds.png",
+          "./assets/screenshot-leaderboard.png"
+        ],
+        "supportURL": "https://padel-americanoo.com/support",
+        "brandColorDark": "#FAFAFA"
+      },
+      "review": {
+        "positive_test_cases": [
+          {
+            "description": "Create a new Americano game from a list of players. No account or sign-in needed.",
+            "prompt": "Set up a padel Americano for Anna, Mikko, Laura, Jussi, Sara, Pekka, Emma and Olli on 2 courts, 24 points.",
+            "tools_triggered": "create_game",
+            "expected_behavior": "Creates the game and shows the game card with round 1 (two courts, four pairs). The reply gives the 6-character code and the spectator link to share, and keeps the organizer key private."
+          },
+          {
+            "description": "Enter scores for the game created in the previous case (same conversation).",
+            "prompt": "Court 1 finished 15-9 and court 2 finished 13-11.",
+            "tools_triggered": "submit_score",
+            "expected_behavior": "Saves both scores (calls submit_score once per court). The game card shows both courts as done and the leaderboard updates; the reply says all courts are scored and the next round can start."
+          },
+          {
+            "description": "Start the next round and check the standings (same conversation).",
+            "prompt": "Start the next round and show me who is leading.",
+            "tools_triggered": "next_round, get_standings",
+            "expected_behavior": "Starts round 2 with new partners, then shows the leaderboard card ranked by points with movement arrows."
+          },
+          {
+            "description": "Preview a schedule without saving anything.",
+            "prompt": "We are 9 players with 2 courts. What would an Americano schedule look like and how long would it take?",
+            "tools_triggered": "preview_schedule",
+            "expected_behavior": "Shows the schedule card round by round with sit-outs (one player sits out each round) and the estimated duration, plus a link to start it in the app. Nothing is saved."
+          },
+          {
+            "description": "Explain the rules of a format.",
+            "prompt": "How does Mexicano work and how is it different from Americano?",
+            "tools_triggered": "explain_mode",
+            "expected_behavior": "Explains Mexicano rules, scoring and tips (pairings follow the standings after each round, unlike Americano's fixed rotation) and links the guide on padel-americanoo.com."
+          }
+        ],
+        "negative_test_cases": [
+          {
+            "description": "Court booking is out of scope: the plugin runs games, it doesn't book courts.",
+            "prompt": "Book a padel court at my club for tomorrow at 7 pm."
+          },
+          {
+            "description": "Unrelated request: the plugin should not be used.",
+            "prompt": "What's the weather in Helsinki this weekend?"
+          },
+          {
+            "description": "Shopping advice is out of scope: no tool should be called.",
+            "prompt": "Which padel racket should I buy as a beginner?"
+          }
+        ],
+        "demo_recording_url": "",
+        "commerce": false
+      },
+      "publication": {
+        "release_notes": "First release: create padel Americano, Mexicano and 6 more formats, enter scores, start rounds and follow a live leaderboard, with an interactive game card in ChatGPT."
       }
     }
   }

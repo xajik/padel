@@ -4,6 +4,7 @@ import type { GameState } from "@padel/engine";
 import { identity, verifyIdToken, type Identity } from "./auth";
 import { isValidCode, normalizeCode, ToolError } from "./game";
 import { handleOAuth, type AccountProps } from "./oauth";
+import { canonicalResource } from "./resource";
 import { handleRest } from "./rest";
 import { createServer } from "./server";
 import { deleteAccountData, issueKey, mergeAccounts, myGames, actor } from "./service";
@@ -199,13 +200,55 @@ function oauth(env: Env): OAuthProvider<Env> {
   return oauthProvider.provider;
 }
 
+async function withCanonicalResource(req: Request, site: string): Promise<Request> {
+  const url = new URL(req.url);
+  const rewrite = (params: URLSearchParams) => {
+    let changed = false;
+    const values = params.getAll("resource");
+    if (!values.length) return false;
+    params.delete("resource");
+    for (const v of values) {
+      const c = canonicalResource(v, site);
+      changed ||= c !== v;
+      params.append("resource", c);
+    }
+    return changed;
+  };
+  if (url.pathname === "/oauth/authorize" && rewrite(url.searchParams)) req = new Request(url, req);
+  if (
+    url.pathname === "/oauth/token" &&
+    req.method === "POST" &&
+    req.headers.get("content-type")?.includes("application/x-www-form-urlencoded")
+  ) {
+    const form = new URLSearchParams(await req.clone().text());
+    if (rewrite(form)) {
+      const headers = new Headers(req.headers);
+      headers.delete("content-length");
+      req = new Request(req, { body: form.toString(), headers });
+    }
+  }
+  return req;
+}
+
+/** Our access tokens look like "userId:grantId:secret". On /mcp they mean the user signed in: serve the account endpoint. */
+function signedInOnAnonymousMcp(req: Request): boolean {
+  const auth = req.headers.get("authorization") ?? "";
+  return /^Bearer [^\s:]+:[^\s:]+:[^\s:]+$/i.test(auth);
+}
+
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const path = new URL(req.url).pathname;
+    const url = new URL(req.url);
+    const path = url.pathname;
     if (path.startsWith("/mcp") || path.startsWith("/api/") || path.startsWith("/oauth/")) {
       const { success } = await env.REQUEST_LIMITER.limit({ key: clientIp(req) });
       if (!success) return json({ error: { code: "RATE_LIMITED", message: "Too many requests. Slow down." } }, 429);
     }
+    if (path === "/mcp" && signedInOnAnonymousMcp(req)) {
+      url.pathname = ACCOUNT_MCP;
+      req = new Request(url, req);
+    }
+    if (path.startsWith("/oauth/")) req = await withCanonicalResource(req, env.SITE_URL);
     return oauth(env).fetch(req, env, ctx);
   },
 } satisfies ExportedHandler<Env>;

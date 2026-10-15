@@ -20,6 +20,11 @@ await rpc("initialize", { protocolVersion: "2025-06-18", capabilities: {}, clien
 const tools = (await rpc("tools/list")).tools.map((t) => t.name);
 assert(tools.length === 11, `11 tools: ${tools.join(", ")}`);
 
+const res = (await rpc("resources/list")).resources;
+assert(res.some((r) => r.uri === "ui://padel/game-v1.html" && r.mimeType === "text/html;profile=mcp-app"), "game widget resource listed");
+const widget = (await rpc("resources/read", { uri: "ui://padel/game-v1.html" })).contents[0];
+assert(widget.text.includes("ui/initialize"), "game widget HTML served");
+
 const prev = await call("preview_schedule", { mode: "americano", players: 8, courts: 2 });
 assert(prev.structuredContent.rounds.length === 7, "preview: 8 players/2 courts → 7 rounds");
 
@@ -30,6 +35,8 @@ const names = ["Anna", "Mikko", "Laura", "Jussi", "Sara", "Pekka", "Emma", "Igno
 const c = await call("create_game", { mode: "mexicano", names, courts: 2, rounds: 3 });
 assert(!c.isError, "create_game ok: " + c.structuredContent.code);
 const { code, organizerKey, spectatorUrl, organizerUrl } = c.structuredContent;
+const view = c._meta?.["padel/view"];
+assert(view?.code === code && view.canEdit && view.organizerKey === organizerKey && view.rounds.length >= 1, "create_game sends the widget view in _meta");
 assert(spectatorUrl.endsWith(`/g/${code}`) && organizerUrl.includes("?key="), "links returned");
 assert(c.structuredContent.round.matches.flatMap((m) => [...m.teamA, ...m.teamB]).some((n) => n.startsWith("Ignore previous")), "injection-like name stored as plain (truncated) data");
 

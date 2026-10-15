@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #FFFFFF; --fg: #0A0A0A; --surface: #FAFAFA; --muted: #F5F5F5; --muted-fg: #737373; --border: #E5E5E5;
+    --primary: #0A0A0A; --primary-fg: #FFFFFF; --up: #15803D; --down: #B91C1C; --error: #DC2626;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0A0A0A; --fg: #FAFAFA; --surface: #141414; --muted: #1F1F1F; --muted-fg: #A3A3A3; --border: #262626;
+      --primary: #FAFAFA; --primary-fg: #0A0A0A; --up: #22C55E; --down: #F87171; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0A0A0A; --fg: #FAFAFA; --surface: #141414; --muted: #1F1F1F; --muted-fg: #A3A3A3; --border: #262626;
+    --primary: #FAFAFA; --primary-fg: #0A0A0A; --up: #22C55E; --down: #F87171; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font: 14px/1.4 Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-variant-numeric: tabular-nums; }
+  #app { padding: 16px; }
+  .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+  .sub { color: var(--muted-fg); font-size: 13px; margin-top: 2px; }
+  .code { font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.08em; }
+  .pill { flex: none; border: 1px solid var(--border); border-radius: 9999px; padding: 3px 10px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .pill.live::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--up); margin-right: 6px; vertical-align: 1px; }
+  .tabs { display: flex; gap: 4px; margin: 14px 0 12px; padding: 3px; background: var(--muted); border-radius: 10px; }
+  .tabs button { flex: 1; border: 0; background: transparent; color: var(--muted-fg); padding: 7px 0; border-radius: 8px; font: inherit; font-weight: 500; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--bg); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .pager { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .pager b { font-weight: 600; }
+  .pager .tag { color: var(--muted-fg); font-weight: 400; font-size: 12px; margin-left: 6px; }
+  .icon-btn { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); font-size: 16px; cursor: pointer; }
+  .icon-btn:disabled { opacity: .3; cursor: default; }
+  .courts { display: grid; gap: 8px; }
+  .court { border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; background: var(--surface); }
+  .court-h { display: flex; justify-content: space-between; color: var(--muted-fg); font-size: 12px; font-weight: 500; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; }
+  .side { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 34px; }
+  .side + .side { border-top: 1px solid var(--border); }
+  .names { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .side.win .names { font-weight: 600; }
+  .score { font-size: 20px; font-weight: 600; min-width: 2ch; text-align: right; }
+  .score.empty { color: var(--muted-fg); font-weight: 400; }
+  input.score-in { width: 56px; height: 34px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; font-size: 18px; font-weight: 600; text-align: center; }
+  input.score-in:focus { outline: 2px solid var(--fg); outline-offset: -1px; }
+  .court-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .btn { border: 0; border-radius: 10px; padding: 9px 14px; background: var(--primary); color: var(--primary-fg); font: inherit; font-weight: 600; cursor: pointer; }
+  .btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--border); }
+  .btn.small { padding: 6px 12px; font-size: 13px; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .bye { color: var(--muted-fg); font-size: 13px; margin-top: 10px; }
+  .actions { display: flex; gap: 8px; margin-top: 12px; }
+  .actions .btn { flex: 1; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { white-space: nowrap; }
+  th { text-align: right; color: var(--muted-fg); font-weight: 500; font-size: 12px; padding: 0 6px 6px; }
+  th:nth-child(2) { text-align: left; }
+  td { padding: 8px 6px; border-top: 1px solid var(--border); text-align: right; }
+  td.rank { width: 28px; text-align: left; color: var(--muted-fg); }
+  td.name { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 0; width: 100%; }
+  td.pts { font-weight: 600; font-size: 16px; }
+  tr.top td.name { font-weight: 600; }
+  .mv { font-size: 11px; margin-left: 4px; }
+  .mv.up { color: var(--up); } .mv.down { color: var(--down); }
+  .muted { color: var(--muted-fg); }
+  .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 13px; }
+  a { color: var(--fg); }
+  .err { color: var(--error); font-size: 13px; margin-top: 10px; }
+  .empty-state { color: var(--muted-fg); padding: 24px 0; text-align: center; }
+</style>
+</head>
+<body>
+<div id="app"><div class="empty-state">Loading game&#8230;</div></div>
+<script>
+(() => {
+  "use strict";
+  const app = document.getElementById("app");
+  const ui = { view: null, tab: "round", round: null, drafts: {}, busy: false, error: "", key: null };
+
+  /* ---------- host bridge: MCP Apps (postMessage JSON-RPC), with the window.openai API as fallback ---------- */
+
+  let nextId = 1, bridge = false;
+  const pending = new Map();
+  const post = (msg) => window.parent.postMessage(Object.assign({ jsonrpc: "2.0" }, msg), "*");
+  function request(method, params, timeout) {
+    const id = nextId++;
+    post({ id, method, params });
+    return new Promise((resolve, reject) => {
+      pending.set(id, { resolve, reject });
+      if (timeout) setTimeout(() => { if (pending.delete(id)) reject(new Error("timeout")); }, timeout);
+    });
+  }
+  window.addEventListener("message", (e) => {
+    if (e.source !== window.parent) return;
+    const m = e.data;
+    if (!m || m.jsonrpc !== "2.0") return;
+    if (m.id != null && !m.method && pending.has(m.id)) {
+      const p = pending.get(m.id); pending.delete(m.id);
+      m.error ? p.reject(new Error(m.error.message || "Request failed")) : p.resolve(m.result);
+      return;
+    }
+    if (m.method === "ui/notifications/tool-input") takeKey(m.params && m.params.arguments);
+    if (m.method === "ui/notifications/tool-result") receive(m.params);
+    if (m.method === "ui/notifications/host-context-changed") applyContext(m.params);
+    if (m.method === "ui/resource-teardown" && m.id != null) post({ id: m.id, result: {} });
+  });
+
+  function applyContext(ctx) {
+    if (ctx && (ctx.theme === "dark" || ctx.theme === "light")) document.documentElement.dataset.theme = ctx.theme;
+  }
+  function takeKey(args) { if (args && typeof args.organizerKey === "string") ui.key = args.organizerKey; }
+  const viewOf = (r) => r && ((r._meta && r._meta["padel/view"]) || (r.meta && r.meta["padel/view"]));
+
+  function receive(result) {
+    if (!result) return;
+    const v = viewOf(result);
+    if (v) setView(v);
+    else if (result.isError) { ui.error = errText(result); render(); }
+  }
+  function setView(v) {
+    const sameRoundShown = !ui.view || ui.round === null || ui.view.code !== v.code || ui.round === ui.view.currentRound;
+    if (v.organizerKey) ui.key = v.organizerKey;
+    if (!ui.view && v.focusTab) ui.tab = v.focusTab;
+    ui.view = v;
+    if (v.focusRound) ui.round = v.focusRound;
+    else if (sameRoundShown) ui.round = v.currentRound;
+    ui.round = Math.min(Math.max(1, ui.round), v.rounds.length);
+    render();
+  }
+  const errText = (r) => ((r.content || []).find((c) => c.type === "text") || {}).text || "Something went wrong.";
+
+  async function callTool(name, args) {
+    if (bridge) return request("tools/call", { name, arguments: args });
+    if (window.openai && window.openai.callTool) return window.openai.callTool(name, args);
+    throw new Error("This host can't run actions from the widget.");
+  }
+  function openLink(url) {
+    if (bridge) request("ui/open-link", { url }).catch(() => window.open(url, "_blank"));
+    else if (window.openai && window.openai.openExternal) window.openai.openExternal({ href: url });
+    else window.open(url, "_blank");
+  }
+  function say(text) {
+    if (bridge) return request("ui/message", { role: "user", content: [{ type: "text", text }] }).catch(() => {});
+    if (window.openai && window.openai.sendFollowUpMessage) return window.openai.sendFollowUpMessage({ prompt: text });
+  }
+
+  /* ---------- actions ---------- */
+
+  const editable = () => !!(ui.view && ui.view.canEdit);
+  async function run(name, args) {
+    ui.busy = true; ui.error = ""; render();
+    try {
+      const res = await callTool(name, Object.assign({ code: ui.view.code }, ui.key ? { organizerKey: ui.key } : {}, args));
+      if (res && res.isError) ui.error = errText(res);
+      else {
+        const v = viewOf(res) || (window.openai && viewOf({ _meta: window.openai.toolResponseMetadata }));
+        if (v) { if (name === "next_round") ui.round = v.currentRound; setView(v); }
+        else await refresh();
+      }
+    } catch (e) { ui.error = e.message || String(e); }
+    ui.busy = false; render();
+  }
+  async function refresh() {
+    const res = await callTool("get_round", { code: ui.view.code });
+    const v = viewOf(res);
+    if (v) setView(Object.assign({}, v, { canEdit: v.canEdit || ui.view.canEdit, organizerKey: ui.key || undefined }));
+  }
+  function saveCourt(court) {
+    const d = ui.drafts[court] || {};
+    const a = num(d.a), b = num(d.b);
+    if (a === null && b === null) return;
+    ui.drafts[court] = undefined;
+    run("submit_score", { court, round: ui.round, ...(a !== null ? { scoreA: a } : {}), ...(b !== null ? { scoreB: b } : {}) });
+  }
+  const num = (s) => (s === "" || s == null || isNaN(+s) ? null : Math.max(0, Math.min(99, Math.round(+s))));
+
+  /* ---------- render ---------- */
+
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const team = (t) => t.map(esc).join(" &amp; ");
+
+  function render() {
+    const v = ui.view;
+    if (!v) return;
+    const done = v.status === "done";
+    const progress = done ? "Final" : "Round " + v.currentRound + (v.plannedRounds ? " of " + v.plannedRounds : "");
+    app.innerHTML =
+      '<div class="head"><div><h1>' + esc(v.name) + '</h1><div class="sub">' + esc(v.modeName) + ' \u00b7 <span class="code">' + esc(v.code) + "</span> \u00b7 " + progress + "</div></div>" +
+      '<span class="pill ' + (done ? "" : "live") + '">' + (done ? "Finished" : "Live") + "</span></div>" +
+      '<div class="tabs" role="tablist">' +
+      tabBtn("round", "Rounds") + tabBtn("table", "Leaderboard") + "</div>" +
+      (ui.tab === "round" ? roundHtml(v) : tableHtml(v)) +
+      (ui.error ? '<div class="err">' + esc(ui.error) + "</div>" : "") +
+      '<div class="foot"><span class="muted">' + (v.canEdit ? "You can enter scores" : "Read-only") + '</span><a href="#" data-act="open">Open live board \u2197</a></div>';
+  }
+  const tabBtn = (id, label) => '<button role="tab" data-tab="' + id + '" aria-selected="' + (ui.tab === id) + '">' + label + "</button>";
+
+  function roundHtml(v) {
+    const r = v.rounds[ui.round - 1];
+    if (!r) return '<div class="empty-state">No rounds yet.</div>';
+    const upcoming = r.round > v.currentRound;
+    const isCurrent = r.round === v.currentRound;
+    const canScore = editable() && !upcoming;
+    const tag = upcoming ? "Next up" : isCurrent && v.status === "live" ? "Now playing" : "";
+    let h = '<div class="pager"><button class="icon-btn" data-act="prev" aria-label="Previous round"' + (ui.round <= 1 ? " disabled" : "") + ">\u2039</button>" +
+      "<b>Round " + r.round + (tag ? '<span class="tag">' + tag + "</span>" : "") + "</b>" +
+      '<button class="icon-btn" data-act="next" aria-label="Next round"' + (ui.round >= v.rounds.length ? " disabled" : "") + ">\u203a</button></div>";
+    h += '<div class="courts">' + r.matches.map((m) => courtHtml(v, m, canScore)).join("") + "</div>";
+    if (r.sittingOut.length) h += '<div class="bye">Sitting out: ' + r.sittingOut.map(esc).join(", ") + "</div>";
+    if (isCurrent && editable()) {
+      const complete = r.matches.every((m) => m.scoreA !== null && m.scoreB !== null);
+      const last = v.plannedRounds && v.currentRound >= v.plannedRounds;
+      h += '<div class="actions">' +
+        (last
+          ? '<button class="btn" data-act="finish"' + (complete && !ui.busy ? "" : " disabled") + ">Finish game</button>"
+          : '<button class="btn" data-act="advance"' + (complete && !ui.busy ? "" : " disabled") + ">Start round " + (v.currentRound + 1) + "</button>") +
+        '<button class="btn ghost" data-act="refresh"' + (ui.busy ? " disabled" : "") + ">Refresh</button></div>";
+    }
+    return h;
+  }
+
+  function courtHtml(v, m, canScore) {
+    const scored = m.scoreA !== null && m.scoreB !== null;
+    const d = ui.drafts[m.court] || {};
+    const cell = (side, val) =>
+      canScore
+        ? '<input class="score-in" inputmode="numeric" maxlength="2" aria-label="Score" data-court="' + m.court + '" data-side="' + side + '" value="' + esc(d[side] != null ? d[side] : val == null ? "" : val) + '">'
+        : '<span class="score' + (val == null ? " empty" : "") + '">' + (val == null ? "\u2013" : val) + "</span>";
+    const winA = scored && m.scoreA > m.scoreB, winB = scored && m.scoreB > m.scoreA;
+    return '<div class="court"><div class="court-h"><span>Court ' + m.court + "</span>" + (scored ? "<span>Done</span>" : "") + "</div>" +
+      '<div class="side' + (winA ? " win" : "") + '"><span class="names">' + team(m.teamA) + "</span>" + cell("a", m.scoreA) + "</div>" +
+      '<div class="side' + (winB ? " win" : "") + '"><span class="names">' + team(m.teamB) + "</span>" + cell("b", m.scoreB) + "</div>" +
+      (canScore ? '<div class="court-actions"><button class="btn small" data-act="save" data-court="' + m.court + '"' + (ui.busy ? " disabled" : "") + ">" + (scored ? "Update" : "Save") + "</button></div>" : "") +
+      "</div>";
+  }
+
+  function tableHtml(v) {
+    if (!v.standings.length) return '<div class="empty-state">No scores yet.</div>';
+    const head = v.leaderboard === "wins" ? "W" : v.leaderboard === "average" ? "Avg" : "Pts";
+    return "<table><thead><tr><th></th><th>Player</th><th>P</th><th>W-D-L</th><th>+/-</th><th>" + head + "</th></tr></thead><tbody>" +
+      v.standings.map((s) => {
+        const mv = s.movement > 0 ? '<span class="mv up">\u25b2' + s.movement + "</span>" : s.movement < 0 ? '<span class="mv down">\u25bc' + -s.movement + "</span>" : "";
+        return '<tr class="' + (s.rank === 1 ? "top" : "") + '"><td class="rank">' + s.rank + '</td><td class="name">' + esc(s.name) + mv + "</td><td>" + s.played +
+          "</td><td>" + s.wins + "-" + s.draws + "-" + s.losses + "</td><td>" + (s.diff > 0 ? "+" : "") + s.diff + '</td><td class="pts">' + (Math.round(s.score * 10) / 10) + "</td></tr>";
+      }).join("") + "</tbody></table>";
+  }
+
+  /* ---------- events ---------- */
+
+  app.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-tab],[data-act]");
+    if (!t || !ui.view) return;
+    if (t.dataset.tab) { ui.tab = t.dataset.tab; return render(); }
+    const act = t.dataset.act;
+    if (act === "prev") { ui.round--; render(); }
+    if (act === "next") { ui.round++; render(); }
+    if (act === "save") saveCourt(+t.dataset.court);
+    if (act === "advance") run("next_round", {});
+    if (act === "refresh") { ui.busy = true; render(); refresh().catch((x) => (ui.error = x.message)).finally(() => { ui.busy = false; render(); }); }
+    if (act === "finish") say("Finish the padel game " + ui.view.code + " and show the final standings.");
+    if (act === "open") { e.preventDefault(); openLink(ui.view.spectatorUrl); }
+  });
+  app.addEventListener("input", (e) => {
+    const t = e.target;
+    if (!t.dataset || !t.dataset.court) return;
+    const court = +t.dataset.court, side = t.dataset.side;
+    const d = (ui.drafts[court] = Object.assign({}, ui.drafts[court], { [side]: t.value.replace(/\D/g, "") }));
+    // Total-points scoring: fill in the other side, like the apps do (24 \u2192 14 + 10).
+    const total = ui.view.scoring.type === "total" ? ui.view.scoring.points || 24 : null;
+    const n = num(d[side]);
+    if (total !== null && n !== null && n <= total) {
+      const other = side === "a" ? "b" : "a";
+      d[other] = String(total - n);
+      const o = app.querySelector('input[data-court="' + court + '"][data-side="' + other + '"]');
+      if (o) o.value = d[other];
+    }
+  });
+  app.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.dataset && e.target.dataset.court) saveCourt(+e.target.dataset.court);
+  });
+
+  /* ---------- size + start ---------- */
+
+  let lastH = 0;
+  new ResizeObserver(() => {
+    const h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+    if (bridge && h !== lastH) { lastH = h; post({ method: "ui/notifications/size-changed", params: { width: document.documentElement.scrollWidth, height: h } }); }
+  }).observe(document.body);
+
+  function fromOpenAI() {
+    const o = window.openai;
+    if (!o) return;
+    if (o.theme) applyContext({ theme: o.theme });
+    takeKey(o.toolInput);
+    const v = viewOf({ _meta: o.toolResponseMetadata });
+    if (v) setView(v);
+  }
+  window.addEventListener("openai:set_globals", () => { if (!bridge) fromOpenAI(); });
+
+  request("ui/initialize", { appInfo: { name: "americanoo-game", version: "1.0.0" }, appCapabilities: {}, protocolVersion: "2026-01-26" }, 3000)
+    .then((res) => {
+      bridge = true;
+      applyContext(res && res.hostContext);
+      post({ method: "ui/notifications/initialized", params: {} });
+    })
+    .catch(fromOpenAI);
+  fromOpenAI();
+})();
+</script>
+</body>
+</html>

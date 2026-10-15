@@ -29,13 +29,13 @@ export default function McpDocsPage() {
   const accountSnippets: [string, string][] = [
     ["Claude (claude.ai / desktop)", `Settings → Connectors → Add custom connector\nURL: ${accountEndpoint}\nClaude opens a sign-in window: continue with Google or Apple, then Allow.`],
     ["Claude Code", `claude mcp add --transport http americanoo ${accountEndpoint}\nThen run /mcp and choose Authenticate.`],
-    ["ChatGPT", `Settings → Apps & Connectors → Create\nMCP server URL: ${accountEndpoint}\nAuthentication: OAuth`],
+    ["ChatGPT", `Plugins → Add custom MCP server\nName: Americanoo\nURL: ${accountEndpoint}\nAuthentication: OAuth`],
   ];
   const snippets: [string, string][] = [
     ["Meta Muse", `Paste the setup prompt from ${absoluteUrl("/docs/muse")} into a Muse chat.\nMCP server URL: ${endpoint} (streamable HTTP, no authentication)`],
     ["Claude (claude.ai / desktop)", `Settings → Connectors → Add custom connector\nURL: ${endpoint}`],
     ["Claude Code", `claude mcp add --transport http padel ${endpoint}`],
-    ["ChatGPT", `Settings → Apps & Connectors → Create\nMCP server URL: ${endpoint}\nAuthentication: none`],
+    ["ChatGPT", `Plugins → Add custom MCP server\nName: Americanoo\nURL: ${endpoint}\nAuthentication: none\nGame tools show an interactive card: rounds, scores and the leaderboard.`],
     ["Cursor / VS Code (mcp.json)", JSON.stringify({ mcpServers: { padel: { url: endpoint } } }, null, 2)],
   ];
   return (

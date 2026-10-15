@@ -1,0 +1,34 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "americanoo",
+  "version": "1.0.0",
+  "description": "Run social padel games (Americano, Mexicano and 6 more formats): create the game, enter scores, start rounds and follow the live leaderboard.",
+  "author": { "name": "Americanoo", "url": "https://padel-americanoo.com" },
+  "homepage": "https://padel-americanoo.com/docs/mcp",
+  "license": "UNLICENSED",
+  "keywords": ["padel", "americano", "mexicano", "sports", "leaderboard"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Americanoo",
+        "shortDescription": "Padel Americano: rounds, scores and a live leaderboard",
+        "longDescription": "Set up a padel Americano, Mexicano or one of 6 other social formats in one message. Americanoo builds fair rotations, gives you a link the whole group can follow on any phone, browser or watch, and shows each round court by court with a live leaderboard. Enter scores and start the next round right from the chat. Free, no ads, no sign-up.",
+        "developerName": "Americanoo",
+        "category": "Lifestyle",
+        "capabilities": ["Read", "Write"],
+        "websiteURL": "https://padel-americanoo.com",
+        "privacyPolicyURL": "https://padel-americanoo.com/privacy",
+        "termsOfServiceURL": "https://padel-americanoo.com/terms",
+        "defaultPrompt": [
+          "Set up a padel Americano for Anna, Mikko, Laura, Jussi, Sara, Pekka, Emma and Olli on 2 courts, 24 points.",
+          "Show the leaderboard for game JRSFS2.",
+          "How does Mexicano work?"
+        ],
+        "brandColor": "#0A0A0A",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png",
+        "screenshots": ["./assets/screenshot-rounds.png", "./assets/screenshot-leaderboard.png"]
+      }
+    }
+  }
+}
